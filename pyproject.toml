@@ -1,0 +1,13 @@
+[project]
+name = "hfovis"
+version = "0.1.0"
+description = "A Python GUI for visualizing HFOs from iEEG data."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "h5py>=3.13.0",
+    "numpy>=2.2.6",
+    "pandas>=2.2.3",
+    "pyside6>=6.9.1",
+    "scipy>=1.15.3",
+]
