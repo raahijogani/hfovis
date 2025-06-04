@@ -194,7 +194,7 @@ cython_debug/
 .cursorindexingignore
 
 # Data files
-data/
+/data
 
 # Scratch testing Python files
 test*.py
