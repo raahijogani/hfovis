@@ -1,11 +1,11 @@
 import numpy as np
 import pandas as pd
 from scipy.signal import butter, filtfilt, firwin
-from .detector_functions import DetectorFunctions
+from .utils import *
 from tqdm import tqdm
 
-get_adaptive_threshold = DetectorFunctions.get_adaptive_threshold
-find_burst_events = DetectorFunctions.find_burst_events
+get_adaptive_threshold = get_adaptive_threshold
+find_burst_events = find_burst_events
 
 
 class AmplitudeThresholdDetectorV2:

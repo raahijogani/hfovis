@@ -74,10 +74,17 @@ class IEEGDataLoader:
         try:
             with h5py.File(mat_file_path, "r") as mat_file:
                 keys = list(mat_file.keys())
-                # print("Keys in the mat file:", keys)
-                montage = self.extract_data(mat_file["montage"])
-                patientInfo = self.extract_data(mat_file["patientInfo"])
-                data = self.extract_data(mat_file["data"])
+                montage = (
+                    self.extract_data(mat_file["montage"])
+                    if "montage" in keys
+                    else None
+                )
+                patientInfo = (
+                    self.extract_data(mat_file["patientInfo"])
+                    if "patientInfo" in keys
+                    else None
+                )
+                data = self.extract_data(mat_file["data"]) if "data" in keys else None
                 iEEG_data = data["data"].transpose()
                 return montage, patientInfo, iEEG_data
         except Exception as e:

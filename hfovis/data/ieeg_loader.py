@@ -1,4 +1,4 @@
-from loaders import IEEGDataLoader
+from .loaders import IEEGDataLoader
 
 
 def load_ieeg_from_fileinfo(file_info, data_path, annotations_path, baseline):
