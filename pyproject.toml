@@ -11,4 +11,5 @@ dependencies = [
     "pyqt6>=6.9.1",
     "pyqtgraph>=0.13.7",
     "scipy>=1.15.3",
+    "streamz>=0.6.4",
 ]

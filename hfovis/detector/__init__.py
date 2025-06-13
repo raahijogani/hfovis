@@ -10,4 +10,4 @@ from .utils import (
     hfo_amp_detector,
 )
 
-from .detector import AmplitudeThresholdDetectorV2
+from .detector import RealTimeDetector, AmplitudeThresholdDetectorV2

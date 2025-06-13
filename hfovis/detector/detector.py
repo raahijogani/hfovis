@@ -1,11 +1,230 @@
 import numpy as np
 import pandas as pd
-from scipy.signal import butter, filtfilt, firwin
-from .utils import *
+from scipy.signal import butter, filtfilt, firwin, sosfilt, sosfilt_zi, lfilter
+import threading
+from streamz import Stream
+from .utils import get_adaptive_threshold, find_burst_events
+from ..data.buffering import RingBuffer
 from tqdm import tqdm
 
 get_adaptive_threshold = get_adaptive_threshold
 find_burst_events = find_burst_events
+
+
+class RealTimeDetector:
+    def __init__(self, stream, handle, **kwargs):
+        self.stream = stream
+        self.handle = handle
+        self.config = self._default_config()
+        self.config.update(kwargs)
+        self._validate_config()
+        self.raw_stream = Stream()
+        self.ring_buffer = RingBuffer(
+            self.config["ring_buffer_size_s"] * self.config["fs"],
+            self.config["channels"],
+        )
+        self._build_graph_single_band()
+        self._running = False
+
+    def _default_config(self):
+        return {
+            "fs": 2048,
+            "channels": 1,
+            "hfo_band": [80, 500],
+            "ripple_band": [80, 270],
+            "fast_ripple_band": [230, 600],
+            "adaptive_threshold_window_size_ms": 500,
+            "adaptive_threshold_overlap_ms": 200,
+            "adaptive_threshold_num_windows": 1800,
+            "adaptive_threshold_num_windows_overlap": 1000,
+            "min_threshold": 5,
+            "threshold_multiplier": 3,
+            "burst_window_size_ms": 320,
+            "burst_window_overlap_ms": 64,
+            "side_max_crossings": 2,
+            "center_min_crossings": 6,
+            "low_band": 1,
+            "ring_buffer_size_s": 10,
+        }
+
+    def _validate_config(self):
+        pass
+
+    def start(self):
+        self._thread = threading.Thread(target=self._internal_loop, daemon=True)
+        self._running = True
+        self.stream.start()
+        self._thread.start()
+
+    def stop(self):
+        if self._running:
+            self._running = False
+            self.stream.stop()
+            self._thread.join()
+
+    def _internal_loop(self):
+        try:
+            idx = 0
+            while self._running:
+                chunk = self.stream.read()
+                if chunk is None:
+                    self.stop()
+                self.raw_stream.emit((idx, chunk))
+                idx += len(chunk)
+        except Exception as e:
+            print(f"Error in internal loop: {e}")
+            self.stop()
+
+    def _build_graph_single_band(self):
+        # Send raw data to the ring buffer
+        self.raw_stream.sink(lambda pair: self.ring_buffer.write(pair[1]))
+
+        def explode(pair):
+            start, chunk = pair
+            idxs = np.arange(start, start + len(chunk), dtype=np.int64)
+            return list(zip(idxs, chunk))
+
+        # Create filters once
+        dc_offset_sos = butter(
+            2, self.config["low_band"], fs=self.config["fs"], btype="high", output="sos"
+        )
+        hfo_band_b = firwin(
+            65,
+            self.config["hfo_band"],
+            fs=self.config["fs"],
+            pass_zero="bandpass",
+            window="hamming",
+        )
+
+        # Initialize filter states
+        dc_zi_init = np.repeat(
+            sosfilt_zi(dc_offset_sos)[:, :, np.newaxis], self.config["channels"], axis=2
+        )
+        fir_zi_init = np.zeros((64, self.config["channels"]))
+
+        # Define the processing functions
+        def dc_block(pair, state=dc_zi_init):
+            idx, chunk = pair
+            y, state[:] = sosfilt(dc_offset_sos, chunk, axis=0, zi=state)
+            return idx, y
+
+        def hfo_filter_block(pair, state=fir_zi_init):
+            idx, chunk = pair
+            y, state[:] = lfilter(hfo_band_b, 1.0, chunk, axis=0, zi=state)
+            return idx, y
+
+        filtered = (
+            self.raw_stream.map(dc_block).map(hfo_filter_block).map(explode).flatten()
+        )
+
+        # Adaptive thresholding stream
+        std_devs = (
+            filtered.sliding_window(
+                int(
+                    self.config["adaptive_threshold_window_size_ms"]
+                    / 1000
+                    * self.config["fs"]
+                ),
+                return_partial=False,
+            )
+            .slice(
+                step=int(
+                    (
+                        self.config["adaptive_threshold_window_size_ms"]
+                        - self.config["adaptive_threshold_overlap_ms"]
+                    )
+                    / 1000
+                    * self.config["fs"]
+                )
+            )
+            .map(lambda w: np.std([x[1] for x in w], axis=0))
+        )
+        thresholds = (
+            std_devs.sliding_window(self.config["adaptive_threshold_num_windows"])
+            .slice(
+                step=self.config["adaptive_threshold_num_windows"]
+                - self.config["adaptive_threshold_num_windows_overlap"],
+                return_partial=False,
+            )
+            .map(
+                lambda w: (
+                    self.config["threshold_multiplier"] * np.median([x[1] for x in w]),
+                )
+            )
+        )
+
+        # Detection stream
+        def classify(pair):
+            thr, data = pair
+            thr = max(thr[0], self.config["min_threshold"])
+            win_idx = data[0][0]
+            win = np.stack([x[1] for x in data])
+
+            left = (
+                self._num_threshold_crossings(
+                    win[: self.config["burst_window_overlap_ms"]], thr
+                )
+                <= self.config["side_max_crossings"]
+            )
+            middle = (
+                self._num_threshold_crossings(
+                    win[
+                        self.config["burst_window_overlap_ms"] : -self.config[
+                            "burst_window_overlap_ms"
+                        ]
+                    ],
+                    thr,
+                )
+                >= self.config["center_min_crossings"]
+            )
+            right = (
+                self._num_threshold_crossings(
+                    win[-self.config["burst_window_overlap_ms"] :], thr
+                )
+                <= self.config["side_max_crossings"]
+            )
+
+            hfo_channels = left & middle & right
+            if not np.any(hfo_channels):
+                return None
+
+            channel_indices = np.where(hfo_channels)[0]
+            raw_seg = self.ring_buffer.read(win_idx, len(win))[:, hfo_channels]
+            filtered_seg = win[:, hfo_channels]
+            center = (win_idx + len(win) // 2) / self.config["fs"]
+
+            return {
+                # "raw": raw_seg,
+                # "filtered": filtered_seg,
+                "center": center,
+                "threshold": thr,
+                "channels": channel_indices,
+            }
+
+        hfo_win = filtered.sliding_window(
+            int(self.config["burst_window_size_ms"] / 1000 * self.config["fs"]),
+            return_partial=False,
+        ).slice(
+            step=int(
+                (
+                    self.config["burst_window_size_ms"]
+                    - self.config["burst_window_overlap_ms"]
+                )
+                / 1000
+                * self.config["fs"]
+            )
+        )
+        hfo_events = (
+            thresholds.combine_latest(hfo_win, emit_on=hfo_win)
+            .map(classify)
+            .filter(lambda x: x is not None)
+        )
+        hfo_events.sink(self.handle)
+
+    def _num_threshold_crossings(self, sig, thr):
+        """Count the number of threshold crossings in each channel of a signal."""
+        above = sig > thr
+        return np.sum(np.abs(np.diff(above.astype(int), axis=0)), axis=0)
 
 
 class AmplitudeThresholdDetectorV2:
