@@ -5,6 +5,7 @@ import threading
 from streamz import Stream
 from .utils import get_adaptive_threshold, find_burst_events
 from ..data.buffering import RingBuffer
+from typing import Callable, Dict, Any
 from tqdm import tqdm
 
 get_adaptive_threshold = get_adaptive_threshold
@@ -12,65 +13,148 @@ find_burst_events = find_burst_events
 
 
 class RealTimeDetector:
-    def __init__(self, stream, handle, **kwargs):
+    """
+    Runs detection for HFOs on real-time stream of data. Runs detection on a separate
+    thread so that the main thread can continue to read data. All events will then be
+    sent to a user set handler.
+    """
+
+    def __init__(self, stream: Any, handle: Callable, **kwargs):
+        """
+        Parameters:
+        -----------
+        stream
+            A data stream object that has a `start()` method for starting the stream
+            and a `read()` method for reading a chunk from the stream.
+        handle: function
+            A function that will be called with the detected events. The function should
+            accept a single argument which is a dictionary containing the detected
+            events. The dictionary will have the following keys:
+                - 'raw': The raw data segment of the detected event.
+                - 'filtered': The filtered data segment of the detected event.
+                - 'center': The center time of the detected event in seconds.
+                - 'channels': The indices of the channels where the event was
+                  detected.
+                - 'threshold': The threshold used for detection.
+        """
         self.stream = stream
         self.handle = handle
         self.config = self._default_config()
         self.config.update(kwargs)
         self._validate_config()
         self.raw_stream = Stream()
+
+        # Ring buffer is used to temporarily store raw data so that it can later
+        # be matched in time if events are detected.
         self.ring_buffer = RingBuffer(
-            self.config["ring_buffer_size_s"] * self.config["fs"],
+            int(self.config["ring_buffer_size_s"] * self.config["fs"]),
             self.config["channels"],
         )
         self._build_graph_single_band()
         self._running = False
 
-    def _default_config(self):
+    def _default_config(self) -> Dict[str, Any]:
+        """
+        Returns the default configuration for the detector.
+
+        Explanation of configuration parameters:
+            fs: float
+                Sampling frequency of the data in Hz.
+            channels: int
+                Number of channels in the data.
+            hfo_band: list of float
+                Frequency band for HFO detection (in Hz).
+            ripple_band: list of float
+                Frequency band of ripple oscillations (in Hz).
+            fast_ripple_band: list of float
+                Frequency band of fast ripple oscillations (in Hz).
+            adaptive_threshold_window_size_ms: float
+                Window size over which standard deviations should be calculated for
+                adaptive thresholding.
+            adaptive_threshold_overlap_ms: float
+                Overlap between consecutive standard deviation windows for adaptive
+                thresholding.
+            adaptive_threshold_num_windows: int
+                Number of standard deviations to calculate median over to get adaptive
+                threshold.
+            adaptive_threshold_overlap_ms: int
+                Number of standard deviations to overlap when calculating adaptive
+                threshold.
+            min_threshold: float
+                Minimum threshold for detection. If the adaptive threshold is below this
+                value, threshold will be set to this value.
+            threshold_multiplier: float
+                Multiplier for the adaptive threshold to set the detection threshold.
+            burst_window_size_ms: float
+                Size of the window over which to detect bursts in milliseconds.
+            burst_window_overlap_ms: float
+                Overlap between consecutive burst windows in milliseconds.
+            side_max_crossings: int
+                Maximum number of threshold crossings allowed on the sides (overlap
+                region) of the burst window.
+            center_min_crossings: int
+                Minimum number of threshold crossings required in the center of the
+                burst window to classify window as HFO candidate.
+            low_band: float
+                Low band frequency for high-pass filtering to remove DC offset.
+            ring_buffer_size_s: float
+                Size of the ring buffer in seconds. This is used to store raw data so
+                that it can be matched with detected events.
+        """
         return {
-            "fs": 2048,
+            "fs": 2048.0,
             "channels": 1,
             "hfo_band": [80, 500],
             "ripple_band": [80, 270],
             "fast_ripple_band": [230, 600],
-            "adaptive_threshold_window_size_ms": 500,
-            "adaptive_threshold_overlap_ms": 200,
-            "adaptive_threshold_num_windows": 1800,
-            "adaptive_threshold_num_windows_overlap": 1000,
-            "min_threshold": 5,
-            "threshold_multiplier": 3,
-            "burst_window_size_ms": 320,
-            "burst_window_overlap_ms": 64,
+            "adaptive_threshold_window_size_ms": 500.0,
+            "adaptive_threshold_overlap_ms": 200.0,
+            "adaptive_threshold_num_windows": 100,
+            "adaptive_threshold_num_windows_overlap": 50,
+            "min_threshold": 5.0,
+            "threshold_multiplier": 3.0,
+            "burst_window_size_ms": 320.0,
+            "burst_window_overlap_ms": 64.0,
             "side_max_crossings": 2,
             "center_min_crossings": 6,
             "low_band": 1,
-            "ring_buffer_size_s": 10,
+            "ring_buffer_size_s": 10.0,
         }
 
     def _validate_config(self):
         pass
 
     def start(self):
+        """
+        Starts both the stream and the detector. Do not start the stream prior to
+        running this.
+        """
         self._thread = threading.Thread(target=self._internal_loop, daemon=True)
         self._running = True
         self.stream.start()
         self._thread.start()
 
     def stop(self):
+        """
+        Stops both the stream and the detector.
+        """
         if self._running:
             self._running = False
             self.stream.stop()
             self._thread.join()
 
     def _internal_loop(self):
+        """
+        Reads through the data stream and emits chunks tagged with a global index.
+        """
         try:
-            idx = 0
+            idx = 0  # Global index to tag chunks with global time stamp
             while self._running:
                 chunk = self.stream.read()
-                if chunk is None:
+                if chunk is None:  # Last chunk in stream should be None
                     self.stop()
                 self.raw_stream.emit((idx, chunk))
-                idx += len(chunk)
+                idx += len(chunk)  # Update global index
         except Exception as e:
             print(f"Error in internal loop: {e}")
             self.stop()
@@ -79,6 +163,9 @@ class RealTimeDetector:
         # Send raw data to the ring buffer
         self.raw_stream.sink(lambda pair: self.ring_buffer.write(pair[1]))
 
+        # Function to change global indexing of chunks to global indexing of individual
+        # samples. This will allow for precise matching of filtered data with raw data
+        # in the ring buffer regardless of frame shifts.
         def explode(pair):
             start, chunk = pair
             idxs = np.arange(start, start + len(chunk), dtype=np.int64)
@@ -105,16 +192,21 @@ class RealTimeDetector:
         # Define the processing functions
         def dc_block(pair, state=dc_zi_init):
             idx, chunk = pair
+            # The state is maintained within this block and not reset every time the
+            # function is called.
             y, state[:] = sosfilt(dc_offset_sos, chunk, axis=0, zi=state)
             return idx, y
 
-        def hfo_filter_block(pair, state=fir_zi_init):
+        def hfo_band_filter_block(pair, state=fir_zi_init):
             idx, chunk = pair
             y, state[:] = lfilter(hfo_band_b, 1.0, chunk, axis=0, zi=state)
             return idx, y
 
         filtered = (
-            self.raw_stream.map(dc_block).map(hfo_filter_block).map(explode).flatten()
+            self.raw_stream.map(dc_block)
+            .map(hfo_band_filter_block)
+            .map(explode)
+            .flatten()  # Flatten the stream to emit individual samples
         )
 
         # Adaptive thresholding stream
@@ -123,9 +215,9 @@ class RealTimeDetector:
                 int(
                     self.config["adaptive_threshold_window_size_ms"]
                     / 1000
-                    * self.config["fs"]
+                    * self.config["fs"]  # Convert ms to samples
                 ),
-                return_partial=False,
+                return_partial=False,  # Prevents sending buffers that aren't full yet
             )
             .slice(
                 step=int(
@@ -134,74 +226,84 @@ class RealTimeDetector:
                         - self.config["adaptive_threshold_overlap_ms"]
                     )
                     / 1000
-                    * self.config["fs"]
+                    * self.config["fs"]  # Convert from overlap ms to step samples
                 )
             )
-            .map(lambda w: np.std([x[1] for x in w], axis=0))
+            # Remove the global index since it is not needed for the threshold and
+            # compute standard deviation over only the signal
+            .map(lambda w: np.std([x[1] for x in w], axis=0))  #
         )
         thresholds = (
-            std_devs.sliding_window(self.config["adaptive_threshold_num_windows"])
+            std_devs.sliding_window(
+                # In this case, it might take a while to get enough standard deviations,
+                # so we will allow partial windows.
+                self.config["adaptive_threshold_num_windows"],
+                return_partial=True,
+            )
             .slice(
                 step=self.config["adaptive_threshold_num_windows"]
                 - self.config["adaptive_threshold_num_windows_overlap"],
-                return_partial=False,
             )
-            .map(
-                lambda w: (
-                    self.config["threshold_multiplier"] * np.median([x[1] for x in w]),
-                )
-            )
+            .map(lambda w: self.config["threshold_multiplier"] * np.median(w, axis=0))
         )
 
         # Detection stream
         def classify(pair):
+            # Here we are given a threshold for each channel as well as the filtered
+            # window.
             thr, data = pair
-            thr = max(thr[0], self.config["min_threshold"])
+
+            # Replace thresholds that are too low with the minimum
+            thr[thr < self.config["min_threshold"]] = self.config["min_threshold"]
             win_idx = data[0][0]
             win = np.stack([x[1] for x in data])
 
+            # We need to convert from ms to samples to slice the window into left, right
+            # and middle segments.
+            num_samples_overlap = int(
+                self.config["burst_window_overlap_ms"] / 1000 * self.config["fs"]
+            )
+
+            # Now we check if the threshold crossings are "centered" within the window
             left = (
-                self._num_threshold_crossings(
-                    win[: self.config["burst_window_overlap_ms"]], thr
-                )
+                self._num_threshold_crossings(win[:num_samples_overlap], thr)
                 <= self.config["side_max_crossings"]
             )
             middle = (
                 self._num_threshold_crossings(
-                    win[
-                        self.config["burst_window_overlap_ms"] : -self.config[
-                            "burst_window_overlap_ms"
-                        ]
-                    ],
+                    win[num_samples_overlap:-num_samples_overlap],
                     thr,
                 )
                 >= self.config["center_min_crossings"]
             )
             right = (
-                self._num_threshold_crossings(
-                    win[-self.config["burst_window_overlap_ms"] :], thr
-                )
+                self._num_threshold_crossings(win[-num_samples_overlap:], thr)
                 <= self.config["side_max_crossings"]
             )
 
-            hfo_channels = left & middle & right
-            if not np.any(hfo_channels):
+            # This is a mask for the channels that meet the burst criteria to be HFO
+            # candidates.
+            burst_channels = left & middle & right
+            if not burst_channels.any():
                 return None
 
-            channel_indices = np.where(hfo_channels)[0]
-            raw_seg = self.ring_buffer.read(win_idx, len(win))[:, hfo_channels]
-            filtered_seg = win[:, hfo_channels]
+            # Now we simply use the mask to extract the relevant data
+            channel_indices = np.where(burst_channels)[0]
+            raw_seg = self.ring_buffer.read(win_idx, len(win))[:, burst_channels]
+            filtered_seg = win[:, burst_channels]
             center = (win_idx + len(win) // 2) / self.config["fs"]
 
             return {
-                # "raw": raw_seg,
-                # "filtered": filtered_seg,
+                "raw": raw_seg,
+                "filtered": filtered_seg,
                 "center": center,
-                "threshold": thr,
                 "channels": channel_indices,
+                "threshold": thr,
             }
 
-        hfo_win = filtered.sliding_window(
+        # We use the same method as before to get overlapping windows for burst
+        # detection.
+        burst_win = filtered.sliding_window(
             int(self.config["burst_window_size_ms"] / 1000 * self.config["fs"]),
             return_partial=False,
         ).slice(
@@ -214,17 +316,80 @@ class RealTimeDetector:
                 * self.config["fs"]
             )
         )
-        hfo_events = (
-            thresholds.combine_latest(hfo_win, emit_on=hfo_win)
+        burst_events = (
+            # Combining in this way will use the previous threshold since computing
+            # those will take longer.
+            thresholds.combine_latest(burst_win, emit_on=burst_win)
             .map(classify)
+            # The classify function returns None if no channels meet the criteria, so we
+            # can filter those out.
             .filter(lambda x: x is not None)
         )
-        hfo_events.sink(self.handle)
+        # Finally we send the detected events to the user defined handler.
+        burst_events.sink(self.handle)
 
-    def _num_threshold_crossings(self, sig, thr):
-        """Count the number of threshold crossings in each channel of a signal."""
+    def _num_threshold_crossings(self, sig: np.ndarray, thr: np.ndarray) -> np.ndarray:
+        """
+        Counts the number of threshold crossings in the signal `sig` for each channel
+        
+        Parameters:
+        -----------
+        sig: np.ndarray
+            The signal data for which to count threshold crossings.
+        thr: np.ndarray
+            The threshold values for each channel.
+
+        Returns:
+        --------
+        np.ndarray
+            An array containing the number of threshold crossings for each channel.
+        """
         above = sig > thr
+        # We use np.diff to find the transitions from below to above the threshold
         return np.sum(np.abs(np.diff(above.astype(int), axis=0)), axis=0)
+
+    def _build_graph_dual_band(self):
+        # Send raw data to the ring buffer
+        self.raw_stream.sink(lambda pair: self.ring_buffer.write(pair[1]))
+
+        # Create filters once
+        dc_offset_sos = butter(
+            2, self.config["low_band"], fs=self.config["fs"], btype="high", output="sos"
+        )
+        r_b = firwin(
+            65,
+            self.config["ripple_band"],
+            fs=self.config["fs"],
+            pass_zero="bandpass",
+            window="hamming",
+        )
+        fr_b = firwin(
+            65,
+            self.config["fast_ripple_band"],
+            fs=self.config["fs"],
+            pass_zero="bandpass",
+            window="hamming",
+        )
+
+        # Initialize filter states
+        dc_zi_init = np.tile(sosfilt_zi(dc_offset_sos), (self.config["channels"], 1)).T
+        fir_zi_init = np.zeros((64, self.config["channels"]))
+
+        # Define the processing functions
+        def dc_block(pair, state=dc_zi_init):
+            idx, chunk = pair
+            y, state[:] = sosfilt(dc_offset_sos, chunk, axis=0, zi=state)
+            return idx, y
+
+        def ripple_filter(pair, state=fir_zi_init.copy()):
+            idx, chunk = pair
+            y, state[:] = lfilter(r_b, 1.0, chunk, axis=0, zi=state)
+            return idx, y
+
+        def fast_ripple_filter(pair, state=fir_zi_init.copy()):
+            idx, chunk = pair
+            y, state[:] = lfilter(fr_b, 1.0, chunk, axis=0, zi=state)
+            return idx, y
 
 
 class AmplitudeThresholdDetectorV2:
