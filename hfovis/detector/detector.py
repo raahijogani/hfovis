@@ -298,7 +298,7 @@ class RealTimeDetector:
                 "filtered": filtered_seg,
                 "center": center,
                 "channels": channel_indices,
-                "threshold": thr,
+                "threshold": thr[burst_channels],
             }
 
         # We use the same method as before to get overlapping windows for burst
