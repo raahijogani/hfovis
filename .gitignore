@@ -197,4 +197,4 @@ cython_debug/
 /data
 
 # Scratch testing Python files
-test*.py
+scratch/
