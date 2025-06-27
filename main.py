@@ -1,10 +1,336 @@
 import sys
+import re
+from collections import defaultdict
+import numpy as np
+import pandas as pd
 import pyqtgraph as pg
-from PyQt6.QtWidgets import QApplication
-from hfovis.data import ieeg_loader, streaming
-from hfovis.gui import MainWindow
-from hfovis.detector import RealTimeDetector
+from PyQt6.QtWidgets import QApplication, QMainWindow
+from PyQt6 import QtCore
+from hfovis.interface import Ui_MainWindow
+from hfovis.data import streaming, ieeg_loader
+from hfovis.detector.detector import RealTimeDetector
+from scipy import signal
+from scipy.signal import butter, filtfilt, get_window
 
+
+class MainWindow(QMainWindow, Ui_MainWindow):
+    """Real‑time HFO viewer with **NumPy‑backed signal arrays** and a
+    **DataFrame for per‑event metadata**.
+
+    Storage layout
+    --------------
+    ``self.raw_events``      → ``ndarray``  shape *(N, S)*  – raw traces
+    ``self.filtered_events`` → ``ndarray``  shape *(N, S)*  – filtered traces
+    ``self.meta``            → ``DataFrame`` columns [center, channel, threshold]
+
+    ``N`` = number of detected events, ``S`` = samples per event.
+    Row *i* of *meta* corresponds to row *i* of both arrays.
+    """
+
+    # ------------------------------------------------------------------
+    new_event = QtCore.pyqtSignal(dict)  # worker → GUI thread
+
+    # ------------------------------------------------------------------
+    def __init__(self, fs: float, channel_names):
+        super().__init__()
+        self.setupUi(self)
+        self.new_event.connect(
+            self._on_event_received, QtCore.Qt.ConnectionType.QueuedConnection
+        )
+
+        # ─── State ----------------------------------------------------
+        self.fs = fs
+        self.channel_names = channel_names
+        self.raw_events: np.ndarray | None = None  # (N, S)
+        self.filtered_events: np.ndarray | None = None  # (N, S)
+        self.meta: pd.DataFrame | None = None  # per‑event info
+        self.event_t: np.ndarray | None = None  # x‑axis for traces
+        self.show_latest = True
+        self.raw_event = True  # toggle raw/filtered spectrogram source
+
+        # Raster‑plot scroll state
+        self.window_secs = 10.0  # x‑range shown (user adjustable)
+        self.auto_scroll = True  # follow live data unless user pans
+        self._raster_updating = False  # guard to avoid feedback loops
+
+        # Create high pass parameters for spectrogram
+        self.spec_a, self.spec_b = butter(2, 16, fs=self.fs, btype="highpass")
+
+        # ─── Time‑series plots ---------------------------------------
+        self._init_time_series_plots()
+        self._init_spectrogram()
+        self._init_raster_plot()
+        self._connect_ui()
+
+    # ==================================================================
+    # Initialisation helpers -------------------------------------------
+    def _init_time_series_plots(self):
+        self.rawPlot = self.rawEventPlot
+        self.filteredPlot = self.filteredEventPlot
+        self.rawCurve = self.rawPlot.plot(pen="w")
+        self.filtCurve = self.filteredPlot.plot(pen="w")
+        self.lowerThreshLine = pg.InfiniteLine(pen="r", angle=0)
+        self.upperThreshLine = pg.InfiniteLine(pen="r", angle=0)
+        self.filteredPlot.addItem(self.lowerThreshLine)
+        self.filteredPlot.addItem(self.upperThreshLine)
+        for c in (self.rawCurve, self.filtCurve):
+            c.setClipToView(True)
+            c.setDownsampling(auto=True, ds="peak")
+        self.rawPlot.setLabel("left", "Raw")
+        self.filteredPlot.setLabel("left", "Filtered")
+        for p in (self.rawPlot, self.filteredPlot):
+            p.setLabel("bottom", "Time", units="s")
+            p.showGrid(x=True, y=True, alpha=0.3)
+
+    def _init_spectrogram(self):
+        self.specImg = pg.ImageItem()
+        self.eventSpectrogram.addItem(self.specImg)
+        cmap = pg.colormap.get("viridis")
+        self.cbar = pg.ColorBarItem(colorMap=cmap)
+        self.cbar.setImageItem(
+            self.specImg, insert_in=self.eventSpectrogram.getPlotItem()
+        )
+        self.eventSpectrogram.setLabel("bottom", "Time", units="s")
+        self.eventSpectrogram.setLabel("left", "Frequency", units="Hz")
+
+    def _init_raster_plot(self):
+        """Configure rasterPlot for scrolling spike‑like events."""
+        self.rasterScatter = pg.ScatterPlotItem(size=4, brush="w", pen=None)
+        self.rasterPlot.addItem(self.rasterScatter)
+        self.rasterPlot.setLabel("left", "Channel")
+        self.rasterPlot.setLabel("bottom", "Time", units="s")
+        self.rasterPlot.setYRange(-0.5, len(self.channel_names) - 0.5, padding=0)
+        # Fixed y‑ticks with channel labels
+        # yticks = [(i, name) for i, name in enumerate(self.channel_names)]
+        yticks = self._update_raster_yticks(self.channel_names)
+        self.rasterPlot.getAxis("left").setTicks([yticks])
+        # Detect manual panning/zooming
+        self.rasterPlot.sigXRangeChanged.connect(self._on_raster_xrange_changed)
+
+    def _update_raster_yticks(self, channel_names):
+        """
+        Group channels by shared prefix and show at most one label per group.
+        """
+        groups = defaultdict(list)
+        for i, label in enumerate(channel_names):
+            match = re.match(r"([A-Za-z]+)", label)
+            key = match.group(1) if match else label
+            groups[key].append(i)
+
+        yticks = []
+        for name, indices in groups.items():
+            center_idx = indices[len(indices) // 2]
+            yticks.append((center_idx, name))
+
+        yticks.sort()
+
+        return yticks
+
+    def _connect_ui(self):
+        self.showRawSpectrogramButton.setChecked(True)
+        self.showRawSpectrogramButton.toggled.connect(self.toggle_spectrogram)
+        self.showFilteredSpectrogramButton.toggled.connect(self.toggle_spectrogram)
+        self.eventNumBox.valueChanged.connect(self._on_event_index_changed)
+        self.nextEventButton.clicked.connect(self.next_event)
+        self.previousEventButton.clicked.connect(self.previous_event)
+        self.lastEventButton.clicked.connect(self.last_event)
+        self.firstEventButton.clicked.connect(self.first_event)
+        # If there is a spinBox (optional) named windowLengthSpinBox, wire it:
+        if hasattr(self, "windowLengthSpinBox"):
+            self.windowLengthSpinBox.setValue(self.window_secs)
+            self.windowLengthSpinBox.valueChanged.connect(self.set_raster_window)
+
+    # ==================================================================
+    # Worker‑thread callback -------------------------------------------
+    def handle(self, event: dict):
+        """Slot for RealTimeDetector; executed in worker thread."""
+        self.new_event.emit(event)
+
+    # ==================================================================
+    # GUI‑thread slot ---------------------------------------------------
+    @QtCore.pyqtSlot(dict)
+    def _on_event_received(self, event: dict):
+        """Merge incoming batch and update plots (including raster)."""
+
+        n_ch = len(event["channels"])
+        raw_batch = event["raw"].T
+        filt_batch = event["filtered"].T
+
+        # initialise x‑axis for waveforms
+        if self.event_t is None:
+            self.event_t = np.arange(raw_batch.shape[1]) / self.fs
+            self.eventNumBox.setMinimum(1)
+
+        # ------ Expand master buffers --------------------------------
+        if self.raw_events is None:
+            self.raw_events = raw_batch.copy()
+            self.filtered_events = filt_batch.copy()
+        else:
+            self.raw_events = np.vstack((self.raw_events, raw_batch))
+            self.filtered_events = np.vstack((self.filtered_events, filt_batch))
+
+        # ------ Build metadata frame ---------------------------------
+        center_arr = np.asarray(event["center"], dtype=float)
+        chan_vec = np.asarray(event["channels"], dtype=int)
+        thresh_arr = np.asarray(event["threshold"], dtype=float)
+
+        batch_meta = pd.DataFrame(
+            {
+                "center": center_arr,
+                "channel": chan_vec,
+                "threshold": thresh_arr,
+            }
+        )
+        self.meta = (
+            pd.concat([self.meta, batch_meta], ignore_index=True)
+            if self.meta is not None
+            else batch_meta
+        )
+
+        # ------ Raster plot update -----------------------------------
+        self._append_raster_points(center_arr, chan_vec)
+        self._update_raster_view(center_arr.max())
+
+        # ------ GUI counters -----------------------------------------
+        n_events = len(self.meta)
+        self.eventNumBox.setMaximum(n_events)
+        self.numEventsLabel.setText(f"of {n_events}")
+        if self.show_latest:
+            self.eventNumBox.setValue(n_events)  # jump to latest
+
+    # ==================================================================
+    # Raster helpers ---------------------------------------------------
+    def _append_raster_points(self, times: np.ndarray, chans: np.ndarray):
+        """Add new points to the scatter item."""
+        self.rasterScatter.addPoints(x=times, y=chans)
+
+    def _update_raster_view(self, newest_time: float):
+        """Auto‑scroll unless the user has taken manual control."""
+        if self.auto_scroll:
+            self._raster_updating = True  # suppress pan callback
+            self.rasterPlot.setXRange(
+                newest_time - self.window_secs, newest_time, padding=0
+            )
+            self._raster_updating = False
+
+    def _on_raster_xrange_changed(self, view_box, range):
+        """Detect manual panning/zooming to disable auto‑scroll."""
+        if not self._raster_updating:
+            self.auto_scroll = False
+
+    def set_raster_window(self, secs: float):
+        """Setter for the visible time window (callable from UI)."""
+        self.window_secs = float(secs)
+        # Force update to current view if in live mode
+        if self.meta is not None and self.auto_scroll:
+            self._update_raster_view(self.meta["center"].iloc[-1])
+
+    def catch_up_live(self):
+        """Re‑enable auto‑scroll and jump to newest data (bind to a button)."""
+        self.auto_scroll = True
+        if self.meta is not None:
+            self._update_raster_view(self.meta["center"].iloc[-1])
+
+    # ==================================================================
+    # Navigation helpers ----------------------------------------------
+    def _on_event_index_changed(self):
+        if self.meta is None:
+            return
+        self.show_latest = self.eventNumBox.value() == len(self.meta)
+        self.plot_event(self.eventNumBox.value() - 1)
+
+    def last_event(self):
+        if self.meta is not None:
+            self.eventNumBox.setValue(len(self.meta))
+
+    def first_event(self):
+        if self.meta is not None:
+            self.eventNumBox.setValue(1)
+
+    def next_event(self):
+        if self.meta is None:
+            return
+        i, n = self.eventNumBox.value(), len(self.meta)
+        self.eventNumBox.setValue(i + 1 if i < n else 1)
+
+    def previous_event(self):
+        if self.meta is None:
+            return
+        i, n = self.eventNumBox.value(), len(self.meta)
+        self.eventNumBox.setValue(i - 1 if i > 1 else n)
+
+    # ==================================================================
+    # Plotting ---------------------------------------------------------
+    def plot_event(self, idx: int):
+        if self.meta is None or not (0 <= idx < len(self.meta)):
+            return
+
+        raw = self.raw_events[idx]
+        filt = self.filtered_events[idx]
+        row = self.meta.iloc[idx]
+        chan, cent, thresh = int(row.channel), float(row.center), float(row.threshold)
+
+        self._update_window(raw, self.rawCurve, self.rawPlot, cent)
+        self._update_window(filt, self.filtCurve, self.filteredPlot)
+        self.lowerThreshLine.setPos(-thresh)
+        self.upperThreshLine.setPos(thresh)
+
+        self.plot_spectrogram(raw if self.raw_event else filt)
+        self.channelLabel.setText(self.channel_names[chan])
+
+    def _update_window(self, sig, curve, plot_widget, center=None):
+        curve.setData(self.event_t, sig)
+        if center is not None:
+            plot_widget.setTitle(f"Center: {center:.3f} s")
+        plot_widget.setXRange(0, sig.size / self.fs, padding=0)
+        plot_widget.setYRange(np.min(sig), np.max(sig), padding=0.05)
+
+    # ------------------------------------------------------------------
+    def plot_spectrogram(self, sig):
+        sig = filtfilt(self.spec_a, self.spec_b, sig, axis=0)
+        sig = signal.detrend(sig, type="constant")
+        # Normalize by l2 norm
+        sig = sig / np.linalg.norm(sig)
+        nfft = min(1024, sig.size)
+        f, t, Zxx = signal.spectrogram(
+            sig,
+            fs=self.fs,
+            window="hann",
+            nperseg=128,
+            noverlap=127,
+            nfft=nfft,
+            scaling="density",
+            mode="psd",
+        )
+        mask = f <= 600
+        Z = 20 * np.log10(np.abs(Zxx[mask]) + 1e-6)
+
+        self.specImg.setImage(
+            Z, autoLevels=False, autoDownsample=True, axes={"x": 1, "y": 0}
+        )
+        self.specImg.setRect(
+            pg.QtCore.QRectF(t[0], f[0], t[-1] - t[0], f[mask][-1] - f[0])
+        )
+        self.cbar.setLevels((np.nanmin(Z), np.nanmax(Z)))
+        # self.cbar.setLevels((-30, 0))
+
+    # ==================================================================
+    def toggle_spectrogram(self):
+        self.raw_event = self.showRawSpectrogramButton.isChecked()
+        if self.meta is not None:
+            self.plot_event(self.eventNumBox.value() - 1)
+
+    # ==================================================================
+    def closeEvent(self, event):
+        """Persist buffers on shutdown."""
+        if self.meta is not None and self.raw_events is not None:
+            np.save("raw_events.npy", self.raw_events)
+            np.save("filtered_events.npy", self.filtered_events)
+            self.meta.to_pickle("events_meta.pkl")
+        event.accept()
+
+
+# ──────────────────────────────────────────────────────────────────────
 if __name__ == "__main__":
     pg.setConfigOptions(imageAxisOrder="row-major", antialias=True, useOpenGL=True)
 
@@ -25,7 +351,6 @@ if __name__ == "__main__":
     streamer = streaming.DataStreamer(data, chunk_size=1000, fs=fs)
 
     app = QApplication(sys.argv)
-    app.setStyle("Fusion")
     main = MainWindow(fs, channel_names)
 
     detector = RealTimeDetector(streamer, main.handle, fs=fs, channels=data.shape[1])
