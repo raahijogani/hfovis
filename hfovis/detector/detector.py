@@ -1,4 +1,5 @@
 import numpy as np
+from numpy.lib.stride_tricks import sliding_window_view
 import pandas as pd
 from scipy.signal import butter, filtfilt, firwin, sosfilt, sosfilt_zi, lfilter
 import threading
@@ -95,6 +96,9 @@ class RealTimeDetector:
             center_min_crossings: int
                 Minimum number of threshold crossings required in the center of the
                 burst window to classify window as HFO candidate.
+            visualization_window_size_ms: float
+                Size of the visualization window in milliseconds. This is used to
+                extract the center of the detected event for visualization.
             low_band: float
                 Low band frequency for high-pass filtering to remove DC offset.
             ring_buffer_size_s: float
@@ -115,8 +119,9 @@ class RealTimeDetector:
             "threshold_multiplier": 3.0,
             "burst_window_size_ms": 320.0,
             "burst_window_overlap_ms": 64.0,
-            "side_max_crossings": 2,
+            "side_max_crossings": 4,
             "center_min_crossings": 6,
+            "visualization_window_size_ms": 100.0,
             "low_band": 1,
             "ring_buffer_size_s": 10.0,
         }
@@ -258,44 +263,89 @@ class RealTimeDetector:
             win_idx = data[0][0]
             win = np.stack([x[1] for x in data])
 
-            # We need to convert from ms to samples to slice the window into left, right
-            # and middle segments.
-            num_samples_overlap = int(
-                self.config["burst_window_overlap_ms"] / 1000 * self.config["fs"]
-            )
+            # Split of left and right thirds of the window
+            third_of_window = int(win.shape[0] / 3)
+            left_window = win[:third_of_window]
+            right_window = win[-third_of_window:]
 
-            # Now we check if the threshold crossings are "centered" within the window
-            left = (
-                self._num_threshold_crossings(win[:num_samples_overlap], thr)
-                <= self.config["side_max_crossings"]
+            # Get the crossing matrices for left, right, and entire window. First for
+            # the positive thresholds.
+            left_p_crossings = self._threshold_crossings(left_window, thr)
+            left_n_crossings = self._threshold_crossings(left_window, -thr)
+            right_p_crossings = self._threshold_crossings(right_window, thr)
+            right_n_crossings = self._threshold_crossings(right_window, -thr)
+            all_p_crossings = self._threshold_crossings(win, thr)
+            all_n_crossings = self._threshold_crossings(win, -thr)
+
+            # Now we need to filter out channels where the crossings are not close
+            # enough to be in our HFO band.
+            min_sample_distance = int(
+                round(self.config["fs"] / self.config["hfo_band"][0])
             )
-            middle = (
-                self._num_threshold_crossings(
-                    win[num_samples_overlap:-num_samples_overlap],
-                    thr,
-                )
-                >= self.config["center_min_crossings"]
+            left_p_burst_channels = self._sufficient_crossings(
+                left_p_crossings,
+                min_sample_distance,
+                self.config["side_max_crossings"],
             )
-            right = (
-                self._num_threshold_crossings(win[-num_samples_overlap:], thr)
-                <= self.config["side_max_crossings"]
+            left_n_burst_channels = self._sufficient_crossings(
+                left_n_crossings,
+                min_sample_distance,
+                self.config["side_max_crossings"],
             )
+            left_burst_condition = ~left_p_burst_channels & ~left_n_burst_channels
+
+            right_p_burst_channels = self._sufficient_crossings(
+                right_p_crossings,
+                min_sample_distance,
+                self.config["side_max_crossings"],
+            )
+            right_n_burst_channels = self._sufficient_crossings(
+                right_n_crossings,
+                min_sample_distance,
+                self.config["side_max_crossings"],
+            )
+            right_burst_condition = ~right_p_burst_channels & ~right_n_burst_channels
+
+            all_p_burst_channels = self._sufficient_crossings(
+                all_p_crossings,
+                min_sample_distance,
+                self.config["center_min_crossings"],
+            )
+            all_n_burst_channels = self._sufficient_crossings(
+                all_n_crossings,
+                min_sample_distance,
+                self.config["center_min_crossings"],
+            )
+            all_burst_condition = all_p_burst_channels | all_n_burst_channels
 
             # This is a mask for the channels that meet the burst criteria to be HFO
             # candidates.
-            burst_channels = left & middle & right
+            burst_channels = (
+                left_burst_condition & right_burst_condition & all_burst_condition
+            )
             if not burst_channels.any():
                 return None
 
-            # Now we simply use the mask to extract the relevant data
+            # Next, we use the mask to extract the relevant data
             channel_indices = np.where(burst_channels)[0]
-            raw_seg = self.ring_buffer.read(win_idx, len(win))[:, burst_channels]
             filtered_seg = win[:, burst_channels]
-            center = (win_idx + len(win) // 2) / self.config["fs"]
+            raw_seg = self.ring_buffer.read(win_idx, len(win))[:, burst_channels]
+
+            # Now we extract the indices of the center of the event.
+            visualization_window_size = int(
+                self.config["visualization_window_size_ms"] / 1000 * self.config["fs"]
+            )
+            peak_idx, center_indices = self._center_extraction_indices(
+                filtered_seg,
+                visualization_window_size,
+            )
+
+            # Now we need to convert the centers of the events to seconds.
+            center = (peak_idx + win_idx) / self.config["fs"]
 
             return {
-                "raw": raw_seg,
-                "filtered": filtered_seg,
+                "raw": np.take_along_axis(raw_seg, center_indices, axis=0),
+                "filtered": np.take_along_axis(filtered_seg, center_indices, axis=0),
                 "center": center,
                 "channels": channel_indices,
                 "threshold": thr[burst_channels],
@@ -328,25 +378,64 @@ class RealTimeDetector:
         # Finally we send the detected events to the user defined handler.
         burst_events.sink(self.handle)
 
-    def _num_threshold_crossings(self, sig: np.ndarray, thr: np.ndarray) -> np.ndarray:
+    def _threshold_crossings(self, sig: np.ndarray, thr: np.ndarray) -> np.ndarray:
         """
-        Counts the number of threshold crossings in the signal `sig` for each channel
-        
+        Produce binary array of threshold crossings.
+
         Parameters:
         -----------
         sig: np.ndarray
-            The signal data for which to count threshold crossings.
+            The signal data for which to count threshold crossings. This should have
+            shape (n_samples, n_channels).
         thr: np.ndarray
             The threshold values for each channel.
 
         Returns:
         --------
         np.ndarray
-            An array containing the number of threshold crossings for each channel.
+            An array of shape (n_samples-1, n_channels) with 1's where there are
+            threshold crossings and 0's otherwise.
         """
         above = sig > thr
         # We use np.diff to find the transitions from below to above the threshold
-        return np.sum(np.abs(np.diff(above.astype(int), axis=0)), axis=0)
+        return np.abs(np.diff(above.astype(int), axis=0))
+
+    def _sufficient_crossings(
+        self,
+        crossings: np.ndarray,
+        min_sample_distance: int,
+        min_cluster_crossings: int,
+    ) -> np.ndarray:
+        # Minimum number of samples needed to detect the number of cluster crossings
+        # with the minimum sample distance spacing.
+        window_size = (min_cluster_crossings - 1) * min_sample_distance + 1
+
+        # Create sliding windows so we can check the number of crossings in each
+        # cluster.
+        sw = sliding_window_view(crossings, window_size, axis=0)
+        counts = sw.sum(axis=2)
+
+        return np.any(counts >= min_cluster_crossings, axis=0)
+
+    def _center_extraction_indices(
+        self, win: np.ndarray, vis_win_length: int
+    ) -> np.ndarray:
+        half = vis_win_length // 2
+
+        # Find index of absolute maximum. This will be the center of the event.
+        peak_idx = np.argmax(np.abs(win), axis=0)
+
+        # Calculate the start index for the visualization window. If the peak is too
+        # close to the edge, we simply return the edge and compromise on having the peak
+        # be in the center.
+        start_idx = np.clip(peak_idx - half, 0, win.shape[0] - vis_win_length)
+
+        # Individually index each sample in the new window
+        offsets = np.arange(vis_win_length)[:, None]
+
+        # Add the offsets to the start indices to get the indices of the windows for
+        # each sample in our visualization window.
+        return peak_idx, start_idx[None, :] + offsets
 
     def _build_graph_dual_band(self):
         # Send raw data to the ring buffer
@@ -974,10 +1063,12 @@ class AmplitudeThresholdDetectorV2:
                     )  # Find overlapping events
                     pairs[ch] = np.column_stack((i, j))  # Store index pairs
                     # Separate overlapping events
-                    overlapping_HFO[ch] = np.column_stack((
-                        t_R[i],
-                        t_FR[j],
-                    ))  # Save overlapping event timestamps
+                    overlapping_HFO[ch] = np.column_stack(
+                        (
+                            t_R[i],
+                            t_FR[j],
+                        )
+                    )  # Save overlapping event timestamps
                     # Remove overlapping events from Ripple group to keep only non-overlapping
                     t_R = np.delete(t_R, i, axis=0)
                     TFR = np.copy(t_FR)
@@ -1048,9 +1139,13 @@ class AmplitudeThresholdDetectorV2:
 
         # --- EXTRACT CHANNEL REFERENCES ---
         all_channels = (
-            np.concatenate([
-                np.full(len(ts), ch) for ch, ts in timestamp_HFO.items() if len(ts) > 0
-            ])
+            np.concatenate(
+                [
+                    np.full(len(ts), ch)
+                    for ch, ts in timestamp_HFO.items()
+                    if len(ts) > 0
+                ]
+            )
             if non_overlapping_timestamps.size > 0
             else np.array([])
         )
