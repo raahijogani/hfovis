@@ -83,10 +83,26 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             p.showGrid(x=True, y=True, alpha=0.3)
 
     def _init_spectrogram(self):
+        # Set light background
+        self.eventSpectrogram.setBackground("#f8f8f8")
+        self.eventSpectrogram.getPlotItem().getAxis("bottom").setPen("k")
+        self.eventSpectrogram.getPlotItem().getAxis("left").setPen("k")
+        self.eventSpectrogram.getPlotItem().getAxis("bottom").setTextPen("k")
+        self.eventSpectrogram.getPlotItem().getAxis("left").setTextPen("k")
+        self.eventSpectrogram.getPlotItem().getAxis("bottom").setTickPen(None)
+        self.eventSpectrogram.getPlotItem().getAxis("left").setTickPen(None)
+
+        # Get rid of padding
+        self.eventSpectrogram.getViewBox().setDefaultPadding(0)
+        self.eventSpectrogram.getPlotItem().setContentsMargins(0, 0, 0, 0)
+
         self.specImg = pg.ImageItem()
         self.eventSpectrogram.addItem(self.specImg)
-        cmap = pg.colormap.get("viridis")
-        self.cbar = pg.ColorBarItem(colorMap=cmap)
+        self.colormap = pg.colormap.get("viridis")
+        self.cbar = pg.ColorBarItem(colorMap=self.colormap, label="Power (dB)")
+        self.cbar.getAxis("right").setPen("k")
+        self.cbar.getAxis("right").setTextPen("k")
+        self.cbar.getAxis("left").setLabel(color="k")
         self.cbar.setImageItem(
             self.specImg, insert_in=self.eventSpectrogram.getPlotItem()
         )
