@@ -20,7 +20,13 @@ class RealTimeDetector:
     sent to a user set handler.
     """
 
-    def __init__(self, stream: Any, handle: Callable, **kwargs):
+    def __init__(
+        self,
+        stream: Any,
+        handle: Callable,
+        raw_stream_handler: Callable = None,
+        **kwargs,
+    ):
         """
         Parameters:
         -----------
@@ -40,6 +46,7 @@ class RealTimeDetector:
         """
         self.stream = stream
         self.handle = handle
+        self.raw_stream_handler = raw_stream_handler
         self.config = self._default_config()
         self.config.update(kwargs)
         self._validate_config()
@@ -175,6 +182,10 @@ class RealTimeDetector:
             start, chunk = pair
             idxs = np.arange(start, start + len(chunk), dtype=np.int64)
             return list(zip(idxs, chunk))
+
+        # Send one stream to the raw stream handler
+        if self.raw_stream_handler is not None:
+            self.raw_stream.map(explode).flatten().sink(self.raw_stream_handler)
 
         # Create filters once
         dc_offset_sos = butter(
