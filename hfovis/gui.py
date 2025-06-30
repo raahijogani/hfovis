@@ -1,16 +1,13 @@
-import sys
 import re
 from collections import defaultdict
 import numpy as np
 import pandas as pd
 import pyqtgraph as pg
-from PyQt6.QtWidgets import QApplication, QMainWindow
+from PyQt6.QtWidgets import QMainWindow
 from PyQt6 import QtCore
 from hfovis.interface import Ui_MainWindow
-from hfovis.data import streaming, ieeg_loader
-from hfovis.detector.detector import RealTimeDetector
 from scipy import signal
-from scipy.signal import butter, filtfilt, get_window
+from scipy.signal import butter, filtfilt
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
@@ -53,8 +50,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.auto_scroll = True  # follow live data unless user pans
         self._raster_updating = False  # guard to avoid feedback loops
 
-        # Create high pass parameters for spectrogram
-        self.spec_a, self.spec_b = butter(2, 16, fs=self.fs, btype="highpass")
 
         # ─── Time‑series plots ---------------------------------------
         self._init_time_series_plots()
@@ -83,6 +78,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             p.showGrid(x=True, y=True, alpha=0.3)
 
     def _init_spectrogram(self):
+        # Create high pass parameters for spectrogram
+        self.spec_a, self.spec_b = butter(2, 16, fs=self.fs, btype="highpass")
+
         # Set light background
         self.eventSpectrogram.setBackground("#f8f8f8")
         self.eventSpectrogram.getPlotItem().getAxis("bottom").setPen("k")
@@ -168,7 +166,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def _on_event_received(self, event: dict):
         """Merge incoming batch and update plots (including raster)."""
 
-        n_ch = len(event["channels"])
         raw_batch = event["raw"].T
         filt_batch = event["filtered"].T
 
@@ -307,19 +304,20 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         sig = signal.detrend(sig, type="constant")
         # Normalize by l2 norm
         sig = sig / np.linalg.norm(sig)
-        nfft = min(1024, sig.size)
         f, t, Zxx = signal.spectrogram(
             sig,
             fs=self.fs,
             window="hann",
             nperseg=128,
             noverlap=127,
-            nfft=nfft,
+            nfft=1024,
             scaling="density",
-            mode="psd",
+            mode="magnitude",
         )
         mask = f <= 600
-        Z = 20 * np.log10(np.abs(Zxx[mask]) + 1e-6)
+        Zxx = np.abs(Zxx[mask])
+        Zxx /= np.max(Zxx)
+        Z = 20 * np.log10(Zxx + 1e-6)
 
         self.specImg.setImage(
             Z, autoLevels=False, autoDownsample=True, axes={"x": 1, "y": 0}
@@ -327,8 +325,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.specImg.setRect(
             pg.QtCore.QRectF(t[0], f[0], t[-1] - t[0], f[mask][-1] - f[0])
         )
-        self.cbar.setLevels((np.nanmin(Z), np.nanmax(Z)))
-        # self.cbar.setLevels((-30, 0))
+        # self.cbar.setLevels((np.nanmin(Z), np.nanmax(Z)))
+        self.cbar.setLevels((-30, 0))
 
     # ==================================================================
     def toggle_spectrogram(self):
@@ -344,34 +342,3 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             np.save("filtered_events.npy", self.filtered_events)
             self.meta.to_pickle("events_meta.pkl")
         event.accept()
-
-
-# ──────────────────────────────────────────────────────────────────────
-if __name__ == "__main__":
-    pg.setConfigOptions(imageAxisOrder="row-major", antialias=True, useOpenGL=True)
-
-    # ------------------------------------------------------------------
-    file_info = {
-        "Filename_interictal": "demo_data.mat",
-        "subject": "sub-01",
-        "outcome": "seizure-free",
-    }
-    data_path = "data"
-    annotations_path = "annotations.json"
-
-    print("Loading data…")
-    data, fs, channel_names, _ = ieeg_loader.load_ieeg_from_fileinfo(
-        file_info, data_path, annotations_path, baseline="interictal"
-    )
-
-    streamer = streaming.DataStreamer(data, chunk_size=1000, fs=fs)
-
-    app = QApplication(sys.argv)
-    main = MainWindow(fs, channel_names)
-
-    detector = RealTimeDetector(streamer, main.handle, fs=fs, channels=data.shape[1])
-    app.aboutToQuit.connect(detector.stop)
-    detector.start()
-
-    main.show()
-    sys.exit(app.exec())

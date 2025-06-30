@@ -121,7 +121,7 @@ class RealTimeDetector:
             "burst_window_overlap_ms": 64.0,
             "side_max_crossings": 4,
             "center_min_crossings": 6,
-            "visualization_window_size_ms": 100.0,
+            "visualization_window_size_ms": 200.0,
             "low_band": 1,
             "ring_buffer_size_s": 10.0,
         }
@@ -260,6 +260,7 @@ class RealTimeDetector:
 
             # Replace thresholds that are too low with the minimum
             thr[thr < self.config["min_threshold"]] = self.config["min_threshold"]
+
             win_idx = data[0][0]
             win = np.stack([x[1] for x in data])
 
