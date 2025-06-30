@@ -24,11 +24,11 @@
        <enum>QTabWidget::Rounded</enum>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="main">
        <attribute name="title">
-        <string>Main</string>
+        <string>Event Viewer</string>
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout" stretch="3,1,2,2">
         <property name="sizeConstraint">
@@ -125,14 +125,14 @@
                  <item>
                   <widget class="QPushButton" name="firstEventButton">
                    <property name="text">
-                    <string>&lt;&lt;</string>
+                    <string>First</string>
                    </property>
                   </widget>
                  </item>
                  <item>
                   <widget class="QPushButton" name="lastEventButton">
                    <property name="text">
-                    <string>&gt;&gt;</string>
+                    <string>Last/Live</string>
                    </property>
                   </widget>
                  </item>
@@ -211,6 +211,16 @@
            </item>
           </layout>
          </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="live">
+       <attribute name="title">
+        <string>Live Viewer</string>
+       </attribute>
+       <layout class="QGridLayout" name="gridLayout_2">
+        <item row="0" column="0">
+         <widget class="PlotWidget" name="livePlot" native="true"/>
         </item>
        </layout>
       </widget>

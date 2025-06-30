@@ -153,6 +153,14 @@ class Ui_MainWindow(object):
         self.verticalLayout.setStretch(2, 2)
         self.verticalLayout.setStretch(3, 2)
         self.tabWidget.addTab(self.main, "")
+        self.live = QtWidgets.QWidget()
+        self.live.setObjectName("live")
+        self.gridLayout_2 = QtWidgets.QGridLayout(self.live)
+        self.gridLayout_2.setObjectName("gridLayout_2")
+        self.livePlot = PlotWidget(parent=self.live)
+        self.livePlot.setObjectName("livePlot")
+        self.gridLayout_2.addWidget(self.livePlot, 0, 0, 1, 1)
+        self.tabWidget.addTab(self.live, "")
         self.config = QtWidgets.QWidget()
         self.config.setObjectName("config")
         self.tabWidget.addTab(self.config, "")
@@ -160,7 +168,7 @@ class Ui_MainWindow(object):
         MainWindow.setCentralWidget(self.centralwidget)
 
         self.retranslateUi(MainWindow)
-        self.tabWidget.setCurrentIndex(0)
+        self.tabWidget.setCurrentIndex(1)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
@@ -171,8 +179,8 @@ class Ui_MainWindow(object):
         self.eventClassificationLabel.setText(_translate("MainWindow", "Classification"))
         self.showRawSpectrogramButton.setText(_translate("MainWindow", "raw"))
         self.showFilteredSpectrogramButton.setText(_translate("MainWindow", "filtered"))
-        self.firstEventButton.setText(_translate("MainWindow", "<<"))
-        self.lastEventButton.setText(_translate("MainWindow", ">>"))
+        self.firstEventButton.setText(_translate("MainWindow", "First"))
+        self.lastEventButton.setText(_translate("MainWindow", "Last/Live"))
         self.previousEventButton.setText(_translate("MainWindow", "<"))
         self.numEventsLabel.setText(_translate("MainWindow", "events"))
         self.nextEventButton.setText(_translate("MainWindow", ">"))
@@ -180,6 +188,7 @@ class Ui_MainWindow(object):
         self.rasterBox.setTitle(_translate("MainWindow", "Raster"))
         self.showPsuedoCheckBox.setText(_translate("MainWindow", "show psuedo events"))
         self.frequencyBox.setTitle(_translate("MainWindow", "Frequency Content"))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.main), _translate("MainWindow", "Main"))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.main), _translate("MainWindow", "Event Viewer"))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.live), _translate("MainWindow", "Live Viewer"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.config), _translate("MainWindow", "Config"))
 from pyqtgraph import PlotWidget
