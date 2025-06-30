@@ -51,8 +51,8 @@ class DataStreamer:
 
     def stop(self):
         if self._running:
-            self._process.join()
             self._process.terminate()
+            self._process.join()
             self._running = False
 
     def get_queue(self):
