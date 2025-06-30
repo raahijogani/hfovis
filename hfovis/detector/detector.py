@@ -271,11 +271,11 @@ class RealTimeDetector:
             # Get the crossing matrices for left, right, and entire window. First for
             # the positive thresholds.
             left_p_crossings = self._threshold_crossings(left_window, thr)
-            left_n_crossings = self._threshold_crossings(left_window, -thr)
+            left_n_crossings = self._threshold_crossings(-left_window, thr)
             right_p_crossings = self._threshold_crossings(right_window, thr)
-            right_n_crossings = self._threshold_crossings(right_window, -thr)
+            right_n_crossings = self._threshold_crossings(-right_window, thr)
             all_p_crossings = self._threshold_crossings(win, thr)
-            all_n_crossings = self._threshold_crossings(win, -thr)
+            all_n_crossings = self._threshold_crossings(-win, thr)
 
             # Now we need to filter out channels where the crossings are not close
             # enough to be in our HFO band.
