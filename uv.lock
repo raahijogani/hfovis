@@ -156,6 +156,7 @@ dependencies = [
     { name = "pyvista" },
     { name = "scipy" },
     { name = "streamz" },
+    { name = "tabula" },
 ]
 
 [package.metadata]
@@ -169,6 +170,7 @@ requires-dist = [
     { name = "pyvista", specifier = ">=0.45.2" },
     { name = "scipy", specifier = ">=1.15.3" },
     { name = "streamz", specifier = ">=0.6.4" },
+    { name = "tabula", specifier = ">=1.0.5" },
 ]
 
 [[package]]
@@ -630,6 +632,16 @@ sdist = { url = "https://files.pythonhosted.org/packages/e5/11/ffcef75a5b571286c
 wheels = [
     { url = "https://files.pythonhosted.org/packages/bf/6d/379bcb93abd2316f3163260fcf7638a0f845375e95eb0dd527dde2ac4126/streamz-0.6.4-py2.py3-none-any.whl", hash = "sha256:d0d9daac7d2f1213f56673eba654afb4b4784750c2589aa180460b816410ed4a", size = 76851, upload-time = "2022-07-27T18:07:40.874Z" },
 ]
+
+[[package]]
+name = "tabula"
+version = "1.0.5"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "numpy" },
+    { name = "setuptools" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/eb/bf/b2084620900655a8c080af9873cc654a8a2b0d7a5a111ca4ba947cd9717d/tabula-1.0.5.tar.gz", hash = "sha256:b48ddacac12934a0d316ccb27d51b0895caa766ab312053587d6de5f495fe288", size = 9490, upload-time = "2012-11-01T20:50:21.685Z" }
 
 [[package]]
 name = "toolz"
