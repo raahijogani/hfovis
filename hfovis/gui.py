@@ -62,6 +62,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def _init_time_series_plots(self):
         self.rawPlot = self.rawEventPlot
         self.filteredPlot = self.filteredEventPlot
+        self.rawPlot.setYRange(-250, 250)
+        self.filteredPlot.setYRange(-25, 25)
         self.rawCurve = self.rawPlot.plot(pen="w")
         self.filtCurve = self.filteredPlot.plot(pen="w")
         self.lowerThreshLine = pg.InfiniteLine(pen="r", angle=0)
@@ -296,7 +298,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if center is not None:
             plot_widget.setTitle(f"Center: {center:.3f} s")
         plot_widget.setXRange(0, sig.size / self.fs, padding=0)
-        plot_widget.setYRange(np.min(sig), np.max(sig), padding=0.05)
 
     # ------------------------------------------------------------------
     def plot_spectrogram(self, sig):
