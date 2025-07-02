@@ -5,9 +5,12 @@ import pandas as pd
 import pyqtgraph as pg
 from PyQt6.QtWidgets import QMainWindow
 from PyQt6 import QtCore
+from PyQt6.QtCore import QThread
 from hfovis.interface import Ui_MainWindow
 from scipy import signal
 from scipy.signal import butter, filtfilt
+from .event_worker import EventWorker
+from .live_worker import LivePlotWorker
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
@@ -26,18 +29,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     # ------------------------------------------------------------------
     new_event = QtCore.pyqtSignal(dict)  # worker → GUI thread
+    new_live_sample = QtCore.pyqtSignal(object)
 
     # ------------------------------------------------------------------
     def __init__(self, fs: float, channel_names):
         super().__init__()
         self.setupUi(self)
-        self.new_event.connect(
-            self._on_event_received, QtCore.Qt.ConnectionType.QueuedConnection
-        )
 
         # ─── State ----------------------------------------------------
         self.fs = fs
         self.channel_names = channel_names
+
         self.raw_events: np.ndarray | None = None  # (N, S)
         self.filtered_events: np.ndarray | None = None  # (N, S)
         self.meta: pd.DataFrame | None = None  # per‑event info
@@ -50,12 +52,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.auto_scroll = True  # follow live data unless user pans
         self._raster_updating = False  # guard to avoid feedback loops
 
-
         # ─── Time‑series plots ---------------------------------------
         self._init_time_series_plots()
+        self._init_live_plot_thread(channel_names)
         self._init_spectrogram()
         self._init_raster_plot()
         self._connect_ui()
+
+        self.thread_pool = QtCore.QThreadPool.globalInstance()
 
     # ==================================================================
     # Initialisation helpers -------------------------------------------
@@ -78,6 +82,23 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         for p in (self.rawPlot, self.filteredPlot):
             p.setLabel("bottom", "Time", units="s")
             p.showGrid(x=True, y=True, alpha=0.3)
+            p.setMouseEnabled(x=False, y=True)
+
+    def _init_live_plot_thread(self, channel_names):
+        self.live_thread = QThread()
+        self.live_worker = LivePlotWorker(channel_names)
+        self.live_worker.moveToThread(self.live_thread)
+
+        # Connect signals
+        self.live_worker.plot_ready.connect(self._embed_live_plot)
+        self.new_live_sample.connect(self.live_worker.update_plot)
+
+        self.live_thread.start()
+
+    def _embed_live_plot(self, plot_widget):
+        # Replace or add this plot in your UI where livePlot would have been
+        # This assumes you have a QWidget or QLayout called livePlotLayout
+        self.livePlotLayout.addWidget(plot_widget, 0, 0)
 
     def _init_spectrogram(self):
         # Create high pass parameters for spectrogram
@@ -117,11 +138,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.rasterPlot.setLabel("bottom", "Time", units="s")
         self.rasterPlot.setYRange(-0.5, len(self.channel_names) - 0.5, padding=0)
         # Fixed y‑ticks with channel labels
-        # yticks = [(i, name) for i, name in enumerate(self.channel_names)]
         yticks = self._update_raster_yticks(self.channel_names)
         self.rasterPlot.getAxis("left").setTicks([yticks])
         # Detect manual panning/zooming
         self.rasterPlot.sigXRangeChanged.connect(self._on_raster_xrange_changed)
+        self.rasterPlot.setMouseEnabled(x=False, y=False)
 
     def _update_raster_yticks(self, channel_names):
         """
@@ -151,43 +172,28 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.previousEventButton.clicked.connect(self.previous_event)
         self.lastEventButton.clicked.connect(self.last_event)
         self.firstEventButton.clicked.connect(self.first_event)
-        # If there is a spinBox (optional) named windowLengthSpinBox, wire it:
-        if hasattr(self, "windowLengthSpinBox"):
-            self.windowLengthSpinBox.setValue(self.window_secs)
-            self.windowLengthSpinBox.valueChanged.connect(self.set_raster_window)
 
     # ==================================================================
     # Worker‑thread callback -------------------------------------------
     def handle(self, event: dict):
         """Slot for RealTimeDetector; executed in worker thread."""
-        self.new_event.emit(event)
+        worker = EventWorker(event, self.fs)
+        worker.signals.finished.connect(self._on_event_processed)
+        self.thread_pool.start(worker)
 
-    # ==================================================================
-    # GUI‑thread slot ---------------------------------------------------
-    @QtCore.pyqtSlot(dict)
-    def _on_event_received(self, event: dict):
-        """Merge incoming batch and update plots (including raster)."""
-
-        raw_batch = event["raw"].T
-        filt_batch = event["filtered"].T
-
-        # initialise x‑axis for waveforms
+    def _on_event_processed(
+        self, raw_batch, filt_batch, center_arr, chan_vec, thresh_arr
+    ):
         if self.event_t is None:
             self.event_t = np.arange(raw_batch.shape[1]) / self.fs
             self.eventNumBox.setMinimum(1)
 
-        # ------ Expand master buffers --------------------------------
         if self.raw_events is None:
             self.raw_events = raw_batch.copy()
             self.filtered_events = filt_batch.copy()
         else:
             self.raw_events = np.vstack((self.raw_events, raw_batch))
             self.filtered_events = np.vstack((self.filtered_events, filt_batch))
-
-        # ------ Build metadata frame ---------------------------------
-        center_arr = np.asarray(event["center"], dtype=float)
-        chan_vec = np.asarray(event["channels"], dtype=int)
-        thresh_arr = np.asarray(event["threshold"], dtype=float)
 
         batch_meta = pd.DataFrame(
             {
@@ -202,16 +208,20 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             else batch_meta
         )
 
-        # ------ Raster plot update -----------------------------------
         self._append_raster_points(center_arr, chan_vec)
         self._update_raster_view(center_arr.max())
 
-        # ------ GUI counters -----------------------------------------
         n_events = len(self.meta)
         self.eventNumBox.setMaximum(n_events)
         self.numEventsLabel.setText(f"of {n_events}")
         if self.show_latest:
-            self.eventNumBox.setValue(n_events)  # jump to latest
+            self.eventNumBox.setValue(n_events)
+
+    def handle_live_sample(self, window):
+        # Convert your window into t, y
+        t = [s[0] for s in window]
+        y = np.vstack([s[1] for s in window])
+        self.new_live_sample.emit((t, y))
 
     # ==================================================================
     # Raster helpers ---------------------------------------------------
@@ -338,6 +348,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     # ==================================================================
     def closeEvent(self, event):
         """Persist buffers on shutdown."""
+        self.live_thread.quit()
+        self.live_thread.wait()
         if self.meta is not None and self.raw_events is not None:
             np.save("raw_events.npy", self.raw_events)
             np.save("filtered_events.npy", self.filtered_events)

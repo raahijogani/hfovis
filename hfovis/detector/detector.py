@@ -226,25 +226,25 @@ class RealTimeDetector:
         )
 
         # Adaptive thresholding stream
+        adaptive_threshold_window_size = int(
+            self.config["adaptive_threshold_window_size_ms"]
+            / 1000
+            * self.config["fs"]  # Convert ms to samples
+        )
+        adaptive_threshold_overlap_step = int(
+            (
+                self.config["adaptive_threshold_window_size_ms"]
+                - self.config["adaptive_threshold_overlap_ms"]
+            )
+            / 1000
+            * self.config["fs"]  # Convert ms to samples
+        )
         std_devs = (
             filtered.sliding_window(
-                int(
-                    self.config["adaptive_threshold_window_size_ms"]
-                    / 1000
-                    * self.config["fs"]  # Convert ms to samples
-                ),
+                adaptive_threshold_window_size,
                 return_partial=False,  # Prevents sending buffers that aren't full yet
             )
-            .slice(
-                step=int(
-                    (
-                        self.config["adaptive_threshold_window_size_ms"]
-                        - self.config["adaptive_threshold_overlap_ms"]
-                    )
-                    / 1000
-                    * self.config["fs"]  # Convert from overlap ms to step samples
-                )
-            )
+            .slice(step=adaptive_threshold_overlap_step)
             # Remove the global index since it is not needed for the threshold and
             # compute standard deviation over only the signal
             .map(lambda w: np.std([x[1] for x in w], axis=0))  #
@@ -365,19 +365,20 @@ class RealTimeDetector:
 
         # We use the same method as before to get overlapping windows for burst
         # detection.
-        burst_win = filtered.sliding_window(
-            int(self.config["burst_window_size_ms"] / 1000 * self.config["fs"]),
-            return_partial=False,
-        ).slice(
-            step=int(
-                (
-                    self.config["burst_window_size_ms"]
-                    - self.config["burst_window_overlap_ms"]
-                )
-                / 1000
-                * self.config["fs"]
-            )
+        burst_window_size = int(
+            self.config["burst_window_size_ms"] / 1000 * self.config["fs"]
         )
+        burst_window_step = int(
+            (
+                self.config["burst_window_size_ms"]
+                - self.config["burst_window_overlap_ms"]
+            )
+            / 1000
+            * self.config["fs"]
+        )
+        burst_win = filtered.sliding_window(
+            burst_window_size, return_partial=False
+        ).slice(step=burst_window_step)
         burst_events = (
             # Combining in this way will use the previous threshold since computing
             # those will take longer.

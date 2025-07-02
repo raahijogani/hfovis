@@ -1,4 +1,4 @@
-# Form implementation generated from reading ui file 'interface.ui'
+# Form implementation generated from reading ui file 'hfovis/interface.ui'
 #
 # Created by: PyQt6 UI code generator 6.9.1
 #
@@ -157,9 +157,9 @@ class Ui_MainWindow(object):
         self.live.setObjectName("live")
         self.gridLayout_2 = QtWidgets.QGridLayout(self.live)
         self.gridLayout_2.setObjectName("gridLayout_2")
-        self.livePlot = PlotWidget(parent=self.live)
-        self.livePlot.setObjectName("livePlot")
-        self.gridLayout_2.addWidget(self.livePlot, 0, 0, 1, 1)
+        self.livePlotLayout = QtWidgets.QGridLayout()
+        self.livePlotLayout.setObjectName("livePlotLayout")
+        self.gridLayout_2.addLayout(self.livePlotLayout, 0, 0, 1, 1)
         self.tabWidget.addTab(self.live, "")
         self.config = QtWidgets.QWidget()
         self.config.setObjectName("config")

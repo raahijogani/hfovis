@@ -28,9 +28,12 @@ if __name__ == "__main__":
     app.setStyle("Fusion")
     main = MainWindow(fs, channel_names)
 
-    detector = RealTimeDetector(streamer, main.handle, fs=fs, channels=data.shape[1])
+    detector = RealTimeDetector(
+        streamer, main.handle, main.handle_live_sample, fs=fs, channels=data.shape[1]
+    )
     app.aboutToQuit.connect(detector.stop)
     detector.start()
 
+    print("Showing GUI…")
     main.show()
     sys.exit(app.exec())

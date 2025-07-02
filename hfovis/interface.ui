@@ -220,7 +220,7 @@
        </attribute>
        <layout class="QGridLayout" name="gridLayout_2">
         <item row="0" column="0">
-         <widget class="PlotWidget" name="livePlot" native="true"/>
+         <layout class="QGridLayout" name="livePlotLayout"/>
         </item>
        </layout>
       </widget>
