@@ -125,14 +125,14 @@
                  <item>
                   <widget class="QPushButton" name="firstEventButton">
                    <property name="text">
-                    <string>&lt;&lt;</string>
+                    <string>First</string>
                    </property>
                   </widget>
                  </item>
                  <item>
                   <widget class="QPushButton" name="lastEventButton">
                    <property name="text">
-                    <string>&gt;&gt;</string>
+                    <string>Last/Live</string>
                    </property>
                   </widget>
                  </item>

@@ -1,4 +1,4 @@
-# Form implementation generated from reading ui file 'interface.ui'
+# Form implementation generated from reading ui file 'hfovis/interface.ui'
 #
 # Created by: PyQt6 UI code generator 6.9.1
 #
@@ -171,8 +171,8 @@ class Ui_MainWindow(object):
         self.eventClassificationLabel.setText(_translate("MainWindow", "Classification"))
         self.showRawSpectrogramButton.setText(_translate("MainWindow", "raw"))
         self.showFilteredSpectrogramButton.setText(_translate("MainWindow", "filtered"))
-        self.firstEventButton.setText(_translate("MainWindow", "<<"))
-        self.lastEventButton.setText(_translate("MainWindow", ">>"))
+        self.firstEventButton.setText(_translate("MainWindow", "First"))
+        self.lastEventButton.setText(_translate("MainWindow", "Last/Live"))
         self.previousEventButton.setText(_translate("MainWindow", "<"))
         self.numEventsLabel.setText(_translate("MainWindow", "events"))
         self.nextEventButton.setText(_translate("MainWindow", ">"))
