@@ -278,41 +278,29 @@ class RealTimeDetector:
             all_p_crossings = self._threshold_crossings(win, thr)
             all_n_crossings = self._threshold_crossings(-win, thr)
 
+            # Our left and right conditions are that there should not be more than the
+            # minimum number of crossings in the left and right thirds of the window.
+            max_crossings = self.config["side_max_crossings"]
+
+            left_p_burst_condition = left_p_crossings.sum(axis=0) < max_crossings
+            left_n_burst_condition = left_n_crossings.sum(axis=0) < max_crossings
+            left_burst_condition = left_p_burst_condition & left_n_burst_condition
+
+            right_p_burst_condition = right_p_crossings.sum(axis=0) < max_crossings
+            right_n_burst_condition = right_n_crossings.sum(axis=0) < max_crossings
+            right_burst_condition = right_p_burst_condition & right_n_burst_condition
+
             # Now we need to filter out channels where the crossings are not close
             # enough to be in our HFO band.
             min_sample_distance = int(
                 round(self.config["fs"] / self.config["hfo_band"][0])
             )
-            left_p_burst_channels = self._sufficient_crossings(
-                left_p_crossings,
-                min_sample_distance,
-                self.config["side_max_crossings"],
-            )
-            left_n_burst_channels = self._sufficient_crossings(
-                left_n_crossings,
-                min_sample_distance,
-                self.config["side_max_crossings"],
-            )
-            left_burst_condition = ~left_p_burst_channels & ~left_n_burst_channels
-
-            right_p_burst_channels = self._sufficient_crossings(
-                right_p_crossings,
-                min_sample_distance,
-                self.config["side_max_crossings"],
-            )
-            right_n_burst_channels = self._sufficient_crossings(
-                right_n_crossings,
-                min_sample_distance,
-                self.config["side_max_crossings"],
-            )
-            right_burst_condition = ~right_p_burst_channels & ~right_n_burst_channels
-
-            all_p_burst_channels = self._sufficient_crossings(
+            all_p_burst_channels = self._sufficient_high_frequency_crossings(
                 all_p_crossings,
                 min_sample_distance,
                 self.config["center_min_crossings"],
             )
-            all_n_burst_channels = self._sufficient_crossings(
+            all_n_burst_channels = self._sufficient_high_frequency_crossings(
                 all_n_crossings,
                 min_sample_distance,
                 self.config["center_min_crossings"],
@@ -401,7 +389,7 @@ class RealTimeDetector:
         # We use np.diff to find the transitions from below to above the threshold
         return np.abs(np.diff(above.astype(int), axis=0))
 
-    def _sufficient_crossings(
+    def _sufficient_high_frequency_crossings(
         self,
         crossings: np.ndarray,
         min_sample_distance: int,
