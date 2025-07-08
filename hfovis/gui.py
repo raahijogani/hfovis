@@ -62,6 +62,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def _init_time_series_plots(self):
         self.rawPlot = self.rawEventPlot
         self.filteredPlot = self.filteredEventPlot
+
+        self.rawPlot.setBackground("#f8f8f8")
+        self.rawPlot.getPlotItem().getViewBox().setBackgroundColor("k")
+        self.rawPlot.getPlotItem().getAxis("bottom").setTextPen("k")
+        self.rawPlot.getPlotItem().getAxis("left").setTextPen("k")
+
+        self.filteredPlot.setBackground("#f8f8f8")
+        self.filteredPlot.getPlotItem().getViewBox().setBackgroundColor("k")
+        self.filteredPlot.getPlotItem().getAxis("bottom").setTextPen("k")
+        self.filteredPlot.getPlotItem().getAxis("left").setTextPen("k")
+
         self.rawPlot.setYRange(-250, 250)
         self.filteredPlot.setYRange(-25, 25)
         self.rawCurve = self.rawPlot.plot(pen="w")
@@ -95,7 +106,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         # Get rid of padding
         self.eventSpectrogram.getViewBox().setDefaultPadding(0)
-        self.eventSpectrogram.getPlotItem().setContentsMargins(0, 0, 0, 0)
+        self.eventSpectrogram.getPlotItem().setContentsMargins(0, 10, 0, 0)
 
         self.specImg = pg.ImageItem()
         self.eventSpectrogram.addItem(self.specImg)
@@ -116,7 +127,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def _init_raster_plot(self):
         """Configure rasterPlot for scrolling spike‑like events."""
         self.rasterScatter = pg.ScatterPlotItem(size=4, brush="w", pen=None)
+
         self.rasterPlot.addItem(self.rasterScatter)
+
+        self.rasterPlot.setBackground("#f8f8f8")
+        self.rasterPlot.getPlotItem().getViewBox().setBackgroundColor("k")
+        self.rasterPlot.getPlotItem().getAxis("bottom").setTextPen("k")
+        self.rasterPlot.getPlotItem().getAxis("left").setTextPen("k")
+
         self.rasterPlot.setLabel("left", "Channel")
         self.rasterPlot.setLabel("bottom", "Time", units="s")
         self.rasterPlot.setYRange(-0.5, len(self.channel_names) - 0.5, padding=0)
@@ -372,7 +390,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def _update_window(self, sig, curve, plot_widget, center=None):
         curve.setData(self.event_t, sig)
         if center is not None:
-            plot_widget.setTitle(f"Center: {center:.3f} s")
+            plot_widget.setTitle(f"Center: {center:.3f} s", color="k")
         plot_widget.setXRange(0, sig.size / self.fs, padding=0)
 
     # ------------------------------------------------------------------
