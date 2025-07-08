@@ -50,11 +50,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.auto_scroll = True  # follow live data unless user pans
         self._raster_updating = False  # guard to avoid feedback loops
 
-
         # ─── Time‑series plots ---------------------------------------
         self._init_time_series_plots()
         self._init_spectrogram()
         self._init_raster_plot()
+        self._init_frequency_plot()
         self._connect_ui()
 
     # ==================================================================
@@ -62,6 +62,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def _init_time_series_plots(self):
         self.rawPlot = self.rawEventPlot
         self.filteredPlot = self.filteredEventPlot
+
+        self.rawPlot.setBackground("#f8f8f8")
+        self.rawPlot.getPlotItem().getViewBox().setBackgroundColor("k")
+        self.rawPlot.getPlotItem().getAxis("bottom").setTextPen("k")
+        self.rawPlot.getPlotItem().getAxis("left").setTextPen("k")
+
+        self.filteredPlot.setBackground("#f8f8f8")
+        self.filteredPlot.getPlotItem().getViewBox().setBackgroundColor("k")
+        self.filteredPlot.getPlotItem().getAxis("bottom").setTextPen("k")
+        self.filteredPlot.getPlotItem().getAxis("left").setTextPen("k")
+
         self.rawPlot.setYRange(-250, 250)
         self.filteredPlot.setYRange(-25, 25)
         self.rawCurve = self.rawPlot.plot(pen="w")
@@ -78,6 +89,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         for p in (self.rawPlot, self.filteredPlot):
             p.setLabel("bottom", "Time", units="s")
             p.showGrid(x=True, y=True, alpha=0.3)
+            p.setMouseEnabled(x=False, y=True)  # disable mouse panning/zooming
 
     def _init_spectrogram(self):
         # Create high pass parameters for spectrogram
@@ -94,11 +106,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         # Get rid of padding
         self.eventSpectrogram.getViewBox().setDefaultPadding(0)
-        self.eventSpectrogram.getPlotItem().setContentsMargins(0, 0, 0, 0)
+        self.eventSpectrogram.getPlotItem().setContentsMargins(0, 10, 0, 0)
 
         self.specImg = pg.ImageItem()
         self.eventSpectrogram.addItem(self.specImg)
-        self.colormap = pg.colormap.get("viridis")
+        self.colormap = pg.colormap.get("inferno")
         self.cbar = pg.ColorBarItem(colorMap=self.colormap, label="Power (dB)")
         self.cbar.getAxis("right").setPen("k")
         self.cbar.getAxis("right").setTextPen("k")
@@ -109,21 +121,73 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.eventSpectrogram.setLabel("bottom", "Time", units="s")
         self.eventSpectrogram.setLabel("left", "Frequency", units="Hz")
 
+        # Disable mouse
+        self.eventSpectrogram.getPlotItem().setMouseEnabled(x=False, y=False)
+
     def _init_raster_plot(self):
         """Configure rasterPlot for scrolling spike‑like events."""
         self.rasterScatter = pg.ScatterPlotItem(size=4, brush="w", pen=None)
+
         self.rasterPlot.addItem(self.rasterScatter)
+
+        self.rasterPlot.setBackground("#f8f8f8")
+        self.rasterPlot.getPlotItem().getViewBox().setBackgroundColor("k")
+        self.rasterPlot.getPlotItem().getAxis("bottom").setTextPen("k")
+        self.rasterPlot.getPlotItem().getAxis("left").setTextPen("k")
+
         self.rasterPlot.setLabel("left", "Channel")
         self.rasterPlot.setLabel("bottom", "Time", units="s")
         self.rasterPlot.setYRange(-0.5, len(self.channel_names) - 0.5, padding=0)
-        # Fixed y‑ticks with channel labels
-        # yticks = [(i, name) for i, name in enumerate(self.channel_names)]
-        yticks = self._update_raster_yticks(self.channel_names)
-        self.rasterPlot.getAxis("left").setTicks([yticks])
-        # Detect manual panning/zooming
-        self.rasterPlot.sigXRangeChanged.connect(self._on_raster_xrange_changed)
 
-    def _update_raster_yticks(self, channel_names):
+        # Fixed y‑ticks with channel labels
+        yticks = self._update_raster_ticks(self.channel_names)
+        self.rasterPlot.getAxis("left").setTicks([yticks])
+
+        self.rasterPlot.setMouseEnabled(x=False, y=False)  # disable mouse
+
+    def _init_frequency_plot(self):
+        self.freq_bins = np.linspace(0, 600, 61)  # 60 bins → 10 Hz resolution
+        self.freq_hist = np.zeros((len(self.freq_bins) - 1, len(self.channel_names)))
+
+        # Create ImageItem
+        self.freqImg = pg.ImageItem()
+        self.frequencyPlot.addItem(self.freqImg)
+
+        # Configure axes
+        self.frequencyPlot.setLabel("bottom", "Channel")
+        self.frequencyPlot.setLabel("left", "Frequency (Hz)")
+
+        # Set light background
+        self.frequencyPlot.setBackground("#f8f8f8")
+        self.frequencyPlot.getPlotItem().getAxis("bottom").setPen("k")
+        self.frequencyPlot.getPlotItem().getAxis("left").setPen("k")
+        self.frequencyPlot.getPlotItem().getAxis("bottom").setTextPen("k")
+        self.frequencyPlot.getPlotItem().getAxis("left").setTextPen("k")
+        self.frequencyPlot.getPlotItem().getAxis("bottom").setTickPen(None)
+        self.frequencyPlot.getPlotItem().getAxis("left").setTickPen(None)
+
+        # Get rid of padding
+        self.frequencyPlot.getViewBox().setDefaultPadding(0)
+        self.frequencyPlot.getPlotItem().setContentsMargins(0, 10, 0, 0)
+
+        # Remove axis ticks
+        self.frequencyPlot.getPlotItem().getAxis("bottom").setTickPen(None)
+        self.frequencyPlot.getPlotItem().getAxis("left").setTickPen(None)
+
+        # Set ticks
+        xticks = self._update_raster_ticks(self.channel_names)
+        self.frequencyPlot.getAxis("bottom").setTicks([xticks])
+
+        # Colorbar
+        self.freq_cbar = pg.ColorBarItem(colorMap=self.colormap, label="Count")
+        self.freq_cbar.getAxis("right").setPen("k")
+        self.freq_cbar.getAxis("right").setTextPen("k")
+        self.freq_cbar.getAxis("left").setLabel(color="k")
+        self.freq_cbar.setImageItem(
+            self.freqImg, insert_in=self.frequencyPlot.getPlotItem()
+        )
+
+    def _update_raster_ticks(self, channel_names):
         """
         Group channels by shared prefix and show at most one label per group.
         """
@@ -206,6 +270,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self._append_raster_points(center_arr, chan_vec)
         self._update_raster_view(center_arr.max())
 
+        # ------ Frequency histogram update --------------------------
+        self._update_frequency_histogram(filt_batch, chan_vec)
+
         # ------ GUI counters -----------------------------------------
         n_events = len(self.meta)
         self.eventNumBox.setMaximum(n_events)
@@ -228,11 +295,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             )
             self._raster_updating = False
 
-    def _on_raster_xrange_changed(self, view_box, range):
-        """Detect manual panning/zooming to disable auto‑scroll."""
-        if not self._raster_updating:
-            self.auto_scroll = False
-
     def set_raster_window(self, secs: float):
         """Setter for the visible time window (callable from UI)."""
         self.window_secs = float(secs)
@@ -245,6 +307,38 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.auto_scroll = True
         if self.meta is not None:
             self._update_raster_view(self.meta["center"].iloc[-1])
+
+    # ==================================================================
+    # Frequency Plot Helper ----------------------------------------------
+    def _update_frequency_histogram(self, filtered_batch, chan_vec):
+        # Compute dominant freq for each event
+        freqs = np.fft.rfftfreq(filtered_batch.shape[1], d=1 / self.fs)
+        fft_vals = np.fft.rfft(filtered_batch, axis=1)
+        mags = np.abs(fft_vals)
+        dom_idx = np.argmax(mags, axis=1)
+        dom_freqs = freqs[dom_idx]
+
+        # Update histogram
+        for freq, chan in zip(dom_freqs, chan_vec):
+            bin_idx = np.searchsorted(self.freq_bins, freq, side="right") - 1
+            if 0 <= bin_idx < len(self.freq_bins) - 1:
+                self.freq_hist[bin_idx, chan] += 1
+
+        # Update image
+        self.freqImg.setImage(self.freq_hist.T, autoLevels=True)
+
+        # Set axes
+        self.freqImg.setRect(
+            pg.QtCore.QRectF(
+                0,
+                self.freq_bins[0],
+                len(self.channel_names),
+                self.freq_bins[-1] - self.freq_bins[0],
+            )
+        )
+
+        # Set colorbar levels
+        self.freq_cbar.setLevels((0, np.max(self.freq_hist)))
 
     # ==================================================================
     # Navigation helpers ----------------------------------------------
@@ -296,7 +390,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def _update_window(self, sig, curve, plot_widget, center=None):
         curve.setData(self.event_t, sig)
         if center is not None:
-            plot_widget.setTitle(f"Center: {center:.3f} s")
+            plot_widget.setTitle(f"Center: {center:.3f} s", color="k")
         plot_widget.setXRange(0, sig.size / self.fs, padding=0)
 
     # ------------------------------------------------------------------
