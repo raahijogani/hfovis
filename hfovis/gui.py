@@ -374,6 +374,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if self.meta is None or not (0 <= idx < len(self.meta)):
             return
 
+        self.rawPlot.setYRange(-250, 250)
+        self.filteredPlot.setYRange(-25, 25)
+
         raw = self.raw_events[idx]
         filt = self.filtered_events[idx]
         row = self.meta.iloc[idx]
