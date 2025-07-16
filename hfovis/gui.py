@@ -5,6 +5,7 @@ import pandas as pd
 import pyqtgraph as pg
 from PyQt6.QtWidgets import QMainWindow
 from PyQt6 import QtCore
+from hfovis.denoiser.worker import DenoisingThread
 from hfovis.interface import Ui_MainWindow
 from scipy import signal
 from scipy.signal import butter, filtfilt
@@ -40,7 +41,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.channel_names = channel_names
         self.raw_events: np.ndarray | None = None  # (N, S)
         self.filtered_events: np.ndarray | None = None  # (N, S)
-        self.meta: pd.DataFrame | None = None  # per‑event info
+        self.meta = None
         self.event_t: np.ndarray | None = None  # x‑axis for traces
         self.show_latest = True
         self.raw_event = True  # toggle raw/filtered spectrogram source
@@ -50,11 +51,25 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.auto_scroll = True  # follow live data unless user pans
         self._raster_updating = False  # guard to avoid feedback loops
 
+        # Set colormap
+        self.colormap = pg.colormap.get("inferno")
+
         # ─── Time‑series plots ---------------------------------------
         self._init_time_series_plots()
+
+        # ─── Denoising heatmap init and thread ────────────────────────
+        self._init_denoising_heatmap()
+        self.denoise_thread = DenoisingThread(
+            num_channels=len(self.channel_names), fs=self.fs
+        )
+        self.denoise_thread.histReady.connect(self._update_denoising_heatmap)
+        self.denoise_thread.classReady.connect(self._on_classification_ready)
+        self.denoise_thread.start()
+
         self._init_spectrogram()
         self._init_raster_plot()
         self._init_frequency_plot()
+
         self._connect_ui()
 
     # ==================================================================
@@ -91,6 +106,47 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             p.showGrid(x=True, y=True, alpha=0.3)
             p.setMouseEnabled(x=False, y=True)  # disable mouse panning/zooming
 
+    def _init_denoising_heatmap(self):
+        """Set up the two‐row heatmap (pseudo vs real)."""
+        self.denoiseImg = pg.ImageItem()
+        self.denoisingHeatmap.addItem(self.denoiseImg)
+        self.denoisingHeatmap.setBackground("#f8f8f8")
+        self.denoisingHeatmap.getPlotItem().getAxis("left").setPen("k")
+        self.denoisingHeatmap.getPlotItem().getAxis("bottom").setPen("k")
+        self.denoisingHeatmap.getPlotItem().getAxis("left").setTextPen("k")
+        self.denoisingHeatmap.getPlotItem().getAxis("bottom").setTextPen("k")
+        self.denoisingHeatmap.getPlotItem().getAxis("bottom").setTickPen(None)
+        self.denoisingHeatmap.getPlotItem().getAxis("left").setTickPen(None)
+        self.denoisingHeatmap.setLabel("left", "")
+        self.denoisingHeatmap.setLabel("bottom", "Channel")
+        # fixed y-ticks at 0 and 1
+        self.denoisingHeatmap.getPlotItem().getAxis("left").setTicks(
+            [[(0, "Pseudo-HFO"), (1, "Real-HFO")]]
+        )
+        # Set x-ticks
+        xticks = self._update_raster_ticks(self.channel_names)
+        self.denoisingHeatmap.getAxis("bottom").setTicks([xticks])
+
+        self.denoisingHeatmap.getViewBox().setDefaultPadding(0)
+        self.denoisingHeatmap.getPlotItem().setContentsMargins(0, 10, 0, 0)
+        # add colorbar
+        self.denoise_cbar = pg.ColorBarItem(
+            colorMap=self.colormap,
+            label="Count",
+            interactive=False,
+            pen=None,
+            hoverPen=None,
+            hoverBrush=None,
+        )
+        self.denoise_cbar.setImageItem(
+            self.denoiseImg, insert_in=self.denoisingHeatmap.getPlotItem()
+        )
+        self.denoise_cbar.getAxis("right").setTextPen("k")
+        self.denoise_cbar.getAxis("left").setTextPen("k")
+
+        # cumulative counts across all batches
+        self._denoise_hist = np.zeros((2, len(self.channel_names)), dtype=int)
+
     def _init_spectrogram(self):
         # Create high pass parameters for spectrogram
         self.spec_a, self.spec_b = butter(2, 16, fs=self.fs, btype="highpass")
@@ -110,7 +166,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.specImg = pg.ImageItem()
         self.eventSpectrogram.addItem(self.specImg)
-        self.colormap = pg.colormap.get("inferno")
         self.cbar = pg.ColorBarItem(colorMap=self.colormap, label="Power (dB)")
         self.cbar.getAxis("right").setPen("k")
         self.cbar.getAxis("right").setTextPen("k")
@@ -179,7 +234,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.frequencyPlot.getAxis("bottom").setTicks([xticks])
 
         # Colorbar
-        self.freq_cbar = pg.ColorBarItem(colorMap=self.colormap, label="Count")
+        self.freq_cbar = pg.ColorBarItem(
+            colorMap=self.colormap,
+            label="Count",
+            interactive=False,
+            pen=None,
+            hoverPen=None,
+            hoverBrush=None,
+        )
         self.freq_cbar.getAxis("right").setPen("k")
         self.freq_cbar.getAxis("right").setTextPen("k")
         self.freq_cbar.getAxis("left").setLabel(color="k")
@@ -253,17 +315,30 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         chan_vec = np.asarray(event["channels"], dtype=int)
         thresh_arr = np.asarray(event["threshold"], dtype=float)
 
+        # store current position in meta DataFrame
+        old_n = len(self.meta) if self.meta is not None else 0
+
         batch_meta = pd.DataFrame(
             {
                 "center": center_arr,
                 "channel": chan_vec,
                 "threshold": thresh_arr,
+                "is_real": pd.NA,  # will be filled by denoiser
             }
         )
         self.meta = (
             pd.concat([self.meta, batch_meta], ignore_index=True)
             if self.meta is not None
             else batch_meta
+        )
+
+        # enqueue just this batch for denoising thread
+        batch_indices = np.arange(old_n, old_n + len(batch_meta), dtype=int)
+        self.denoise_thread.enqueue(
+            raw_batch=raw_batch,
+            filtered_batch=filt_batch,
+            batch_meta=batch_meta,
+            batch_indices=batch_indices,
         )
 
         # ------ Raster plot update -----------------------------------
@@ -280,8 +355,33 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if self.show_latest:
             self.eventNumBox.setValue(n_events)  # jump to latest
 
+    @QtCore.pyqtSlot(np.ndarray)
+    def _update_denoising_heatmap(self, hist_batch: np.ndarray):
+        """
+        hist: shape (2, num_channels)
+        """
+        self._denoise_hist += hist_batch
+        self.denoiseImg.setImage(self._denoise_hist, autoLevels=True)
+        h, w = self._denoise_hist.shape
+        self.denoiseImg.setRect(pg.QtCore.QRectF(0, 0, w, h))
+        self.denoise_cbar.setLevels((0, self._denoise_hist.max()))
+        axis = self.denoise_cbar.getAxis("right")
+        maxv = float(self._denoise_hist.max())
+        axis.setTicks([[(maxv, str(int(maxv)))]])
+
+    @QtCore.pyqtSlot(np.ndarray, np.ndarray)
+    def _on_classification_ready(self, indices: np.ndarray, classes: np.ndarray):
+        self.meta.loc[indices, "is_real"] = classes == 1
+        cur = self.eventNumBox.value() - 1
+        val = self.meta.at[cur, "is_real"]
+        if pd.isna(val):
+            self.eventClassificationLabel.setText("Classification\npending")
+        else:
+            self.eventClassificationLabel.setText("Real HFO" if val else "Pseudo HFO")
+
     # ==================================================================
     # Raster helpers ---------------------------------------------------
+
     def _append_raster_points(self, times: np.ndarray, chans: np.ndarray):
         """Add new points to the scatter item."""
         self.rasterScatter.addPoints(x=times, y=chans)
@@ -390,13 +490,19 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.plot_spectrogram(raw if self.raw_event else filt)
         self.channelLabel.setText(self.channel_names[chan])
 
+        # Update classification label
+        val = row.is_real
+        if pd.isna(val):
+            self.eventClassificationLabel.setText("Classification\npending")
+        else:
+            self.eventClassificationLabel.setText("Real HFO" if val else "Pseudo HFO")
+
     def _update_window(self, sig, curve, plot_widget, center=None):
         curve.setData(self.event_t, sig)
         if center is not None:
             plot_widget.setTitle(f"Center: {center:.3f} s", color="k")
         plot_widget.setXRange(0, sig.size / self.fs, padding=0)
 
-    # ------------------------------------------------------------------
     def plot_spectrogram(self, sig):
         sig = filtfilt(self.spec_a, self.spec_b, sig, axis=0)
         sig = signal.detrend(sig, type="constant")

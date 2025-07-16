@@ -13,8 +13,10 @@ dependencies = [
     "pyqt6>=6.9.1",
     "pyqtgraph>=0.13.7",
     "pyvista>=0.45.2",
-    "scikit-learn>=1.7.0",
+    "scikit-learn==1.6.1",
     "scipy>=1.15.3",
+    "setuptools<81",
     "streamz>=0.6.4",
     "tabula>=1.0.5",
+    "tqdm>=4.67.1",
 ]
