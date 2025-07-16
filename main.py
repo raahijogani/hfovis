@@ -22,7 +22,7 @@ if __name__ == "__main__":
         file_info, data_path, annotations_path, baseline="interictal"
     )
 
-    streamer = streaming.DataStreamer(data, chunk_size=1000, fs=fs)
+    streamer = streaming.DataStreamer(data, chunk_size=fs, fs=fs)
 
     app = QApplication(sys.argv)
     app.setStyle("Fusion")
