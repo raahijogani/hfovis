@@ -277,6 +277,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.previousEventButton.clicked.connect(self.previous_event)
         self.lastEventButton.clicked.connect(self.last_event)
         self.firstEventButton.clicked.connect(self.first_event)
+        self.showPsuedoCheckBox.toggled.connect(self._on_show_pseudo_toggled)
         # If there is a spinBox (optional) named windowLengthSpinBox, wire it:
         if hasattr(self, "windowLengthSpinBox"):
             self.windowLengthSpinBox.setValue(self.window_secs)
@@ -342,8 +343,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         )
 
         # ------ Raster plot update -----------------------------------
-        self._append_raster_points(center_arr, chan_vec)
-        self._update_raster_view(center_arr.max())
+        self._refresh_raster()
 
         # ------ Frequency histogram update --------------------------
         self._update_frequency_histogram(filt_batch, chan_vec)
@@ -382,18 +382,37 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     # ==================================================================
     # Raster helpers ---------------------------------------------------
 
-    def _append_raster_points(self, times: np.ndarray, chans: np.ndarray):
-        """Add new points to the scatter item."""
-        self.rasterScatter.addPoints(x=times, y=chans)
+    def _on_show_pseudo_toggled(self, show_pseudo: bool):
+        """Re‑draw the raster whenever the user toggles pseudo events on/off."""
+        self._refresh_raster()
+
+    def _refresh_raster(self):
+        """Clear + re‑plot all raster points, filtering out pseudo if needed."""
+        if self.meta is None:
+            return
+
+        # build mask: either all events, or only real ones
+        if self.showPsuedoCheckBox.isChecked():
+            mask = np.ones(len(self.meta), dtype=bool)
+        else:
+            mask = (self.meta["is_real"] == True).to_numpy()
+
+        # grab times & channels
+        times = self.meta["center"].to_numpy()[mask]
+        chans = self.meta["channel"].to_numpy()[mask]
+
+        # redraw scatter
+        self.rasterScatter.setData(x=times, y=chans)
+
+        # scroll to latest
+        if times.size:
+            tmax = times.max()
+            self._update_raster_view(tmax)
 
     def _update_raster_view(self, newest_time: float):
-        """Auto‑scroll unless the user has taken manual control."""
-        if self.auto_scroll:
-            self._raster_updating = True  # suppress pan callback
-            self.rasterPlot.setXRange(
-                newest_time - self.window_secs, newest_time, padding=0
-            )
-            self._raster_updating = False
+        self.rasterPlot.setXRange(
+            newest_time - self.window_secs, newest_time, padding=0
+        )
 
     def set_raster_window(self, secs: float):
         """Setter for the visible time window (callable from UI)."""
