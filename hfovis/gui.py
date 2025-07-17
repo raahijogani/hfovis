@@ -372,10 +372,19 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.meta.loc[indices, "is_real"] = classes == 1
         cur = self.eventNumBox.value() - 1
         val = self.meta.at[cur, "is_real"]
+
         if pd.isna(val):
-            self.eventClassificationLabel.setText("Classification\npending")
+            text = "Classification\npending"
+            color = "black"
+        elif val:
+            text = "Real HFO"
+            color = "green"
         else:
-            self.eventClassificationLabel.setText("Real HFO" if val else "Pseudo HFO")
+            text = "Pseudo HFO"
+            color = "red"
+
+        self.eventClassificationLabel.setText(text)
+        self.eventClassificationLabel.setStyleSheet(f"color: {color}")
 
     # ==================================================================
     # Raster helpers ---------------------------------------------------
@@ -506,10 +515,19 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         # Update classification label
         val = row.is_real
+
         if pd.isna(val):
-            self.eventClassificationLabel.setText("Classification\npending")
+            text = "Classification\npending"
+            color = "black"
+        elif val:
+            text = "Real HFO"
+            color = "green"
         else:
-            self.eventClassificationLabel.setText("Real HFO" if val else "Pseudo HFO")
+            text = "Pseudo HFO"
+            color = "red"
+
+        self.eventClassificationLabel.setText(text)
+        self.eventClassificationLabel.setStyleSheet(f"color: {color}")
 
     def _update_window(self, sig, curve, plot_widget, center=None):
         curve.setData(self.event_t, sig)
