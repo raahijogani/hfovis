@@ -44,7 +44,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.meta = None
         self.event_t: np.ndarray | None = None  # x‑axis for traces
         self.show_latest = True
-        self.raw_event = True  # toggle raw/filtered spectrogram source
 
         # Raster‑plot scroll state
         self.window_secs = 10.0  # x‑range shown (user adjustable)
@@ -164,7 +163,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.specImg = pg.ImageItem()
         self.eventSpectrogram.addItem(self.specImg)
-        self.cbar = pg.ColorBarItem(colorMap=self.colormap, label="Power (dB)")
+        self.cbar = pg.ColorBarItem(colorMap=pg.colormap.get("turbo"), label="Power (dB)")
         self.cbar.getAxis("right").setPen("k")
         self.cbar.getAxis("right").setTextPen("k")
         self.cbar.getAxis("left").setLabel(color="k")
@@ -267,9 +266,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         return yticks
 
     def _connect_ui(self):
-        self.showRawSpectrogramButton.setChecked(True)
-        self.showRawSpectrogramButton.toggled.connect(self.toggle_spectrogram)
-        self.showFilteredSpectrogramButton.toggled.connect(self.toggle_spectrogram)
         self.eventNumBox.valueChanged.connect(self._on_event_index_changed)
         self.nextEventButton.clicked.connect(self.next_event)
         self.previousEventButton.clicked.connect(self.previous_event)
@@ -372,10 +368,19 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.meta.loc[indices, "is_real"] = classes == 1
         cur = self.eventNumBox.value() - 1
         val = self.meta.at[cur, "is_real"]
+
         if pd.isna(val):
-            self.eventClassificationLabel.setText("Classification\npending")
+            text = "Classification\npending"
+            color = "black"
+        elif val:
+            text = "Real HFO"
+            color = "green"
         else:
-            self.eventClassificationLabel.setText("Real HFO" if val else "Pseudo HFO")
+            text = "Pseudo HFO"
+            color = "red"
+
+        self.eventClassificationLabel.setText(text)
+        self.eventClassificationLabel.setStyleSheet(f"color: {color}")
 
     # ==================================================================
     # Raster helpers ---------------------------------------------------
@@ -501,21 +506,42 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.lowerThreshLine.setPos(-thresh)
         self.upperThreshLine.setPos(thresh)
 
-        self.plot_spectrogram(raw if self.raw_event else filt)
+        self.plot_spectrogram(raw)
         self.channelLabel.setText(self.channel_names[chan])
 
         # Update classification label
         val = row.is_real
+
         if pd.isna(val):
-            self.eventClassificationLabel.setText("Classification\npending")
+            text = "Classification\npending"
+            color = "black"
+        elif val:
+            text = "Real HFO"
+            color = "green"
         else:
-            self.eventClassificationLabel.setText("Real HFO" if val else "Pseudo HFO")
+            text = "Pseudo HFO"
+            color = "red"
+
+        self.eventClassificationLabel.setText(text)
+        self.eventClassificationLabel.setStyleSheet(f"color: {color}")
 
     def _update_window(self, sig, curve, plot_widget, center=None):
         curve.setData(self.event_t, sig)
         if center is not None:
             plot_widget.setTitle(f"Center: {center:.3f} s", color="k")
-        plot_widget.setXRange(0, sig.size / self.fs, padding=0)
+        plot_widget.setXRange(0, sig.size / self.fs, padding=0)    # Add 20% vertical padding
+
+        y_min = np.min(sig)
+        y_max = np.max(sig)
+        y_range = y_max - y_min
+        if y_range == 0:
+            y_min -= 1
+            y_max += 1
+        else:
+            pad = 0.5 * y_range
+            y_min -= pad
+            y_max += pad
+        plot_widget.setYRange(y_min, y_max, padding=0)
 
     def plot_spectrogram(self, sig):
         sig = filtfilt(self.spec_a, self.spec_b, sig, axis=0)
@@ -544,12 +570,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             pg.QtCore.QRectF(t[0], f[0], t[-1] - t[0], f[mask][-1] - f[0])
         )
         self.cbar.setLevels((-35, 0))
-
-    # ==================================================================
-    def toggle_spectrogram(self):
-        self.raw_event = self.showRawSpectrogramButton.isChecked()
-        if self.meta is not None:
-            self.plot_event(self.eventNumBox.value() - 1)
 
     # ==================================================================
     def closeEvent(self, event):
