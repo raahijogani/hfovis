@@ -96,20 +96,6 @@
                       </property>
                      </widget>
                     </item>
-                    <item>
-                     <widget class="QRadioButton" name="showRawSpectrogramButton">
-                      <property name="text">
-                       <string>raw</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item>
-                     <widget class="QRadioButton" name="showFilteredSpectrogramButton">
-                      <property name="text">
-                       <string>filtered</string>
-                      </property>
-                     </widget>
-                    </item>
                    </layout>
                   </widget>
                  </item>

@@ -44,7 +44,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.meta = None
         self.event_t: np.ndarray | None = None  # x‑axis for traces
         self.show_latest = True
-        self.raw_event = True  # toggle raw/filtered spectrogram source
 
         # Raster‑plot scroll state
         self.window_secs = 10.0  # x‑range shown (user adjustable)
@@ -267,9 +266,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         return yticks
 
     def _connect_ui(self):
-        self.showRawSpectrogramButton.setChecked(True)
-        self.showRawSpectrogramButton.toggled.connect(self.toggle_spectrogram)
-        self.showFilteredSpectrogramButton.toggled.connect(self.toggle_spectrogram)
         self.eventNumBox.valueChanged.connect(self._on_event_index_changed)
         self.nextEventButton.clicked.connect(self.next_event)
         self.previousEventButton.clicked.connect(self.previous_event)
@@ -510,7 +506,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.lowerThreshLine.setPos(-thresh)
         self.upperThreshLine.setPos(thresh)
 
-        self.plot_spectrogram(raw if self.raw_event else filt)
+        self.plot_spectrogram(raw)
         self.channelLabel.setText(self.channel_names[chan])
 
         # Update classification label
@@ -574,12 +570,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             pg.QtCore.QRectF(t[0], f[0], t[-1] - t[0], f[mask][-1] - f[0])
         )
         self.cbar.setLevels((-35, 0))
-
-    # ==================================================================
-    def toggle_spectrogram(self):
-        self.raw_event = self.showRawSpectrogramButton.isChecked()
-        if self.meta is not None:
-            self.plot_event(self.eventNumBox.value() - 1)
 
     # ==================================================================
     def closeEvent(self, event):
