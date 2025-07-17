@@ -88,8 +88,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.filteredPlot.getPlotItem().getAxis("bottom").setTextPen("k")
         self.filteredPlot.getPlotItem().getAxis("left").setTextPen("k")
 
-        self.rawPlot.setYRange(-250, 250)
-        self.filteredPlot.setYRange(-25, 25)
         self.rawCurve = self.rawPlot.plot(pen="w")
         self.filtCurve = self.filteredPlot.plot(pen="w")
         self.lowerThreshLine = pg.InfiniteLine(pen="r", angle=0)
@@ -493,9 +491,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if self.meta is None or not (0 <= idx < len(self.meta)):
             return
 
-        self.rawPlot.setYRange(-250, 250)
-        self.filteredPlot.setYRange(-25, 25)
-
         raw = self.raw_events[idx]
         filt = self.filtered_events[idx]
         row = self.meta.iloc[idx]
@@ -548,8 +543,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.specImg.setRect(
             pg.QtCore.QRectF(t[0], f[0], t[-1] - t[0], f[mask][-1] - f[0])
         )
-        # self.cbar.setLevels((np.nanmin(Z), np.nanmax(Z)))
-        self.cbar.setLevels((-30, 0))
+        self.cbar.setLevels((-35, 0))
 
     # ==================================================================
     def toggle_spectrogram(self):
