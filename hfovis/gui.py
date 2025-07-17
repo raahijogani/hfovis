@@ -164,7 +164,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.specImg = pg.ImageItem()
         self.eventSpectrogram.addItem(self.specImg)
-        self.cbar = pg.ColorBarItem(colorMap=self.colormap, label="Power (dB)")
+        self.cbar = pg.ColorBarItem(colorMap=pg.colormap.get("turbo"), label="Power (dB)")
         self.cbar.getAxis("right").setPen("k")
         self.cbar.getAxis("right").setTextPen("k")
         self.cbar.getAxis("left").setLabel(color="k")
