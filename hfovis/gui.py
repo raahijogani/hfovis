@@ -515,7 +515,19 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         curve.setData(self.event_t, sig)
         if center is not None:
             plot_widget.setTitle(f"Center: {center:.3f} s", color="k")
-        plot_widget.setXRange(0, sig.size / self.fs, padding=0)
+        plot_widget.setXRange(0, sig.size / self.fs, padding=0)    # Add 20% vertical padding
+
+        y_min = np.min(sig)
+        y_max = np.max(sig)
+        y_range = y_max - y_min
+        if y_range == 0:
+            y_min -= 1
+            y_max += 1
+        else:
+            pad = 0.5 * y_range
+            y_min -= pad
+            y_max += pad
+        plot_widget.setYRange(y_min, y_max, padding=0)
 
     def plot_spectrogram(self, sig):
         sig = filtfilt(self.spec_a, self.spec_b, sig, axis=0)
