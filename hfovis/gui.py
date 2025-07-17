@@ -1,5 +1,4 @@
 import re
-from collections import defaultdict
 import numpy as np
 import pandas as pd
 import pyqtgraph as pg
@@ -114,6 +113,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.denoisingHeatmap.getPlotItem().getAxis("bottom").setTextPen("k")
         self.denoisingHeatmap.getPlotItem().getAxis("bottom").setTickPen(None)
         self.denoisingHeatmap.getPlotItem().getAxis("left").setTickPen(None)
+        self.denoisingHeatmap.getPlotItem().getAxis("bottom").setStyle(
+            hideOverlappingLabels=False
+        )
         self.denoisingHeatmap.setLabel("left", "")
         self.denoisingHeatmap.setLabel("bottom", "Channel")
         # fixed y-ticks at 0 and 1
@@ -163,7 +165,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.specImg = pg.ImageItem()
         self.eventSpectrogram.addItem(self.specImg)
-        self.cbar = pg.ColorBarItem(colorMap=pg.colormap.get("turbo"), label="Power (dB)")
+        self.cbar = pg.ColorBarItem(
+            colorMap=pg.colormap.get("turbo"), label="Power (dB)"
+        )
         self.cbar.getAxis("right").setPen("k")
         self.cbar.getAxis("right").setTextPen("k")
         self.cbar.getAxis("left").setLabel(color="k")
@@ -208,6 +212,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # Configure axes
         self.frequencyPlot.setLabel("bottom", "Channel")
         self.frequencyPlot.setLabel("left", "Frequency (Hz)")
+        self.frequencyPlot.getPlotItem().getAxis("bottom").setStyle(
+            hideOverlappingLabels=False
+        )
 
         # Set light background
         self.frequencyPlot.setBackground("#f8f8f8")
@@ -248,21 +255,21 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def _update_raster_ticks(self, channel_names):
         """
-        Group channels by shared prefix and show at most one label per group.
+        Group bipolar channels by shared prefix (e.g., LA, LAH, LPH) and
+        return ticks at the first occurrence of each group.
         """
-        groups = defaultdict(list)
+        groups = {}  # prefix -> first index
+
         for i, label in enumerate(channel_names):
-            match = re.match(r"([A-Za-z]+)", label)
-            key = match.group(1) if match else label
-            groups[key].append(i)
+            match = re.match(r"([A-Z]+)", label)  # Extract "LA", "LAH", etc.
+            if not match:
+                continue
+            prefix = match.group(1)
+            if prefix not in groups:
+                groups[prefix] = i  # Only store the first occurrence
 
-        yticks = []
-        for name, indices in groups.items():
-            center_idx = indices[len(indices) // 2]
-            yticks.append((center_idx, name))
-
-        yticks.sort()
-
+        # Convert to sorted list of ticks
+        yticks = sorted((idx, prefix) for prefix, idx in groups.items())
         return yticks
 
     def _connect_ui(self):
@@ -529,7 +536,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         curve.setData(self.event_t, sig)
         if center is not None:
             plot_widget.setTitle(f"Center: {center:.3f} s", color="k")
-        plot_widget.setXRange(0, sig.size / self.fs, padding=0)    # Add 20% vertical padding
+        # Add 20% vertical padding
+        plot_widget.setXRange(0, sig.size / self.fs, padding=0)
 
         y_min = np.min(sig)
         y_max = np.max(sig)
