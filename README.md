@@ -7,7 +7,7 @@ A real-time GUI for detecting, denoising, and visualizing high-frequency oscilla
 Clone this repository and install the dependencies listed in `pyproject.toml`.
 
 It is recommended to use [uv](https://docs.astral.sh/uv/) to recreate the virtual
-environment for this project run:
+environment for this project. Run:
 
 ```bash
 uv sync
