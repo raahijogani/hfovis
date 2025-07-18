@@ -177,9 +177,9 @@
             <widget class="PlotWidget" name="rasterPlot" native="true"/>
            </item>
            <item>
-            <widget class="QCheckBox" name="showPsuedoCheckBox">
+            <widget class="QCheckBox" name="showPseudoCheckBox">
              <property name="text">
-              <string>show psuedo events</string>
+              <string>show pseudo events</string>
              </property>
             </widget>
            </item>

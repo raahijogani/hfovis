@@ -278,7 +278,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.previousEventButton.clicked.connect(self.previous_event)
         self.lastEventButton.clicked.connect(self.last_event)
         self.firstEventButton.clicked.connect(self.first_event)
-        self.showPsuedoCheckBox.toggled.connect(self._on_show_pseudo_toggled)
+        self.showPseudoCheckBox.toggled.connect(self._on_show_pseudo_toggled)
         # If there is a spinBox (optional) named windowLengthSpinBox, wire it:
         if hasattr(self, "windowLengthSpinBox"):
             self.windowLengthSpinBox.setValue(self.window_secs)
@@ -402,7 +402,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             return
 
         # build mask: either all events, or only real ones
-        if self.showPsuedoCheckBox.isChecked():
+        if self.showPseudoCheckBox.isChecked():
             mask = np.ones(len(self.meta), dtype=bool)
         else:
             mask = (self.meta["is_real"] == True).to_numpy()
