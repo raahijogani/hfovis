@@ -1,9 +1,36 @@
 import time
 import numpy as np
+from abc import ABC, abstractmethod
 from multiprocessing import Process, Queue
 
 
-class DataStreamer:
+class Streamer(ABC):
+    """
+    Abstract base class for data streamers.
+    Subclasses must implement the start, read, and stop methods.
+    """
+
+    @abstractmethod
+    def start(self):
+        """Start the streaming process."""
+        pass
+
+    @abstractmethod
+    def read(self, timeout=None):
+        """
+        Read the next chunk of data.
+        If timeout is specified, waits at most that many seconds.
+        Returns None when the stream ends.
+        """
+        pass
+
+    @abstractmethod
+    def stop(self):
+        """Stop the streaming process."""
+        pass
+
+
+class DataStreamer(Streamer):
     def __init__(
         self,
         data: np.ndarray,
