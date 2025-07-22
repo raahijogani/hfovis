@@ -176,9 +176,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.eventSpectrogram.setLabel("bottom", "Time", units="s")
         self.eventSpectrogram.setLabel("left", "Frequency", units="Hz")
 
-        # Disable mouse
-        self.eventSpectrogram.getPlotItem().setMouseEnabled(x=False, y=False)
-
     def _init_raster_plot(self):
         """Configure rasterPlot for scrolling spike‑like events."""
         self.rasterScatter = pg.ScatterPlotItem(size=4, brush="w", pen=None)
@@ -194,6 +191,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.rasterPlot.setLabel("bottom", "Time", units="s")
         self.rasterPlot.setYRange(-0.5, len(self.channel_names) - 0.5, padding=0)
 
+        # hide auto-scale and menu buttons
+        self.rasterPlot.getPlotItem().hideButtons()
+
         # add a special scatter for the “selected” event
         self.selectedScatter = pg.ScatterPlotItem(
             size=10,
@@ -207,7 +207,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         yticks = self._update_raster_ticks(self.channel_names)
         self.rasterPlot.getAxis("left").setTicks([yticks])
 
-        self.rasterPlot.setMouseEnabled(x=True, y=False)  # disable mouse
+        self.rasterPlot.setMouseEnabled(x=False, y=False)  # disable mouse
 
     def _init_frequency_plot(self):
         self.freq_bins = np.linspace(0, 600, 61)  # 60 bins → 10 Hz resolution
