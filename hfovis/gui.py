@@ -35,6 +35,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self._on_event_received, QtCore.Qt.ConnectionType.QueuedConnection
         )
 
+        # Default setting
+        self.keepUpWithDetectorButton.setChecked(True)
+
         # ─── State ----------------------------------------------------
         self.fs = fs
         self.channel_names = channel_names
@@ -46,7 +49,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         # Raster‑plot scroll state
         self.window_secs = 10.0  # x‑range shown (user adjustable)
-        self.auto_scroll = True  # follow live data unless user pans
         self._raster_updating = False  # guard to avoid feedback loops
 
         # Set colormap
@@ -69,6 +71,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self._init_frequency_plot()
 
         self._connect_ui()
+
+        self.mode = (
+            "detector" if self.keepUpWithDetectorButton.isChecked() else "denoiser"
+        )
+
+        self._on_mode_changed()
 
     # ==================================================================
     # Initialisation helpers -------------------------------------------
@@ -278,11 +286,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.previousEventButton.clicked.connect(self.previous_event)
         self.lastEventButton.clicked.connect(self.last_event)
         self.firstEventButton.clicked.connect(self.first_event)
-        self.showPseudoCheckBox.toggled.connect(self._on_show_pseudo_toggled)
-        # If there is a spinBox (optional) named windowLengthSpinBox, wire it:
-        if hasattr(self, "windowLengthSpinBox"):
-            self.windowLengthSpinBox.setValue(self.window_secs)
-            self.windowLengthSpinBox.valueChanged.connect(self.set_raster_window)
+
+        self.keepUpWithDetectorButton.toggled.connect(self._on_mode_changed)
+        self.keepUpWithDenoiserButton.toggled.connect(self._on_mode_changed)
+
+        self.windowLengthSpinBox.setValue(self.window_secs)
+        self.windowLengthSpinBox.valueChanged.connect(self.set_raster_window)
 
     # ==================================================================
     # Worker‑thread callback -------------------------------------------
@@ -392,29 +401,52 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     # ==================================================================
     # Raster helpers ---------------------------------------------------
 
-    def _on_show_pseudo_toggled(self, show_pseudo: bool):
-        """Re‑draw the raster whenever the user toggles pseudo events on/off."""
+    def _on_mode_changed(self):
+        """
+        Switch between:
+         - detector: white dots, always live
+         - denoiser: red/green dots after classification
+        """
+        if self.keepUpWithDetectorButton.isChecked():
+            self.mode = "detector"
+        else:
+            self.mode = "denoiser"
+
+        # always jump to the latest in both modes
+        self.show_latest = True
+
+        # re‑draw everything
         self._refresh_raster()
 
     def _refresh_raster(self):
-        """Clear + re‑plot all raster points, filtering out pseudo if needed."""
+        """Re‑plot all raster points, coloring by mode."""
         if self.meta is None:
             return
 
-        # build mask: either all events, or only real ones
-        if self.showPseudoCheckBox.isChecked():
-            mask = np.ones(len(self.meta), dtype=bool)
-        else:
-            mask = (self.meta["is_real"] == True).to_numpy()
+        # grab times & channels for _all_ events
+        times = self.meta["center"].to_numpy()
+        chans = self.meta["channel"].to_numpy()
 
-        # grab times & channels
-        times = self.meta["center"].to_numpy()[mask]
-        chans = self.meta["channel"].to_numpy()[mask]
+        if self.mode == "detector":
+            # everything white before classification
+            brushes = ["w"] * len(times)
 
-        # redraw scatter
-        self.rasterScatter.setData(x=times, y=chans)
+        else:  # denoiser mode → color by is_real
+            # pull the classification series
+            is_real = self.meta["is_real"]
+            brushes = []
+            for val in is_real:
+                if pd.isna(val):
+                    brushes.append("k")       # still pending
+                elif val:
+                    brushes.append("g")       # real → green
+                else:
+                    brushes.append("r")       # pseudo → red
 
-        # scroll to latest
+        # redraw scatter with per-point colors
+        self.rasterScatter.setData(x=times, y=chans, brush=brushes)
+
+        # live scroll to the newest event
         if times.size:
             tmax = times.max()
             self._update_raster_view(tmax)
@@ -428,12 +460,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         """Setter for the visible time window (callable from UI)."""
         self.window_secs = float(secs)
         # Force update to current view if in live mode
-        if self.meta is not None and self.auto_scroll:
-            self._update_raster_view(self.meta["center"].iloc[-1])
-
-    def catch_up_live(self):
-        """Re‑enable auto‑scroll and jump to newest data (bind to a button)."""
-        self.auto_scroll = True
         if self.meta is not None:
             self._update_raster_view(self.meta["center"].iloc[-1])
 

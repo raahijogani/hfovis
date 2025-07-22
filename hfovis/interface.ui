@@ -172,16 +172,44 @@
           <property name="title">
            <string>Raster</string>
           </property>
-          <layout class="QVBoxLayout" name="verticalLayout_6" stretch="10,1">
+          <layout class="QVBoxLayout" name="verticalLayout_6" stretch="19,1">
            <item>
             <widget class="PlotWidget" name="rasterPlot" native="true"/>
            </item>
            <item>
-            <widget class="QCheckBox" name="showPseudoCheckBox">
-             <property name="text">
-              <string>show pseudo events</string>
-             </property>
-            </widget>
+            <layout class="QHBoxLayout" name="horizontalLayout_5">
+             <item>
+              <widget class="QRadioButton" name="keepUpWithDetectorButton">
+               <property name="text">
+                <string>keep up with detector</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QRadioButton" name="keepUpWithDenoiserButton">
+               <property name="text">
+                <string>keep up with denoiser</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="windowLengthLabel">
+               <property name="text">
+                <string>Window Length (s):</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QDoubleSpinBox" name="windowLengthSpinBox">
+               <property name="value">
+                <double>10.000000000000000</double>
+               </property>
+              </widget>
+             </item>
+            </layout>
            </item>
           </layout>
          </widget>
