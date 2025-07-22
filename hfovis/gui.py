@@ -46,7 +46,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         # Raster‑plot scroll state
         self.window_secs = 10.0  # x‑range shown (user adjustable)
-        self.auto_scroll = True  # follow live data unless user pans
         self._raster_updating = False  # guard to avoid feedback loops
 
         # Set colormap
@@ -177,9 +176,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.eventSpectrogram.setLabel("bottom", "Time", units="s")
         self.eventSpectrogram.setLabel("left", "Frequency", units="Hz")
 
-        # Disable mouse
-        self.eventSpectrogram.getPlotItem().setMouseEnabled(x=False, y=False)
-
     def _init_raster_plot(self):
         """Configure rasterPlot for scrolling spike‑like events."""
         self.rasterScatter = pg.ScatterPlotItem(size=4, brush="w", pen=None)
@@ -194,6 +190,18 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.rasterPlot.setLabel("left", "Channel")
         self.rasterPlot.setLabel("bottom", "Time", units="s")
         self.rasterPlot.setYRange(-0.5, len(self.channel_names) - 0.5, padding=0)
+
+        # hide auto-scale and menu buttons
+        self.rasterPlot.getPlotItem().hideButtons()
+
+        # add a special scatter for the “selected” event
+        self.selectedScatter = pg.ScatterPlotItem(
+            size=10,
+            symbol="x",
+            pen="w",  # default, will be updated per‐point
+            brush=None,
+        )
+        self.rasterPlot.addItem(self.selectedScatter)
 
         # Fixed y‑ticks with channel labels
         yticks = self._update_raster_ticks(self.channel_names)
@@ -278,11 +286,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.previousEventButton.clicked.connect(self.previous_event)
         self.lastEventButton.clicked.connect(self.last_event)
         self.firstEventButton.clicked.connect(self.first_event)
-        self.showPseudoCheckBox.toggled.connect(self._on_show_pseudo_toggled)
-        # If there is a spinBox (optional) named windowLengthSpinBox, wire it:
-        if hasattr(self, "windowLengthSpinBox"):
-            self.windowLengthSpinBox.setValue(self.window_secs)
-            self.windowLengthSpinBox.valueChanged.connect(self.set_raster_window)
+
+        self.showPseudoEventBox.toggled.connect(self._refresh_raster)
+
+        self.windowLengthSpinBox.setValue(self.window_secs)
+        self.windowLengthSpinBox.valueChanged.connect(self.set_raster_window)
 
     # ==================================================================
     # Worker‑thread callback -------------------------------------------
@@ -372,52 +380,42 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     @QtCore.pyqtSlot(np.ndarray, np.ndarray)
     def _on_classification_ready(self, indices: np.ndarray, classes: np.ndarray):
+        # update your meta DataFrame
         self.meta.loc[indices, "is_real"] = classes == 1
+
+        # update the little text label
         cur = self.eventNumBox.value() - 1
         val = self.meta.at[cur, "is_real"]
-
         if pd.isna(val):
-            text = "Classification\npending"
-            color = "black"
+            text, color = "Classification\npending", "black"
         elif val:
-            text = "Real HFO"
-            color = "green"
+            text, color = "Real HFO", "green"
         else:
-            text = "Pseudo HFO"
-            color = "red"
+            text, color = "Pseudo HFO", "red"
 
         self.eventClassificationLabel.setText(text)
         self.eventClassificationLabel.setStyleSheet(f"color: {color}")
 
+        # repaint the raster plot now that some points changed color
+        self._refresh_raster()
+
     # ==================================================================
     # Raster helpers ---------------------------------------------------
 
-    def _on_show_pseudo_toggled(self, show_pseudo: bool):
-        """Re‑draw the raster whenever the user toggles pseudo events on/off."""
-        self._refresh_raster()
+    def _center_raster_on_event(self, t_center: float):
+        T = self.window_secs
+        t_last = float(self.meta["center"].iloc[-1])
+        half = T / 2
 
-    def _refresh_raster(self):
-        """Clear + re‑plot all raster points, filtering out pseudo if needed."""
-        if self.meta is None:
-            return
+        lo = t_center - half
+        hi = t_center + half
 
-        # build mask: either all events, or only real ones
-        if self.showPseudoCheckBox.isChecked():
-            mask = np.ones(len(self.meta), dtype=bool)
-        else:
-            mask = (self.meta["is_real"] == True).to_numpy()
+        if lo < 0:
+            lo, hi = 0, min(T, t_last)
+        elif hi > t_last:
+            hi, lo = t_last, max(0, t_last - T)
 
-        # grab times & channels
-        times = self.meta["center"].to_numpy()[mask]
-        chans = self.meta["channel"].to_numpy()[mask]
-
-        # redraw scatter
-        self.rasterScatter.setData(x=times, y=chans)
-
-        # scroll to latest
-        if times.size:
-            tmax = times.max()
-            self._update_raster_view(tmax)
+        self.rasterPlot.setXRange(lo, hi, padding=0)
 
     def _update_raster_view(self, newest_time: float):
         self.rasterPlot.setXRange(
@@ -427,18 +425,63 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def set_raster_window(self, secs: float):
         """Setter for the visible time window (callable from UI)."""
         self.window_secs = float(secs)
-        # Force update to current view if in live mode
-        if self.meta is not None and self.auto_scroll:
-            self._update_raster_view(self.meta["center"].iloc[-1])
-
-    def catch_up_live(self):
-        """Re‑enable auto‑scroll and jump to newest data (bind to a button)."""
-        self.auto_scroll = True
         if self.meta is not None:
-            self._update_raster_view(self.meta["center"].iloc[-1])
+            self._refresh_raster()
+
+    def _refresh_raster(self):
+        if self.meta is None:
+            return
+
+        # — build color list for *all* events —
+        vals = self.meta["is_real"]
+        brushes = []
+        for v in vals:
+            if pd.isna(v):
+                brushes.append("w")  # pending
+            elif v:
+                brushes.append("g")  # real
+            else:
+                brushes.append("r")  # pseudo
+
+        # — mask out pseudo unless checkbox ticked —
+        mask = vals.isna() | (vals == True)
+        if self.showPseudoEventBox.isChecked():
+            mask |= vals == False
+        mask = mask.to_numpy()
+
+        times = self.meta["center"].to_numpy()[mask]
+        chans = self.meta["channel"].to_numpy()[mask]
+        colors = [brushes[i] for i in np.nonzero(mask)[0]]
+
+        # redraw main dots
+        self.rasterScatter.setData(x=times, y=chans, brush=colors)
+
+        # — now draw the “×” at the selected event —
+        idx = self.eventNumBox.value() - 1
+        if 0 <= idx < len(self.meta):
+            t_sel = float(self.meta["center"].iat[idx])
+            chan_sel = int(self.meta["channel"].iat[idx])
+            v = self.meta["is_real"].iat[idx]
+
+            if pd.isna(v):
+                sel_color = "w"
+            elif v:
+                sel_color = "g"
+            else:
+                sel_color = "r"
+
+            # always draw exactly one “×”
+            self.selectedScatter.setData(x=[t_sel], y=[chan_sel], pen=sel_color)
+
+        # — finally, decide whether to live‑scroll or center on selected —
+        if self.show_latest:
+            self._update_raster_view(times.max())
+        else:
+            self._center_raster_on_event(float(self.meta["center"].iat[idx]))
 
     # ==================================================================
     # Frequency Plot Helper ----------------------------------------------
+
     def _update_frequency_histogram(self, filtered_batch, chan_vec):
         # Compute dominant freq for each event
         freqs = np.fft.rfftfreq(filtered_batch.shape[1], d=1 / self.fs)
@@ -476,6 +519,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             return
         self.show_latest = self.eventNumBox.value() == len(self.meta)
         self.plot_event(self.eventNumBox.value() - 1)
+        self._refresh_raster()
 
     def last_event(self):
         if self.meta is not None:

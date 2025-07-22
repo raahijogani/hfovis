@@ -42,8 +42,13 @@ This panel shows a heatmap of the counts of real and pseudo-HFO events per chann
 
 #### Raster Plot
 
-A live, sliding raster plot of detected HFO events per channel. You can tick the "show
-pseudo events" checkbox to show pseudo-HFO events as well.
+A raster plot of the detected events over channels and time. Green points indicate
+events that have been classified as real HFOs, while red points indicate pseudo-HFOs.
+White points indicate events that have not been classified yet. If "show pseudo events"
+isn't checked, only real HFOs will be shown in green and unverified points in white. The
+event shown in the Events panel is marked with an 'X' and centered in the plot.
+
+You can change the length of the time window shown in the raster plot with the spin box.
 
 #### Frequency Content Plot
 
