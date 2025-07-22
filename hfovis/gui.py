@@ -423,9 +423,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def set_raster_window(self, secs: float):
         """Setter for the visible time window (callable from UI)."""
         self.window_secs = float(secs)
-        # Force update to current view if in live mode
         if self.meta is not None:
-            self._update_raster_view(self.meta["center"].iloc[-1])
+            self._refresh_raster()
 
     def _refresh_raster(self):
         if self.meta is None:
