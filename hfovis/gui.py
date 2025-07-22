@@ -380,22 +380,24 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     @QtCore.pyqtSlot(np.ndarray, np.ndarray)
     def _on_classification_ready(self, indices: np.ndarray, classes: np.ndarray):
+        # update your meta DataFrame
         self.meta.loc[indices, "is_real"] = classes == 1
+
+        # update the little text label
         cur = self.eventNumBox.value() - 1
         val = self.meta.at[cur, "is_real"]
-
         if pd.isna(val):
-            text = "Classification\npending"
-            color = "black"
+            text, color = "Classification\npending", "black"
         elif val:
-            text = "Real HFO"
-            color = "green"
+            text, color = "Real HFO", "green"
         else:
-            text = "Pseudo HFO"
-            color = "red"
+            text, color = "Pseudo HFO", "red"
 
         self.eventClassificationLabel.setText(text)
         self.eventClassificationLabel.setStyleSheet(f"color: {color}")
+
+        # repaint the raster plot now that some points changed color
+        self._refresh_raster()
 
     # ==================================================================
     # Raster helpers ---------------------------------------------------
