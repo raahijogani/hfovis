@@ -194,6 +194,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.rasterPlot.setLabel("bottom", "Time", units="s")
         self.rasterPlot.setYRange(-0.5, len(self.channel_names) - 0.5, padding=0)
 
+        # add a special scatter for the “selected” event
+        self.selectedScatter = pg.ScatterPlotItem(
+            size=10,
+            symbol="x",
+            pen="w",  # default, will be updated per‐point
+            brush=None,
+        )
+        self.rasterPlot.addItem(self.selectedScatter)
+
         # Fixed y‑ticks with channel labels
         yticks = self._update_raster_ticks(self.channel_names)
         self.rasterPlot.getAxis("left").setTicks([yticks])
@@ -422,10 +431,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if self.meta is None:
             return
 
-        # build a per‑point color list
-        all_vals = self.meta["is_real"]
+        # — build color list for *all* events —
+        vals = self.meta["is_real"]
         brushes = []
-        for v in all_vals:
+        for v in vals:
             if pd.isna(v):
                 brushes.append("w")  # pending
             elif v:
@@ -433,26 +442,41 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             else:
                 brushes.append("r")  # pseudo
 
-        # build mask: always include real+pending; include pseudo only if box checked
-        mask = all_vals.isna() | (all_vals == True)
+        # — mask out pseudo unless checkbox ticked —
+        mask = vals.isna() | (vals == True)
         if self.showPseudoEventBox.isChecked():
-            mask |= all_vals == False
-
+            mask |= vals == False
         mask = mask.to_numpy()
+
         times = self.meta["center"].to_numpy()[mask]
         chans = self.meta["channel"].to_numpy()[mask]
         colors = [brushes[i] for i in np.nonzero(mask)[0]]
 
-        # re‑draw
+        # redraw main dots
         self.rasterScatter.setData(x=times, y=chans, brush=colors)
 
-        # live scroll or recenter on selected event
+        # — now draw the “×” at the selected event —
+        idx = self.eventNumBox.value() - 1
+        if 0 <= idx < len(self.meta):
+            t_sel = float(self.meta["center"].iat[idx])
+            chan_sel = int(self.meta["channel"].iat[idx])
+            v = self.meta["is_real"].iat[idx]
+
+            if pd.isna(v):
+                sel_color = "w"
+            elif v:
+                sel_color = "g"
+            else:
+                sel_color = "r"
+
+            # always draw exactly one “×”
+            self.selectedScatter.setData(x=[t_sel], y=[chan_sel], pen=sel_color)
+
+        # — finally, decide whether to live‑scroll or center on selected —
         if self.show_latest:
             self._update_raster_view(times.max())
         else:
-            idx = self.eventNumBox.value() - 1
-            t_sel = float(self.meta["center"].iat[idx])
-            self._center_raster_on_event(t_sel)
+            self._center_raster_on_event(float(self.meta["center"].iat[idx]))
 
     # ==================================================================
     # Frequency Plot Helper ----------------------------------------------
