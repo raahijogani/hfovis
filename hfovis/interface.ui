@@ -179,16 +179,9 @@
            <item>
             <layout class="QHBoxLayout" name="horizontalLayout_5">
              <item>
-              <widget class="QRadioButton" name="keepUpWithDetectorButton">
+              <widget class="QCheckBox" name="showPseudoEventBox">
                <property name="text">
-                <string>keep up with detector</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QRadioButton" name="keepUpWithDenoiserButton">
-               <property name="text">
-                <string>keep up with denoiser</string>
+                <string>show pseudo events</string>
                </property>
               </widget>
              </item>

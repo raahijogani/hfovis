@@ -35,9 +35,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self._on_event_received, QtCore.Qt.ConnectionType.QueuedConnection
         )
 
-        # Default setting
-        self.keepUpWithDetectorButton.setChecked(True)
-
         # ─── State ----------------------------------------------------
         self.fs = fs
         self.channel_names = channel_names
@@ -71,12 +68,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self._init_frequency_plot()
 
         self._connect_ui()
-
-        self.mode = (
-            "detector" if self.keepUpWithDetectorButton.isChecked() else "denoiser"
-        )
-
-        self._on_mode_changed()
 
     # ==================================================================
     # Initialisation helpers -------------------------------------------
@@ -207,7 +198,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         yticks = self._update_raster_ticks(self.channel_names)
         self.rasterPlot.getAxis("left").setTicks([yticks])
 
-        self.rasterPlot.setMouseEnabled(x=False, y=False)  # disable mouse
+        self.rasterPlot.setMouseEnabled(x=True, y=False)  # disable mouse
 
     def _init_frequency_plot(self):
         self.freq_bins = np.linspace(0, 600, 61)  # 60 bins → 10 Hz resolution
@@ -287,8 +278,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.lastEventButton.clicked.connect(self.last_event)
         self.firstEventButton.clicked.connect(self.first_event)
 
-        self.keepUpWithDetectorButton.toggled.connect(self._on_mode_changed)
-        self.keepUpWithDenoiserButton.toggled.connect(self._on_mode_changed)
+        self.showPseudoEventBox.toggled.connect(self._refresh_raster)
 
         self.windowLengthSpinBox.setValue(self.window_secs)
         self.windowLengthSpinBox.valueChanged.connect(self.set_raster_window)
@@ -401,55 +391,20 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     # ==================================================================
     # Raster helpers ---------------------------------------------------
 
-    def _on_mode_changed(self):
-        """
-        Switch between:
-         - detector: white dots, always live
-         - denoiser: red/green dots after classification
-        """
-        if self.keepUpWithDetectorButton.isChecked():
-            self.mode = "detector"
-        else:
-            self.mode = "denoiser"
+    def _center_raster_on_event(self, t_center: float):
+        T = self.window_secs
+        t_last = float(self.meta["center"].iloc[-1])
+        half = T / 2
 
-        # always jump to the latest in both modes
-        self.show_latest = True
+        lo = t_center - half
+        hi = t_center + half
 
-        # re‑draw everything
-        self._refresh_raster()
+        if lo < 0:
+            lo, hi = 0, min(T, t_last)
+        elif hi > t_last:
+            hi, lo = t_last, max(0, t_last - T)
 
-    def _refresh_raster(self):
-        """Re‑plot all raster points, coloring by mode."""
-        if self.meta is None:
-            return
-
-        # grab times & channels for _all_ events
-        times = self.meta["center"].to_numpy()
-        chans = self.meta["channel"].to_numpy()
-
-        if self.mode == "detector":
-            # everything white before classification
-            brushes = ["w"] * len(times)
-
-        else:  # denoiser mode → color by is_real
-            # pull the classification series
-            is_real = self.meta["is_real"]
-            brushes = []
-            for val in is_real:
-                if pd.isna(val):
-                    brushes.append("k")       # still pending
-                elif val:
-                    brushes.append("g")       # real → green
-                else:
-                    brushes.append("r")       # pseudo → red
-
-        # redraw scatter with per-point colors
-        self.rasterScatter.setData(x=times, y=chans, brush=brushes)
-
-        # live scroll to the newest event
-        if times.size:
-            tmax = times.max()
-            self._update_raster_view(tmax)
+        self.rasterPlot.setXRange(lo, hi, padding=0)
 
     def _update_raster_view(self, newest_time: float):
         self.rasterPlot.setXRange(
@@ -463,8 +418,45 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if self.meta is not None:
             self._update_raster_view(self.meta["center"].iloc[-1])
 
+    def _refresh_raster(self):
+        if self.meta is None:
+            return
+
+        # build a per‑point color list
+        all_vals = self.meta["is_real"]
+        brushes = []
+        for v in all_vals:
+            if pd.isna(v):
+                brushes.append("w")  # pending
+            elif v:
+                brushes.append("g")  # real
+            else:
+                brushes.append("r")  # pseudo
+
+        # build mask: always include real+pending; include pseudo only if box checked
+        mask = all_vals.isna() | (all_vals == True)
+        if self.showPseudoEventBox.isChecked():
+            mask |= all_vals == False
+
+        mask = mask.to_numpy()
+        times = self.meta["center"].to_numpy()[mask]
+        chans = self.meta["channel"].to_numpy()[mask]
+        colors = [brushes[i] for i in np.nonzero(mask)[0]]
+
+        # re‑draw
+        self.rasterScatter.setData(x=times, y=chans, brush=colors)
+
+        # live scroll or recenter on selected event
+        if self.show_latest:
+            self._update_raster_view(times.max())
+        else:
+            idx = self.eventNumBox.value() - 1
+            t_sel = float(self.meta["center"].iat[idx])
+            self._center_raster_on_event(t_sel)
+
     # ==================================================================
     # Frequency Plot Helper ----------------------------------------------
+
     def _update_frequency_histogram(self, filtered_batch, chan_vec):
         # Compute dominant freq for each event
         freqs = np.fft.rfftfreq(filtered_batch.shape[1], d=1 / self.fs)
@@ -502,6 +494,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             return
         self.show_latest = self.eventNumBox.value() == len(self.meta)
         self.plot_event(self.eventNumBox.value() - 1)
+        self._refresh_raster()
 
     def last_event(self):
         if self.meta is not None:
