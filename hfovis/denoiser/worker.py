@@ -23,11 +23,10 @@ class DenoisingThread(QThread):
         self._queue = queue.Queue()
         self._running = True
 
-    def enqueue(self, raw_batch, filtered_batch, batch_meta, batch_indices):
+    def enqueue(self, raw_batch, batch_meta, batch_indices):
         # push onto the queue (never overwritten)
         self._queue.put((
             raw_batch.copy(),
-            filtered_batch.copy(),
             batch_meta.copy().reset_index(drop=True),
             batch_indices.copy(),
         ))
@@ -35,7 +34,7 @@ class DenoisingThread(QThread):
     def run(self):
         while self._running:
             try:
-                raw, filt, meta, indices = self._queue.get(timeout=0.1)
+                raw, meta, indices = self._queue.get(timeout=0.1)
             except queue.Empty:
                 continue
 
