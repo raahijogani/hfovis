@@ -45,3 +45,11 @@ class EventModel:
     def append_denoise_counts(self, hist_batch: np.ndarray) -> np.ndarray:
         self._denoise_hist += hist_batch
         return self._denoise_hist
+
+    def save(self, raw_filename: str, filt_filename: str, meta_filename: str):
+        if self.meta is not None:
+            self.meta.to_pickle(meta_filename)
+            np.save(raw_filename, self.raw_events)
+            np.save(filt_filename, self.filtered_events)
+        else:
+            raise ValueError("No metadata to save.")

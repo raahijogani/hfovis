@@ -28,6 +28,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.setupUi(self)
 
         self.fs = fs
+        self.streamer = streamer
+        self.detector_args = kwargs
+
         self.channel_names = channel_names
         n_channels = len(channel_names)
         self.channel_groups = self._create_channel_groups(channel_names)
@@ -65,8 +68,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         )
 
         self._connect_ui()
-        self._start_detector_thread(streamer, **kwargs)
-        self._start_denoise_thread()
 
     # Slots
     @QtCore.pyqtSlot(dict)
@@ -138,6 +139,22 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.showPseudoEventBox.toggled.connect(self.rasterPlot.update)
         self.windowLengthSpinBox.valueChanged.connect(self.rasterPlot.set_raster_window)
+
+        self.startButton.clicked.connect(self._start)
+        self.saveButton.clicked.connect(self.save)
+
+    def save(self):
+        if self.model.meta is not None:
+            self.model.save(
+                raw_filename="raw_events.npy",
+                filt_filename="filtered_events.npy",
+                meta_filename="meta.pkl",
+            )
+
+    def _start(self):
+        self._start_detector_thread(self.streamer, **self.detector_args)
+        self._start_denoise_thread()
+        self.startButton.setEnabled(False)
 
     def _start_detector_thread(self, streamer: Streamer, **kwargs):
         self.detector_thread = RealTimeDetector(
@@ -213,9 +230,5 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self._update_classification_label()
 
     def closeEvent(self, event):
-        """Persist buffers on shutdown."""
-        if self.model.meta is not None and self.model.raw_events is not None:
-            np.save("raw_events.npy", self.model.raw_events)
-            np.save("filtered_events.npy", self.model.filtered_events)
-            self.model.meta.to_pickle("events_meta.pkl")
+        self.save()
         event.accept()

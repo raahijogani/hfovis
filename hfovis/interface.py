@@ -12,7 +12,7 @@ from PyQt6 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(995, 908)
+        MainWindow.resize(975, 954)
         self.centralwidget = QtWidgets.QWidget(parent=MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.gridLayout = QtWidgets.QGridLayout(self.centralwidget)
@@ -162,6 +162,20 @@ class Ui_MainWindow(object):
         self.config.setObjectName("config")
         self.tabWidget.addTab(self.config, "")
         self.gridLayout.addWidget(self.tabWidget, 0, 0, 1, 1)
+        self.frame = QtWidgets.QFrame(parent=self.centralwidget)
+        self.frame.setFrameShape(QtWidgets.QFrame.Shape.StyledPanel)
+        self.frame.setFrameShadow(QtWidgets.QFrame.Shadow.Raised)
+        self.frame.setObjectName("frame")
+        self.horizontalLayout_6 = QtWidgets.QHBoxLayout(self.frame)
+        self.horizontalLayout_6.setObjectName("horizontalLayout_6")
+        self.startButton = QtWidgets.QPushButton(parent=self.frame)
+        self.startButton.setObjectName("startButton")
+        self.horizontalLayout_6.addWidget(self.startButton)
+        self.saveButton = QtWidgets.QPushButton(parent=self.frame)
+        self.saveButton.setEnabled(True)
+        self.saveButton.setObjectName("saveButton")
+        self.horizontalLayout_6.addWidget(self.saveButton)
+        self.gridLayout.addWidget(self.frame, 1, 0, 1, 1)
         MainWindow.setCentralWidget(self.centralwidget)
 
         self.retranslateUi(MainWindow)
@@ -186,4 +200,6 @@ class Ui_MainWindow(object):
         self.frequencyBox.setTitle(_translate("MainWindow", "Frequency Content"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.main), _translate("MainWindow", "Main"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.config), _translate("MainWindow", "Config"))
+        self.startButton.setText(_translate("MainWindow", "Start"))
+        self.saveButton.setText(_translate("MainWindow", "Save Events"))
 from pyqtgraph import PlotWidget
