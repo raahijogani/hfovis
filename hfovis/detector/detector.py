@@ -3,14 +3,14 @@ import pandas as pd
 from numpy.lib.stride_tricks import sliding_window_view
 from scipy.signal import butter, filtfilt, firwin, sosfilt, sosfilt_zi, lfilter
 
-from typing import Dict, Any
-
 from streamz import Stream
 
 from PyQt6.QtCore import QThread, pyqtSignal
 
 from hfovis.data.streaming import Streamer
 from hfovis.data.buffering import RingBuffer
+
+from hfovis.detector.config import DetectorConfig
 
 from tqdm import tqdm
 from hfovis.detector.utils import get_adaptive_threshold, find_burst_events
@@ -20,12 +20,6 @@ find_burst_events = find_burst_events
 
 
 class RealTimeDetector(QThread):
-    """
-    Runs detection for HFOs on real-time stream of data. Runs detection on a separate
-    thread so that the main thread can continue to read data. All events will then be
-    sent to a user set handler.
-    """
-
     new_event = pyqtSignal(dict)
 
     def __init__(self, stream: Streamer, parent=None, **kwargs):
@@ -35,97 +29,24 @@ class RealTimeDetector(QThread):
         stream:
             A data stream object that has a `start()` method for starting the stream
             and a `read()` method for reading a chunk from the stream.
+
+        kwargs:
+            Check `DetectorConfig` for available parameters.
         """
         super().__init__(parent)
         self.stream = stream
-        self.config = self._default_config()
-        self.config.update(kwargs)
-        self._validate_config()
+        self.config = DetectorConfig()
+        self.config.update(**kwargs)
         self.raw_stream = Stream()
 
         # Ring buffer is used to temporarily store raw data so that it can later
         # be matched in time if events are detected.
         self.ring_buffer = RingBuffer(
-            int(self.config["ring_buffer_size_s"] * self.config["fs"]),
-            self.config["channels"],
+            int(self.config.ring_buffer_size_s * self.config.fs),
+            self.config.channels,
         )
         self._build_graph_single_band()
         self._running = True
-
-    def _default_config(self) -> Dict[str, Any]:
-        """
-        Returns the default configuration for the detector.
-
-        Explanation of configuration parameters:
-            fs: float
-                Sampling frequency of the data in Hz.
-            channels: int
-                Number of channels in the data.
-            hfo_band: list of float
-                Frequency band for HFO detection (in Hz).
-            ripple_band: list of float
-                Frequency band of ripple oscillations (in Hz).
-            fast_ripple_band: list of float
-                Frequency band of fast ripple oscillations (in Hz).
-            adaptive_threshold_window_size_ms: float
-                Window size over which standard deviations should be calculated for
-                adaptive thresholding.
-            adaptive_threshold_overlap_ms: float
-                Overlap between consecutive standard deviation windows for adaptive
-                thresholding.
-            adaptive_threshold_num_windows: int
-                Number of standard deviations to calculate median over to get adaptive
-                threshold.
-            adaptive_threshold_overlap_ms: int
-                Number of standard deviations to overlap when calculating adaptive
-                threshold.
-            min_threshold: float
-                Minimum threshold for detection. If the adaptive threshold is below this
-                value, threshold will be set to this value.
-            threshold_multiplier: float
-                Multiplier for the adaptive threshold to set the detection threshold.
-            burst_window_size_ms: float
-                Size of the window over which to detect bursts in milliseconds.
-            burst_window_overlap_ms: float
-                Overlap between consecutive burst windows in milliseconds.
-            side_max_crossings: int
-                Maximum number of threshold crossings allowed on the sides (overlap
-                region) of the burst window.
-            center_min_crossings: int
-                Minimum number of threshold crossings required in the center of the
-                burst window to classify window as HFO candidate.
-            visualization_window_size_ms: float
-                Size of the visualization window in milliseconds. This is used to
-                extract the center of the detected event for visualization.
-            low_band: float
-                Low band frequency for high-pass filtering to remove DC offset.
-            ring_buffer_size_s: float
-                Size of the ring buffer in seconds. This is used to store raw data so
-                that it can be matched with detected events.
-        """
-        return {
-            "fs": 2048.0,
-            "channels": 1,
-            "hfo_band": [80, 500],
-            "ripple_band": [80, 270],
-            "fast_ripple_band": [230, 600],
-            "adaptive_threshold_window_size_ms": 500.0,
-            "adaptive_threshold_overlap_ms": 200.0,
-            "adaptive_threshold_num_windows": 100,
-            "adaptive_threshold_num_windows_overlap": 50,
-            "min_threshold": 5.0,
-            "threshold_multiplier": 3.0,
-            "burst_window_size_ms": 320.0,
-            "burst_window_overlap_ms": 64.0,
-            "side_max_crossings": 4,
-            "center_min_crossings": 6,
-            "visualization_window_size_ms": 200.0,
-            "low_band": 1,
-            "ring_buffer_size_s": 10.0,
-        }
-
-    def _validate_config(self):
-        pass
 
     def stop(self):
         """
@@ -166,21 +87,21 @@ class RealTimeDetector(QThread):
 
         # Create filters once
         dc_offset_sos = butter(
-            2, self.config["low_band"], fs=self.config["fs"], btype="high", output="sos"
+            2, self.config.low_band, fs=self.config.fs, btype="high", output="sos"
         )
         hfo_band_b = firwin(
             65,
-            self.config["hfo_band"],
-            fs=self.config["fs"],
+            self.config.hfo_band,
+            fs=self.config.fs,
             pass_zero="bandpass",
             window="hamming",
         )
 
         # Initialize filter states
         dc_zi_init = np.repeat(
-            sosfilt_zi(dc_offset_sos)[:, :, np.newaxis], self.config["channels"], axis=2
+            sosfilt_zi(dc_offset_sos)[:, :, np.newaxis], self.config.channels, axis=2
         )
-        fir_zi_init = np.zeros((64, self.config["channels"]))
+        fir_zi_init = np.zeros((64, self.config.channels))
 
         # Define the processing functions
         def dc_block(pair, state=dc_zi_init):
@@ -206,21 +127,21 @@ class RealTimeDetector(QThread):
         std_devs = (
             filtered.sliding_window(
                 int(
-                    self.config["adaptive_threshold_window_size_ms"]
+                    self.config.adaptive_threshold_window_size_ms
                     / 1000
-                    * self.config["fs"]  # Convert ms to samples
+                    * self.config.fs  # Convert ms to samples
                 ),
                 return_partial=False,  # Prevents sending buffers that aren't full yet
             )
             .slice(
                 step=int(
                     (
-                        self.config["adaptive_threshold_window_size_ms"]
-                        - self.config["adaptive_threshold_overlap_ms"]
+                        self.config.adaptive_threshold_window_size_ms
+                        - self.config.adaptive_threshold_overlap_ms
                     )
                     / 1000
                     # Convert from overlap ms to step samples
-                    * self.config["fs"]
+                    * self.config.fs
                 )
             )
             # Remove the global index since it is not needed for the threshold and
@@ -231,14 +152,14 @@ class RealTimeDetector(QThread):
             std_devs.sliding_window(
                 # In this case, it might take a while to get enough standard deviations,
                 # so we will allow partial windows.
-                self.config["adaptive_threshold_num_windows"],
+                self.config.adaptive_threshold_num_windows,
                 return_partial=True,
             )
             .slice(
-                step=self.config["adaptive_threshold_num_windows"]
-                - self.config["adaptive_threshold_num_windows_overlap"],
+                step=self.config.adaptive_threshold_num_windows
+                - self.config.adaptive_threshold_num_windows_overlap,
             )
-            .map(lambda w: self.config["threshold_multiplier"] * np.median(w, axis=0))
+            .map(lambda w: self.config.threshold_multiplier * np.median(w, axis=0))
         )
 
         # Detection stream
@@ -248,7 +169,7 @@ class RealTimeDetector(QThread):
             thr, data = pair
 
             # Replace thresholds that are too low with the minimum
-            thr[thr < self.config["min_threshold"]] = self.config["min_threshold"]
+            thr[thr < self.config.min_threshold] = self.config.min_threshold
 
             win_idx = data[0][0]
             win = np.stack([x[1] for x in data])
@@ -269,7 +190,7 @@ class RealTimeDetector(QThread):
 
             # Our left and right conditions are that there should not be more than the
             # minimum number of crossings in the left and right thirds of the window.
-            max_crossings = self.config["side_max_crossings"]
+            max_crossings = self.config.side_max_crossings
 
             left_p_burst_condition = left_p_crossings.sum(axis=0) < max_crossings
             left_n_burst_condition = left_n_crossings.sum(axis=0) < max_crossings
@@ -281,18 +202,16 @@ class RealTimeDetector(QThread):
 
             # Now we need to filter out channels where the crossings are not close
             # enough to be in our HFO band.
-            min_sample_distance = int(
-                round(self.config["fs"] / self.config["hfo_band"][0])
-            )
+            min_sample_distance = int(round(self.config.fs / self.config.hfo_band[0]))
             all_p_burst_channels = self._sufficient_high_frequency_crossings(
                 all_p_crossings,
                 min_sample_distance,
-                self.config["center_min_crossings"],
+                self.config.center_min_crossings,
             )
             all_n_burst_channels = self._sufficient_high_frequency_crossings(
                 all_n_crossings,
                 min_sample_distance,
-                self.config["center_min_crossings"],
+                self.config.center_min_crossings,
             )
             all_burst_condition = all_p_burst_channels | all_n_burst_channels
 
@@ -311,7 +230,7 @@ class RealTimeDetector(QThread):
 
             # Now we extract the indices of the center of the event.
             visualization_window_size = int(
-                self.config["visualization_window_size_ms"] / 1000 * self.config["fs"]
+                self.config.visualization_window_size_ms / 1000 * self.config.fs
             )
             peak_idx, center_indices = self._center_extraction_indices(
                 filtered_seg,
@@ -319,7 +238,7 @@ class RealTimeDetector(QThread):
             )
 
             # Now we need to convert the centers of the events to seconds.
-            center = (peak_idx + win_idx) / self.config["fs"]
+            center = (peak_idx + win_idx) / self.config.fs
 
             return {
                 "raw": np.take_along_axis(raw_seg, center_indices, axis=0),
@@ -332,16 +251,13 @@ class RealTimeDetector(QThread):
         # We use the same method as before to get overlapping windows for burst
         # detection.
         burst_win = filtered.sliding_window(
-            int(self.config["burst_window_size_ms"] / 1000 * self.config["fs"]),
+            int(self.config.burst_window_size_ms / 1000 * self.config.fs),
             return_partial=False,
         ).slice(
             step=int(
-                (
-                    self.config["burst_window_size_ms"]
-                    - self.config["burst_window_overlap_ms"]
-                )
+                (self.config.burst_window_size_ms - self.config.burst_window_overlap_ms)
                 / 1000
-                * self.config["fs"]
+                * self.config.fs
             )
         )
         burst_events = (
@@ -421,26 +337,26 @@ class RealTimeDetector(QThread):
 
         # Create filters once
         dc_offset_sos = butter(
-            2, self.config["low_band"], fs=self.config["fs"], btype="high", output="sos"
+            2, self.config.low_band, fs=self.config.fs, btype="high", output="sos"
         )
         r_b = firwin(
             65,
-            self.config["ripple_band"],
-            fs=self.config["fs"],
+            self.config.ripple_band,
+            fs=self.config.fs,
             pass_zero="bandpass",
             window="hamming",
         )
         fr_b = firwin(
             65,
-            self.config["fast_ripple_band"],
-            fs=self.config["fs"],
+            self.config.fast_ripple_band,
+            fs=self.config.fs,
             pass_zero="bandpass",
             window="hamming",
         )
 
         # Initialize filter states
-        dc_zi_init = np.tile(sosfilt_zi(dc_offset_sos), (self.config["channels"], 1)).T
-        fir_zi_init = np.zeros((64, self.config["channels"]))
+        dc_zi_init = np.tile(sosfilt_zi(dc_offset_sos), (self.config.channels, 1)).T
+        fir_zi_init = np.zeros((64, self.config.channels))
 
         # Define the processing functions
         def dc_block(pair, state=dc_zi_init):
