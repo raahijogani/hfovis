@@ -1,7 +1,8 @@
-import time
+import threading
+import queue
 import numpy as np
+from streamz import Stream
 from abc import ABC, abstractmethod
-from multiprocessing import Process, Queue
 
 
 class Streamer(ABC):
@@ -35,53 +36,63 @@ class DataStreamer(Streamer):
         self,
         data: np.ndarray,
         chunk_size: int = 1,
-        fs: float = 0.0,
+        interval_s: float = 0.0,
         max_queue_size: int = 100,
     ):
         """
         data           : NumPy array of shape (num_samples, num_channels)
-        chunk_size     : number of samples per send()
-        fs             : sampling frequency in Hz, used to determine the interval between chunk_size
+        chunk_size     : number of samples per chunk
+        interval_s     : interval between sending chunks in seconds
         max_queue_size : max number of chunks to buffer
         """
         self.data = data
         self.chunk_size = chunk_size
-        self.interval = 1 / fs if fs > 0 else 0.0
-        self.queue = Queue(maxsize=max_queue_size)
-        self._process = Process(target=self._stream)
-        self._running = False
+        # Rate limit interval in seconds
+        self.interval = interval_s
 
-    def _stream(self):
-        """Send chunks into the queue."""
-        try:
-            for start in range(0, len(self.data), self.chunk_size):
-                end = start + self.chunk_size
-                chunk = self.data[start:end]
-                self.queue.put(chunk)  # blocks if queue is full
-                if self.interval > 0:
-                    time.sleep(self.interval)
-        finally:
-            self.queue.put(None)  # signal end of stream
+        # Create a stream that starts its own Tornado IOLoop in a separate thread
+        self.source = Stream(asynchronous=False)
+
+        # Throttle events to at most one per `self.interval` seconds
+        self.throttled = self.source.rate_limit(self.interval)
+
+        # Thread-safe queue for delivering chunks to read()
+        self.queue = queue.Queue(maxsize=max_queue_size)
+
+        # Sink throttled stream into the queue
+        self.throttled.sink(self.queue.put)
+
+        # Internal thread to push raw data into stream
+        self._stop_event = threading.Event()
+        self._producer = threading.Thread(target=self._produce, daemon=True)
+
+    def _produce(self):
+        """Emit all chunks rapidly; rate_limit will space them out."""
+        for start in range(0, len(self.data), self.chunk_size):
+            if self._stop_event.is_set():
+                break
+            chunk = self.data[start : start + self.chunk_size]
+            self.source.emit(chunk)
+
+        # Signal end-of-stream
+        self.source.emit(None)
 
     def start(self):
-        if not self._running:
-            self._process.start()
-            self._running = True
+        """Begin streaming in background."""
+        if not self._producer.is_alive():
+            self._producer.start()
 
     def read(self, timeout=None):
         """
-        Get next chunk. Blocks by default.
-        If timeout is specified, waits at most that many seconds.
-        Returns None when stream ends.
+        Retrieve next chunk.
+        Blocks by default; returns None when stream ends.
         """
-        return self.queue.get(timeout=timeout)
+        return self.queue.get(
+            timeout=timeout
+        )
 
     def stop(self):
-        if self._running:
-            self._process.terminate()
-            self._process.join()
-            self._running = False
-
-    def get_queue(self):
-        """Access the queue for external use (e.g. in other processes)."""
-        return self.queue
+        """Stop producing further data and wait for producer to finish."""
+        self._stop_event.set()
+        if self._producer.is_alive():
+            self._producer.join()
