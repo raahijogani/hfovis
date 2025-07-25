@@ -1,45 +1,43 @@
 import numpy as np
-from numpy.lib.stride_tricks import sliding_window_view
 import pandas as pd
+from numpy.lib.stride_tricks import sliding_window_view
 from scipy.signal import butter, filtfilt, firwin, sosfilt, sosfilt_zi, lfilter
-import threading
+
+from typing import Dict, Any
+
 from streamz import Stream
-from .utils import get_adaptive_threshold, find_burst_events
-from ..data.buffering import RingBuffer
-from typing import Callable, Dict, Any
+
+from PyQt6.QtCore import QThread, pyqtSignal
+
+from hfovis.data.streaming import Streamer
+from hfovis.data.buffering import RingBuffer
+
 from tqdm import tqdm
+from hfovis.detector.utils import get_adaptive_threshold, find_burst_events
 
 get_adaptive_threshold = get_adaptive_threshold
 find_burst_events = find_burst_events
 
 
-class RealTimeDetector:
+class RealTimeDetector(QThread):
     """
     Runs detection for HFOs on real-time stream of data. Runs detection on a separate
     thread so that the main thread can continue to read data. All events will then be
     sent to a user set handler.
     """
 
-    def __init__(self, stream: Any, handle: Callable, **kwargs):
+    new_event = pyqtSignal(dict)
+
+    def __init__(self, stream: Streamer, parent=None, **kwargs):
         """
         Parameters:
         -----------
-        stream
+        stream:
             A data stream object that has a `start()` method for starting the stream
             and a `read()` method for reading a chunk from the stream.
-        handle: function
-            A function that will be called with the detected events. The function should
-            accept a single argument which is a dictionary containing the detected
-            events. The dictionary will have the following keys:
-                - 'raw': The raw data segment of the detected event.
-                - 'filtered': The filtered data segment of the detected event.
-                - 'center': The center time of the detected event in seconds.
-                - 'channels': The indices of the channels where the event was
-                  detected.
-                - 'threshold': The threshold used for detection.
         """
+        super().__init__(parent)
         self.stream = stream
-        self.handle = handle
         self.config = self._default_config()
         self.config.update(kwargs)
         self._validate_config()
@@ -52,7 +50,7 @@ class RealTimeDetector:
             self.config["channels"],
         )
         self._build_graph_single_band()
-        self._running = False
+        self._running = True
 
     def _default_config(self) -> Dict[str, Any]:
         """
@@ -129,29 +127,19 @@ class RealTimeDetector:
     def _validate_config(self):
         pass
 
-    def start(self):
-        """
-        Starts both the stream and the detector. Do not start the stream prior to
-        running this.
-        """
-        self._thread = threading.Thread(target=self._internal_loop, daemon=True)
-        self._running = True
-        self.stream.start()
-        self._thread.start()
-
     def stop(self):
         """
         Stops both the stream and the detector.
         """
-        if self._running:
-            self._running = False
-            self.stream.stop()
-            self._thread.join()
+        self._running = False
+        self.stream.stop()
+        self.wait()
 
-    def _internal_loop(self):
+    def run(self):
         """
         Reads through the data stream and emits chunks tagged with a global index.
         """
+        self.stream.start()
         try:
             idx = 0  # Global index to tag chunks with global time stamp
             while self._running:
@@ -231,7 +219,8 @@ class RealTimeDetector:
                         - self.config["adaptive_threshold_overlap_ms"]
                     )
                     / 1000
-                    * self.config["fs"]  # Convert from overlap ms to step samples
+                    # Convert from overlap ms to step samples
+                    * self.config["fs"]
                 )
             )
             # Remove the global index since it is not needed for the threshold and
@@ -364,8 +353,8 @@ class RealTimeDetector:
             # can filter those out.
             .filter(lambda x: x is not None)
         )
-        # Finally we send the detected events to the user defined handler.
-        burst_events.sink(self.handle)
+        # Finally we send the detected events to the GUI thread
+        burst_events.sink(self.new_event.emit)
 
     def _threshold_crossings(self, sig: np.ndarray, thr: np.ndarray) -> np.ndarray:
         """
@@ -480,7 +469,8 @@ class AmplitudeThresholdDetectorV2:
 
     def default_config(self):
         return {
-            "montage": list(range(1, self.data.shape[1] + 1)),  # Default montage
+            # Default montage
+            "montage": list(range(1, self.data.shape[1] + 1)),
             "hardWare": "Not Defined",
             "signalRange": "uV",  # Options: 'uV', 'mV'
             "fs": 2048,  # Default sampling frequency
@@ -515,7 +505,8 @@ class AmplitudeThresholdDetectorV2:
             "adaptiveThreshold_WindowNo": 1800,  # Number of windows
             "adaptiveThreshold_WindowNoShift": 1000,  # Number of windows
             "symmetricGlobalSwing_type": "Full",  # Options: 'Full', 'No'
-            "symmetricLocalSwing_type": "Half-Symmetric",  # Options: 'Full-Symmetric', 'Half-Symmetric', 'No-Symmetric'
+            # Options: 'Full-Symmetric', 'Half-Symmetric', 'No-Symmetric'
+            "symmetricLocalSwing_type": "Half-Symmetric",
             "removeSide": 4,  # Options: 0, k
             "min_symmetricGlobalSwing": 2,  # Minimum number of global swings
             "min_symmetricLocalSwing": 3,  # Minimum number of local swings
@@ -702,7 +693,8 @@ class AmplitudeThresholdDetectorV2:
             self.config["resampleRate"] / 100
         ):  # 100 Hz resolution for resampling
             print(
-                f"Resampling data from {self.config['fs']:.0f} Hz to {self.config['resampleRate']:.0f} Hz"
+                f"Resampling data from {self.config['fs']:.0f} Hz to {
+                    self.config['resampleRate']:.0f} Hz"
             )
 
             # If downsampling the data, first filter the data
@@ -722,7 +714,8 @@ class AmplitudeThresholdDetectorV2:
                 1 / self.config["resampleRate"],
             )
 
-            data_tmp = np.zeros((len(ts_new), raw.shape[1]))  # Predefine temporary data
+            # Predefine temporary data
+            data_tmp = np.zeros((len(ts_new), raw.shape[1]))
 
             for ch in range(raw.shape[1]):
                 data_tmp[:, ch] = np.interp(ts_new, ts_old, raw[:, ch])
@@ -943,7 +936,8 @@ class AmplitudeThresholdDetectorV2:
             )
 
             if not detected_events.empty:
-                detected_events["channel"] = k  # or channel+1 if you prefer 1-based
+                # or channel+1 if you prefer 1-based
+                detected_events["channel"] = k
                 detected_events_master.append(detected_events)
 
         # Combine results across all channels
@@ -979,14 +973,17 @@ class AmplitudeThresholdDetectorV2:
             )
 
             if not detected_events.empty:
-                detected_events["channel"] = k  # or channel+1 if you prefer 1-based
+                # or channel+1 if you prefer 1-based
+                detected_events["channel"] = k
                 detected_events_master.append(detected_events)
 
         # Combine results across all channels
         if detected_events_master:
             df_master_fripple = pd.concat(detected_events_master, ignore_index=True)
             print(
-                f"{df_master_fripple.shape[0]} event(s) detected in the Fast Ripple band."
+                f"{
+                    df_master_fripple.shape[0]
+                } event(s) detected in the Fast Ripple band."
             )
 
         else:
@@ -1111,7 +1108,8 @@ class AmplitudeThresholdDetectorV2:
         # --- STORE FINAL EVENTS ---
         event = {
             "HFO_timeStamp": sorted_non_timestamps,
-            "Overlapping_HFO_timeStamp": sorted_overlapping_timestamps,  # NEW: Store overlapping timestamps
+            # NEW: Store overlapping timestamps
+            "Overlapping_HFO_timeStamp": sorted_overlapping_timestamps,
             "Ripple signal": {
                 ch: df_master_ripple[df_master_ripple["channel"] == ch][
                     "event_filtered"
@@ -1189,10 +1187,14 @@ class AmplitudeThresholdDetectorV2:
 
         # --- PRINT SUMMARY ---
         print(
-            f"{len(event['HFO_timeStamp'])} non-overlapping Ripple & FR events detected!"
+            f"{
+                len(event['HFO_timeStamp'])
+            } non-overlapping Ripple & FR events detected!"
         )
         print(
-            f"{len(event['Overlapping_HFO_timeStamp'])} overlapping Ripple & FR events detected!"
+            f"{
+                len(event['Overlapping_HFO_timeStamp'])
+            } overlapping Ripple & FR events detected!"
         )
         print(f"{len(subGroup_R)} non-overlapping R events stored separately")
         print(f"{len(subGroup_FR)} non-overlapping FR events stored separately")

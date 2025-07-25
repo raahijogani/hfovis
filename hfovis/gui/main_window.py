@@ -14,13 +14,16 @@ from hfovis.gui.spectrogram import SpectrogramPlot
 from hfovis.gui.raster import RasterPlot
 from hfovis.gui.frequency import FrequencyPlot
 
+from hfovis.data.streaming import Streamer
+
+from hfovis.detector import RealTimeDetector
 from hfovis.denoiser import DenoisingThread
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
-    new_event = QtCore.pyqtSignal(dict)
-
-    def __init__(self, fs: float, channel_names: list[str]):
+    def __init__(
+        self, fs: float, channel_names: list[str], streamer: Streamer, **kwargs
+    ):
         super().__init__()
         self.setupUi(self)
 
@@ -62,19 +65,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         )
 
         self._connect_ui()
+        self._start_detector_thread(streamer, **kwargs)
         self._start_denoise_thread()
-        self.new_event.connect(
-            self._on_event_received, QtCore.Qt.ConnectionType.QueuedConnection
-        )
-
-    def handle(self, event: dict):
-        self.new_event.emit(event)
 
     # Slots
     @QtCore.pyqtSlot(dict)
     def _on_event_received(self, event: dict):
         old_len = len(self.model.meta) if self.model.meta is not None else 0
-        was_at_end = (self.eventNumBox.value() == old_len)
+        was_at_end = self.eventNumBox.value() == old_len
 
         raw_batch, filt_batch, batch_meta, batch_indices, chan_vec = (
             self.model.append_batch(event)
@@ -140,6 +138,19 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.showPseudoEventBox.toggled.connect(self.rasterPlot.update)
         self.windowLengthSpinBox.valueChanged.connect(self.rasterPlot.set_raster_window)
+
+    def _start_detector_thread(self, streamer: Streamer, **kwargs):
+        self.detector_thread = RealTimeDetector(
+            streamer,
+            fs=self.fs,
+            channels=len(self.channel_names),
+            **kwargs,
+        )
+
+        self.detector_thread.new_event.connect(
+            self._on_event_received, QtCore.Qt.ConnectionType.QueuedConnection
+        )
+        self.detector_thread.start()
 
     def _start_denoise_thread(self):
         self.denoise_thread = DenoisingThread(
