@@ -2,6 +2,69 @@ from PyQt6 import QtWidgets
 from dataclasses import fields, _MISSING_TYPE
 
 
+class FilePickerWidget(QtWidgets.QWidget):
+    def __init__(
+        self,
+        parent=None,
+        mode: str = "find file",  # "find file" or "create file"
+        file_filter: str = "All Files (*)",
+        extension: str = "",
+    ):
+        super().__init__(parent)
+
+        self.mode = mode
+        self.file_filter = file_filter
+        self.extension = extension
+
+        self.line_edit = QtWidgets.QLineEdit()
+        self.browse_button = QtWidgets.QPushButton("Browse")
+
+        layout = QtWidgets.QHBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(self.line_edit)
+        layout.addWidget(self.browse_button)
+
+        self.browse_button.clicked.connect(self.open_dialog)
+
+    def _append_extension(self, path: str):
+        if path and self.extension and not path.endswith(self.extension):
+            return f"{path}{self.extension}"
+        return path
+
+    def open_dialog(self):
+        if self.mode == "find file":
+            path, _ = QtWidgets.QFileDialog.getOpenFileName(
+                self, "Select File", "", self.file_filter
+            )
+        elif self.mode == "create file":
+            path, _ = QtWidgets.QFileDialog.getSaveFileName(
+                self, "Create File", "", self.file_filter
+            )
+            path = self._append_extension(path)
+        else:
+            path = ""
+
+        if path:
+            self.line_edit.setText(path)
+
+    def text(self):
+        return self.line_edit.text()
+
+    def setText(self, value: str):
+        self.line_edit.setText(value)
+
+    def setToolTip(self, text: str):
+        self.line_edit.setToolTip(text)
+        self.browse_button.setToolTip(text)
+
+    def setEnabled(self, enabled: bool):
+        self.line_edit.setEnabled(enabled)
+        self.browse_button.setEnabled(enabled)
+
+    def setStyleSheet(self, style: str):
+        self.line_edit.setStyleSheet(style)
+
+
 class ConfigMenu:
     def __init__(self, parent: QtWidgets.QWidget, configs: list):
         self.configs = configs
@@ -24,12 +87,25 @@ class ConfigMenu:
         for field in fields(config):
             name = field.metadata.get("label", field.name)
             label = QtWidgets.QLabel(name)
-            widget = QtWidgets.QLineEdit()
 
+            file_dialog_mode = field.metadata.get("file_dialog", None)
+            file_filter = field.metadata.get("file_filter", "All Files (*)")
+
+            if file_dialog_mode in ("find file", "create file"):
+                line_edit = FilePickerWidget(
+                    parent=self.parent,
+                    mode=file_dialog_mode,
+                    file_filter=file_filter,
+                    extension=field.metadata.get("file_extension", ""),
+                )
+            else:
+                line_edit = QtWidgets.QLineEdit()
+
+            # Store the line_edit for validation & apply_changes
             assert field.name not in self.item_line_edits, f"Duplicate field name '{
                 field.name
-            }' found in configuration '{config.name}'."
-            self.item_line_edits[field.name] = widget
+            }'"
+            self.item_line_edits[field.name] = line_edit
 
             # Set default value
             if type(field.default_factory) is not _MISSING_TYPE:
@@ -39,16 +115,15 @@ class ConfigMenu:
                 default_value = str(field.default)
             else:
                 default_value = ""
-            widget.setText(default_value)
+            line_edit.setText(default_value)
 
             # Set tooltip
             tooltip = field.metadata.get("description", "")
             if tooltip:
-                widget.setToolTip(tooltip)
+                line_edit.setToolTip(tooltip)
                 label.setToolTip(tooltip)
 
-            # Add to form
-            form_layout.addRow(label, widget)
+            form_layout.addRow(label, line_edit)
 
     def display_errors(self, messages):
         for config in self.configs:
@@ -91,8 +166,8 @@ class ConfigMenu:
             validation_messages.update(config.get_validation_messages())
 
         # Formatting messages take precedence
-        formatting_messages.update(validation_messages)
-        self.display_errors(formatting_messages)
+        validation_messages.update(formatting_messages)
+        self.display_errors(validation_messages)
 
     def reset_defaults(self):
         for config in self.configs:

@@ -29,6 +29,9 @@ class GeneralConfig:
             "description": "Where to save the metadata file. Must be .pkl absolute path",
             "valid": lambda x: _is_valid_file(x, ".pkl"),
             "error_message": "Metadata filename must be a valid .pkl file path",
+            "file_dialog": "create file",
+            "file_filter": "Pickle files (*.pkl)",
+            "file_extension": ".pkl"
         },
     )
     raw_data_filename: str = field(
@@ -38,6 +41,9 @@ class GeneralConfig:
             "description": "Where to save the raw data file. Must be .npy absolute path",
             "valid": lambda x: _is_valid_file(x, ".npy"),
             "error_message": "Raw data filename must be a valid .npy file path",
+            "file_dialog": "create file",
+            "file_filter": "Numpy files (*.npy)",
+            "file_extension": ".npy"
         },
     )
     filtered_data_filename: str = field(
@@ -47,6 +53,9 @@ class GeneralConfig:
             "description": "Where to save the filtered data file. Must be .npy absolute path",
             "valid": lambda x: _is_valid_file(x, ".npy"),
             "error_message": "Filtered data filename must be a valid .npy file path",
+            "file_dialog": "create file",
+            "file_filter": "Numpy files (*.npy)",
+            "file_extension": ".npy"
         },
     )
     montage_location: str = field(
@@ -56,6 +65,8 @@ class GeneralConfig:
             "description": "Absolute path to channel montage. Each channel should be on a new line.",
             "valid": lambda x: os.path.isfile(x) if x else True,
             "error_message": "Montage location not found",
+            "file_dialog": "find file",
+            "editable_after_start": False,
         },
     )
 
