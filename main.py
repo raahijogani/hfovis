@@ -3,7 +3,6 @@ import pyqtgraph as pg
 from PyQt6.QtWidgets import QApplication
 from hfovis.data import ieeg_loader, streaming
 from hfovis.gui import MainWindow
-from hfovis.detector import RealTimeDetector
 
 if __name__ == "__main__":
     pg.setConfigOptions(imageAxisOrder="row-major", antialias=True, useOpenGL=True)
@@ -26,11 +25,7 @@ if __name__ == "__main__":
 
     app = QApplication(sys.argv)
     app.setStyle("Fusion")
-    main = MainWindow(fs, channel_names)
-
-    detector = RealTimeDetector(streamer, main.handle, fs=fs, channels=data.shape[1])
-    app.aboutToQuit.connect(detector.stop)
-    detector.start()
+    main = MainWindow(fs, streamer, channel_names)
 
     main.show()
     sys.exit(app.exec())

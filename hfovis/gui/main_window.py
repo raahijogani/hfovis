@@ -13,22 +13,63 @@ from hfovis.gui.denoising_heatmap import DenoisingHeatmapPlot
 from hfovis.gui.spectrogram import SpectrogramPlot
 from hfovis.gui.raster import RasterPlot
 from hfovis.gui.frequency import FrequencyPlot
+from hfovis.gui.config_menu import ConfigMenu
+from hfovis.gui.config import GeneralConfig
 
+from hfovis.data.streaming import Streamer
+
+from hfovis.detector import RealTimeDetector
 from hfovis.denoiser import DenoisingThread
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
-    new_event = QtCore.pyqtSignal(dict)
-
-    def __init__(self, fs: float, channel_names: list[str]):
+    def __init__(
+        self,
+        fs: float,
+        streamer: Streamer,
+        channel_names: list[str] | None = None,
+        n_channels: int | None = None,
+        **kwargs,
+    ):
         super().__init__()
         self.setupUi(self)
 
         self.fs = fs
-        self.channel_names = channel_names
-        n_channels = len(channel_names)
-        self.channel_groups = self._create_channel_groups(channel_names)
+        self.streamer = streamer
+
+        self.config = GeneralConfig()
+
+        if self.config.montage_location:
+            with open(self.config.montage_location, "r") as f:
+                self.channel_names = [line.strip()
+                                      for line in f if line.strip()]
+            self.channel_groups = self._create_channel_groups(channel_names)
+            n_channels = len(self.channel_names)
+        elif channel_names:
+            self.channel_names = channel_names
+            self.channel_groups = self._create_channel_groups(channel_names)
+            n_channels = len(self.channel_names)
+        elif n_channels:
+            self.channel_names = [f"{i + 1}" for i in range(n_channels)]
+            self.channel_groups = [(i, f"{i + 1}") for i in range(n_channels)]
+        else:
+            raise ValueError(
+                "No channel names provided and no montage file specified in config."
+            )
+
         self.show_latest = True
+
+        self.detector_thread = RealTimeDetector(
+            streamer,
+            fs=self.fs,
+            channels=len(self.channel_names),
+            **kwargs,
+        )
+
+        self.config_menu = ConfigMenu(
+            self.configScrollAreaWidgetContents,
+            [self.config, self.detector_thread.config],
+        )
 
         self.model = EventModel(n_channels)
 
@@ -62,19 +103,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         )
 
         self._connect_ui()
-        self._start_denoise_thread()
-        self.new_event.connect(
-            self._on_event_received, QtCore.Qt.ConnectionType.QueuedConnection
-        )
-
-    def handle(self, event: dict):
-        self.new_event.emit(event)
 
     # Slots
     @QtCore.pyqtSlot(dict)
     def _on_event_received(self, event: dict):
         old_len = len(self.model.meta) if self.model.meta is not None else 0
-        was_at_end = (self.eventNumBox.value() == old_len)
+        was_at_end = self.eventNumBox.value() == old_len
 
         raw_batch, filt_batch, batch_meta, batch_indices, chan_vec = (
             self.model.append_batch(event)
@@ -139,7 +173,34 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.firstEventButton.clicked.connect(self.first_event)
 
         self.showPseudoEventBox.toggled.connect(self.rasterPlot.update)
-        self.windowLengthSpinBox.valueChanged.connect(self.rasterPlot.set_raster_window)
+        self.windowLengthSpinBox.valueChanged.connect(
+            self.rasterPlot.set_raster_window)
+
+        self.startButton.clicked.connect(self._start)
+        self.saveButton.clicked.connect(self.save)
+
+        self.applyConfigButton.clicked.connect(self.config_menu.apply_changes)
+        self.resetDefaultsButton.clicked.connect(
+            self.config_menu.reset_defaults)
+
+    def save(self):
+        self.model.save(
+            raw_filename=self.config.raw_data_filename,
+            filt_filename=self.config.filtered_data_filename,
+            meta_filename=self.config.metadata_filename,
+        )
+
+    def _start(self):
+        self._start_detector_thread(self.streamer)
+        self._start_denoise_thread()
+        self.startButton.setEnabled(False)
+        self.config_menu.disable_editing()
+
+    def _start_detector_thread(self, streamer: Streamer):
+        self.detector_thread.new_event.connect(
+            self._on_event_received, QtCore.Qt.ConnectionType.QueuedConnection
+        )
+        self.detector_thread.start()
 
     def _start_denoise_thread(self):
         self.denoise_thread = DenoisingThread(
@@ -193,7 +254,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         raw = self.model.raw_events[idx]
         filt = self.model.filtered_events[idx]
         row = self.model.meta.iloc[idx]
-        chan, cent, thresh = int(row.channel), float(row.center), float(row.threshold)
+        chan, cent, thresh = int(row.channel), float(
+            row.center), float(row.threshold)
 
         self.timeSeriesPlot.update(raw, filt, cent, thresh)
         self.spectrogramPlot.update(raw)
@@ -202,9 +264,5 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self._update_classification_label()
 
     def closeEvent(self, event):
-        """Persist buffers on shutdown."""
-        if self.model.meta is not None and self.model.raw_events is not None:
-            np.save("raw_events.npy", self.model.raw_events)
-            np.save("filtered_events.npy", self.model.filtered_events)
-            self.model.meta.to_pickle("events_meta.pkl")
+        self.save()
         event.accept()
