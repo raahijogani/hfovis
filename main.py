@@ -25,7 +25,7 @@ if __name__ == "__main__":
 
     app = QApplication(sys.argv)
     app.setStyle("Fusion")
-    main = MainWindow(fs, channel_names, streamer)
+    main = MainWindow(fs, streamer, channel_names)
 
     main.show()
     sys.exit(app.exec())

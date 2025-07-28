@@ -3,6 +3,8 @@ from dataclasses import dataclass, field, fields
 
 @dataclass
 class DetectorConfig:
+    name = "Detector Configuration"
+
     fs: float = field(
         default=2048.0,
         metadata={
@@ -10,15 +12,17 @@ class DetectorConfig:
             "description": "The sampling frequency of the stream in Hz.",
             "valid": lambda x: x > 0,
             "error_message": "Sampling frequency must be a positive number.",
+            "editable_after_start": False,
         },
     )
     channels: int = field(
         default=1,
         metadata={
             "label": "Number of Channels",
-            "description": "The number of channels in the stream.",
+            "description": "The number of channels in the stream. Ignored if montage is set",
             "valid": lambda x: x > 0,
             "error_message": "Number of channels must be a positive integer.",
+            "editable_after_start": False,
         },
     )
     hfo_band: list[int] = field(
@@ -28,6 +32,7 @@ class DetectorConfig:
             "description": "Frequency band for HFO detection (in Hz).",
             "valid": lambda x: len(x) == 2 and x[0] < x[1],
             "error_message": "HFO band must be a list of two integers where the first is less than the second.",
+            "editable_after_start": False,
         },
     )
     ripple_band: list[int] = field(
@@ -37,6 +42,7 @@ class DetectorConfig:
             "description": "Frequency band of ripple oscillations (in Hz).",
             "valid": lambda x: len(x) == 2 and x[0] < x[1],
             "error_message": "Ripple band must be a list of two integers where the first is less than the second.",
+            "editable_after_start": False,
         },
     )
     fast_ripple_band: list[int] = field(
@@ -46,6 +52,7 @@ class DetectorConfig:
             "description": "Frequency band of fast ripple oscillations (in Hz).",
             "valid": lambda x: len(x) == 2 and x[0] < x[1],
             "error_message": "Fast ripple band must be a list of two integers where the first is less than the second.",
+            "editable_after_start": False,
         },
     )
     adaptive_threshold_window_size_ms: float = field(
@@ -55,6 +62,7 @@ class DetectorConfig:
             "description": "Window size over which standard deviations should be calculated for adaptive thresholding.",
             "valid": lambda x: x > 0,
             "error_message": "Adaptive threshold window size must be a positive number.",
+            "editable_after_start": False,
         },
     )
     adaptive_threshold_overlap_ms: float = field(
@@ -64,6 +72,7 @@ class DetectorConfig:
             "description": "Overlap between consecutive standard deviation windows for adaptive thresholding.",
             "valid": lambda x: x >= 0,
             "error_message": "Adaptive threshold overlap must be a positive number.",
+            "editable_after_start": False,
         },
     )
     adaptive_threshold_num_windows: int = field(
@@ -73,6 +82,7 @@ class DetectorConfig:
             "description": "Number of standard deviations to calculate median over to get adaptive threshold.",
             "valid": lambda x: x > 0,
             "error_message": "Number of adaptive threshold windows must be a positive integer.",
+            "editable_after_start": False,
         },
     )
     adaptive_threshold_num_windows_overlap: int = field(
@@ -82,6 +92,7 @@ class DetectorConfig:
             "description": "Number of adaptive threshold windows that overlap with each other.",
             "valid": lambda x: x >= 0,
             "error_message": "Number of adaptive threshold windows overlap must be a non-negative integer.",
+            "editable_after_start": False,
         },
     )
     min_threshold: float = field(
@@ -91,6 +102,7 @@ class DetectorConfig:
             "description": "Minimum threshold for HFO detection.",
             "valid": lambda x: x > 0,
             "error_message": "Minimum threshold must be a positive number.",
+            "editable_after_start": False,
         },
     )
     threshold_multiplier: float = field(
@@ -100,6 +112,7 @@ class DetectorConfig:
             "description": "Multiplier for the adaptive threshold to determine the detection threshold.",
             "valid": lambda x: x > 0,
             "error_message": "Threshold multiplier must be a positive number.",
+            "editable_after_start": False,
         },
     )
     burst_window_size_ms: float = field(
@@ -109,6 +122,7 @@ class DetectorConfig:
             "description": "Window size for burst detection in milliseconds.",
             "valid": lambda x: x > 0,
             "error_message": "Burst window size must be a positive number.",
+            "editable_after_start": False,
         },
     )
     burst_window_overlap_ms: float = field(
@@ -118,6 +132,7 @@ class DetectorConfig:
             "description": "Overlap between consecutive burst windows in milliseconds.",
             "valid": lambda x: x >= 0,
             "error_message": "Burst window overlap must be a positive number.",
+            "editable_after_start": False,
         },
     )
     side_max_crossings: int = field(
@@ -127,6 +142,7 @@ class DetectorConfig:
             "description": "Maximum number of threshold crossings on either side of the burst window allowed to consider a burst as a candidate HFO.",
             "valid": lambda x: x >= 0,
             "error_message": "Max side crossings must be a non-negative integer.",
+            "editable_after_start": False,
         },
     )
     center_min_crossings: int = field(
@@ -136,6 +152,7 @@ class DetectorConfig:
             "description": "Minimum number of threshold crossings in the center of the burst window to consider it a candidate HFO.",
             "valid": lambda x: x >= 0,
             "error_message": "Min center crossings must be a non-negative integer.",
+            "editable_after_start": False,
         },
     )
     visualization_window_size_ms: float = field(
@@ -145,6 +162,7 @@ class DetectorConfig:
             "description": "Window size for visualizing detected HFOs in milliseconds.",
             "valid": lambda x: x > 0,
             "error_message": "Visualization window size must be a positive number.",
+            "editable_after_start": False,
         },
     )
     low_band: float = field(
@@ -154,6 +172,7 @@ class DetectorConfig:
             "description": "Low band frequency for high-pass filtering to remove DC offset.",
             "valid": lambda x: x >= 0,
             "error_message": "Low band frequency must be a non-negative number.",
+            "editable_after_start": False,
         },
     )
     ring_buffer_size_s: float = field(
@@ -163,6 +182,7 @@ class DetectorConfig:
             "description": "Size of ring buffer used to store raw data for visualization.",
             "valid": lambda x: x > 0,
             "error_message": "Ring buffer size must be a positive number.",
+            "editable_after_start": False,
         },
     )
 

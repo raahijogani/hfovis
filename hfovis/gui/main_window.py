@@ -13,6 +13,8 @@ from hfovis.gui.denoising_heatmap import DenoisingHeatmapPlot
 from hfovis.gui.spectrogram import SpectrogramPlot
 from hfovis.gui.raster import RasterPlot
 from hfovis.gui.frequency import FrequencyPlot
+from hfovis.gui.config_menu import ConfigMenu
+from hfovis.gui.config import GeneralConfig
 
 from hfovis.data.streaming import Streamer
 
@@ -22,19 +24,52 @@ from hfovis.denoiser import DenoisingThread
 
 class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(
-        self, fs: float, channel_names: list[str], streamer: Streamer, **kwargs
+        self,
+        fs: float,
+        streamer: Streamer,
+        channel_names: list[str] | None = None,
+        n_channels: int | None = None,
+        **kwargs,
     ):
         super().__init__()
         self.setupUi(self)
 
         self.fs = fs
         self.streamer = streamer
-        self.detector_args = kwargs
 
-        self.channel_names = channel_names
-        n_channels = len(channel_names)
-        self.channel_groups = self._create_channel_groups(channel_names)
+        self.config = GeneralConfig()
+
+        if self.config.montage_location:
+            with open(self.config.montage_location, "r") as f:
+                self.channel_names = [line.strip()
+                                      for line in f if line.strip()]
+            self.channel_groups = self._create_channel_groups(channel_names)
+            n_channels = len(self.channel_names)
+        elif channel_names:
+            self.channel_names = channel_names
+            self.channel_groups = self._create_channel_groups(channel_names)
+            n_channels = len(self.channel_names)
+        elif n_channels:
+            self.channel_names = [f"{i + 1}" for i in range(n_channels)]
+            self.channel_groups = [(i, f"{i + 1}") for i in range(n_channels)]
+        else:
+            raise ValueError(
+                "No channel names provided and no montage file specified in config."
+            )
+
         self.show_latest = True
+
+        self.detector_thread = RealTimeDetector(
+            streamer,
+            fs=self.fs,
+            channels=len(self.channel_names),
+            **kwargs,
+        )
+
+        self.config_menu = ConfigMenu(
+            self.configScrollAreaWidgetContents,
+            [self.config, self.detector_thread.config],
+        )
 
         self.model = EventModel(n_channels)
 
@@ -138,32 +173,30 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.firstEventButton.clicked.connect(self.first_event)
 
         self.showPseudoEventBox.toggled.connect(self.rasterPlot.update)
-        self.windowLengthSpinBox.valueChanged.connect(self.rasterPlot.set_raster_window)
+        self.windowLengthSpinBox.valueChanged.connect(
+            self.rasterPlot.set_raster_window)
 
         self.startButton.clicked.connect(self._start)
         self.saveButton.clicked.connect(self.save)
 
+        self.applyConfigButton.clicked.connect(self.config_menu.apply_changes)
+        self.resetDefaultsButton.clicked.connect(
+            self.config_menu.reset_defaults)
+
     def save(self):
-        if self.model.meta is not None:
-            self.model.save(
-                raw_filename="raw_events.npy",
-                filt_filename="filtered_events.npy",
-                meta_filename="meta.pkl",
-            )
-
-    def _start(self):
-        self._start_detector_thread(self.streamer, **self.detector_args)
-        self._start_denoise_thread()
-        self.startButton.setEnabled(False)
-
-    def _start_detector_thread(self, streamer: Streamer, **kwargs):
-        self.detector_thread = RealTimeDetector(
-            streamer,
-            fs=self.fs,
-            channels=len(self.channel_names),
-            **kwargs,
+        self.model.save(
+            raw_filename=self.config.raw_data_filename,
+            filt_filename=self.config.filtered_data_filename,
+            meta_filename=self.config.metadata_filename,
         )
 
+    def _start(self):
+        self._start_detector_thread(self.streamer)
+        self._start_denoise_thread()
+        self.startButton.setEnabled(False)
+        self.config_menu.disable_editing()
+
+    def _start_detector_thread(self, streamer: Streamer):
         self.detector_thread.new_event.connect(
             self._on_event_received, QtCore.Qt.ConnectionType.QueuedConnection
         )
@@ -221,7 +254,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         raw = self.model.raw_events[idx]
         filt = self.model.filtered_events[idx]
         row = self.model.meta.iloc[idx]
-        chan, cent, thresh = int(row.channel), float(row.center), float(row.threshold)
+        chan, cent, thresh = int(row.channel), float(
+            row.center), float(row.threshold)
 
         self.timeSeriesPlot.update(raw, filt, cent, thresh)
         self.spectrogramPlot.update(raw)

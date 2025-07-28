@@ -47,9 +47,9 @@ class EventModel:
         return self._denoise_hist
 
     def save(self, raw_filename: str, filt_filename: str, meta_filename: str):
-        if self.meta is not None:
+        if self.meta is not None and meta_filename:
             self.meta.to_pickle(meta_filename)
+        if self.raw_events is not None and raw_filename:
             np.save(raw_filename, self.raw_events)
+        if self.filtered_events is not None and filt_filename:
             np.save(filt_filename, self.filtered_events)
-        else:
-            raise ValueError("No metadata to save.")
