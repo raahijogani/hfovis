@@ -23,7 +23,6 @@ from hfovis.interface import Ui_MainWindow
 class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(
         self,
-        fs: float,
         streamer: Streamer,
         channel_names: list[str] | None = None,
         n_channels: int | None = None,
@@ -32,7 +31,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         super().__init__()
         self.setupUi(self)
 
-        self.fs = fs
         self.streamer = streamer
 
         self.config = GeneralConfig()
@@ -58,10 +56,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.detector_thread = RealTimeDetector(
             streamer,
-            fs=self.fs,
             channels=len(self.channel_names),
             **kwargs,
         )
+
+        self.fs = self.detector_thread.config.fs
 
         self.config_menu = ConfigMenu(
             self.configScrollAreaWidgetContents,
@@ -72,7 +71,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         # Plots
         self.timeSeriesPlot = TimeSeriesPlot(
-            self.rawEventPlot, self.filteredEventPlot, fs
+            self.rawEventPlot, self.filteredEventPlot, self.fs
         )
         self.denoisingHeatmapPlot = DenoisingHeatmapPlot(
             self.denoisingHeatmap,
