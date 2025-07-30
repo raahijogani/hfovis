@@ -31,7 +31,7 @@ class GeneralConfig:
             "error_message": "Metadata filename must be a valid .pkl file path",
             "file_dialog": "create file",
             "file_filter": "Pickle files (*.pkl)",
-            "file_extension": ".pkl"
+            "file_extension": ".pkl",
         },
     )
     raw_data_filename: str = field(
@@ -43,7 +43,7 @@ class GeneralConfig:
             "error_message": "Raw data filename must be a valid .npy file path",
             "file_dialog": "create file",
             "file_filter": "Numpy files (*.npy)",
-            "file_extension": ".npy"
+            "file_extension": ".npy",
         },
     )
     filtered_data_filename: str = field(
@@ -55,7 +55,7 @@ class GeneralConfig:
             "error_message": "Filtered data filename must be a valid .npy file path",
             "file_dialog": "create file",
             "file_filter": "Numpy files (*.npy)",
-            "file_extension": ".npy"
+            "file_extension": ".npy",
         },
     )
     montage_location: str = field(

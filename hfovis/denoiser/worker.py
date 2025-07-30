@@ -9,8 +9,9 @@ from .features import extract_omp_features
 data_dir = os.path.join(os.path.dirname(__file__), "data")
 classifier = joblib.load(os.path.join(data_dir, "random_forest_model.pkl"))
 
+
 class DenoisingThread(QThread):
-    histReady  = pyqtSignal(np.ndarray)
+    histReady = pyqtSignal(np.ndarray)
     classReady = pyqtSignal(np.ndarray, np.ndarray)
 
     def __init__(self, num_channels: int, fs: float, parent=None):
@@ -25,11 +26,13 @@ class DenoisingThread(QThread):
 
     def enqueue(self, raw_batch, batch_meta, batch_indices):
         # push onto the queue (never overwritten)
-        self._queue.put((
-            raw_batch.copy(),
-            batch_meta.copy().reset_index(drop=True),
-            batch_indices.copy(),
-        ))
+        self._queue.put(
+            (
+                raw_batch.copy(),
+                batch_meta.copy().reset_index(drop=True),
+                batch_indices.copy(),
+            )
+        )
 
     def run(self):
         while self._running:

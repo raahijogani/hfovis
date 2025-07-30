@@ -16,7 +16,9 @@ class FrequencyPlot:
         self.num_channels = num_channels
 
         self.freq_bins = np.linspace(0, 600, 61)  # 60 bins → 10 Hz resolution
-        self.freq_hist = np.zeros((len(self.freq_bins) - 1, self.num_channels), dtype=int)
+        self.freq_hist = np.zeros(
+            (len(self.freq_bins) - 1, self.num_channels), dtype=int
+        )
 
         # Create ImageItem
         self.freqImg = pg.ImageItem()

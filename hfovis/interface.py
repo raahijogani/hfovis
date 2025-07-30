@@ -24,7 +24,9 @@ class Ui_MainWindow(object):
         self.main = QtWidgets.QWidget()
         self.main.setObjectName("main")
         self.verticalLayout = QtWidgets.QVBoxLayout(self.main)
-        self.verticalLayout.setSizeConstraint(QtWidgets.QLayout.SizeConstraint.SetDefaultConstraint)
+        self.verticalLayout.setSizeConstraint(
+            QtWidgets.QLayout.SizeConstraint.SetDefaultConstraint
+        )
         self.verticalLayout.setObjectName("verticalLayout")
         self.eventsBox = QtWidgets.QGroupBox(parent=self.main)
         self.eventsBox.setObjectName("eventsBox")
@@ -66,10 +68,14 @@ class Ui_MainWindow(object):
         self.channelLabel.setObjectName("channelLabel")
         self.verticalLayout_5.addWidget(self.channelLabel)
         self.eventClassificationLabel = QtWidgets.QLabel(parent=self.frame_7)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Minimum)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Minimum
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.eventClassificationLabel.sizePolicy().hasHeightForWidth())
+        sizePolicy.setHeightForWidth(
+            self.eventClassificationLabel.sizePolicy().hasHeightForWidth()
+        )
         self.eventClassificationLabel.setSizePolicy(sizePolicy)
         self.eventClassificationLabel.setObjectName("eventClassificationLabel")
         self.verticalLayout_5.addWidget(self.eventClassificationLabel)
@@ -77,7 +83,9 @@ class Ui_MainWindow(object):
         self.horizontalLayout_3.setStretch(0, 6)
         self.horizontalLayout_3.setStretch(1, 1)
         self.verticalLayout_4.addWidget(self.frame_6)
-        self.eventNavigationFrame = QtWidgets.QFrame(parent=self.spectrogramNavigationFrame)
+        self.eventNavigationFrame = QtWidgets.QFrame(
+            parent=self.spectrogramNavigationFrame
+        )
         self.eventNavigationFrame.setFrameShape(QtWidgets.QFrame.Shape.NoFrame)
         self.eventNavigationFrame.setObjectName("eventNavigationFrame")
         self.horizontalLayout_2 = QtWidgets.QHBoxLayout(self.eventNavigationFrame)
@@ -88,7 +96,9 @@ class Ui_MainWindow(object):
         self.lastEventButton = QtWidgets.QPushButton(parent=self.eventNavigationFrame)
         self.lastEventButton.setObjectName("lastEventButton")
         self.horizontalLayout_2.addWidget(self.lastEventButton)
-        self.previousEventButton = QtWidgets.QPushButton(parent=self.eventNavigationFrame)
+        self.previousEventButton = QtWidgets.QPushButton(
+            parent=self.eventNavigationFrame
+        )
         self.previousEventButton.setObjectName("previousEventButton")
         self.horizontalLayout_2.addWidget(self.previousEventButton)
         self.eventNumBox = QtWidgets.QSpinBox(parent=self.eventNavigationFrame)
@@ -134,7 +144,11 @@ class Ui_MainWindow(object):
         self.showPseudoEventBox.setObjectName("showPseudoEventBox")
         self.horizontalLayout_5.addWidget(self.showPseudoEventBox)
         self.windowLengthLabel = QtWidgets.QLabel(parent=self.rasterBox)
-        self.windowLengthLabel.setAlignment(QtCore.Qt.AlignmentFlag.AlignRight|QtCore.Qt.AlignmentFlag.AlignTrailing|QtCore.Qt.AlignmentFlag.AlignVCenter)
+        self.windowLengthLabel.setAlignment(
+            QtCore.Qt.AlignmentFlag.AlignRight
+            | QtCore.Qt.AlignmentFlag.AlignTrailing
+            | QtCore.Qt.AlignmentFlag.AlignVCenter
+        )
         self.windowLengthLabel.setObjectName("windowLengthLabel")
         self.horizontalLayout_5.addWidget(self.windowLengthLabel)
         self.windowLengthSpinBox = QtWidgets.QDoubleSpinBox(parent=self.rasterBox)
@@ -169,7 +183,9 @@ class Ui_MainWindow(object):
         self.configScrollArea.setObjectName("configScrollArea")
         self.configScrollAreaWidgetContents = QtWidgets.QWidget()
         self.configScrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 929, 740))
-        self.configScrollAreaWidgetContents.setObjectName("configScrollAreaWidgetContents")
+        self.configScrollAreaWidgetContents.setObjectName(
+            "configScrollAreaWidgetContents"
+        )
         self.configScrollArea.setWidget(self.configScrollAreaWidgetContents)
         self.configVerticalLayout.addWidget(self.configScrollArea)
         self.applyConfigButton = QtWidgets.QPushButton(parent=self.config)
@@ -206,7 +222,9 @@ class Ui_MainWindow(object):
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
         self.eventsBox.setTitle(_translate("MainWindow", "Events"))
         self.channelLabel.setText(_translate("MainWindow", "Channel"))
-        self.eventClassificationLabel.setText(_translate("MainWindow", "Classification"))
+        self.eventClassificationLabel.setText(
+            _translate("MainWindow", "Classification")
+        )
         self.firstEventButton.setText(_translate("MainWindow", "⏮  First"))
         self.lastEventButton.setText(_translate("MainWindow", "Live ⏭"))
         self.previousEventButton.setText(_translate("MainWindow", "<"))
@@ -217,10 +235,16 @@ class Ui_MainWindow(object):
         self.showPseudoEventBox.setText(_translate("MainWindow", "show pseudo events"))
         self.windowLengthLabel.setText(_translate("MainWindow", "Window Length (s):"))
         self.frequencyBox.setTitle(_translate("MainWindow", "Frequency Content"))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.main), _translate("MainWindow", "Main"))
+        self.tabWidget.setTabText(
+            self.tabWidget.indexOf(self.main), _translate("MainWindow", "Main")
+        )
         self.applyConfigButton.setText(_translate("MainWindow", "Apply Config"))
         self.resetDefaultsButton.setText(_translate("MainWindow", "Default Settings"))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.config), _translate("MainWindow", "Config"))
+        self.tabWidget.setTabText(
+            self.tabWidget.indexOf(self.config), _translate("MainWindow", "Config")
+        )
         self.startButton.setText(_translate("MainWindow", "Start"))
         self.saveButton.setText(_translate("MainWindow", "Save Events"))
+
+
 from pyqtgraph import PlotWidget
