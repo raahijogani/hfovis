@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>hfovis package &#8212; hfovis 0.0.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/classic.css?v=2bf1fcf8" />
+    
+    <script src="_static/documentation_options.js?v=d45e8c67"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="hfovis.data package" href="hfovis.data.html" />
+    <link rel="prev" title="hfovis documentation" href="index.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="hfovis.data.html" title="hfovis.data package"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="hfovis documentation"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">hfovis 0.0.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">hfovis package</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="hfovis-package">
+<h1>hfovis package<a class="headerlink" href="#hfovis-package" title="Link to this heading">¶</a></h1>
+<section id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Link to this heading">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="hfovis.data.html">hfovis.data package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="hfovis.data.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hfovis.data.html#module-hfovis.data.buffering">hfovis.data.buffering module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="hfovis.data.html#hfovis.data.buffering.RingBuffer"><code class="docutils literal notranslate"><span class="pre">RingBuffer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="hfovis.data.html#hfovis.data.buffering.RingBuffer.read"><code class="docutils literal notranslate"><span class="pre">RingBuffer.read()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hfovis.data.html#hfovis.data.buffering.RingBuffer.write"><code class="docutils literal notranslate"><span class="pre">RingBuffer.write()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="hfovis.data.html#module-hfovis.data.ieeg_loader">hfovis.data.ieeg_loader module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="hfovis.data.html#hfovis.data.ieeg_loader.load_annotations"><code class="docutils literal notranslate"><span class="pre">load_annotations()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="hfovis.data.html#hfovis.data.ieeg_loader.load_ieeg_from_fileinfo"><code class="docutils literal notranslate"><span class="pre">load_ieeg_from_fileinfo()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="hfovis.data.html#module-hfovis.data.loaders">hfovis.data.loaders module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="hfovis.data.html#hfovis.data.loaders.IEEGDataLoader"><code class="docutils literal notranslate"><span class="pre">IEEGDataLoader</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="hfovis.data.html#hfovis.data.loaders.IEEGDataLoader.extract_data"><code class="docutils literal notranslate"><span class="pre">IEEGDataLoader.extract_data()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hfovis.data.html#hfovis.data.loaders.IEEGDataLoader.load_annotations"><code class="docutils literal notranslate"><span class="pre">IEEGDataLoader.load_annotations()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hfovis.data.html#hfovis.data.loaders.IEEGDataLoader.load_data"><code class="docutils literal notranslate"><span class="pre">IEEGDataLoader.load_data()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="hfovis.data.html#module-hfovis.data.streaming">hfovis.data.streaming module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="hfovis.data.html#hfovis.data.streaming.DataStreamer"><code class="docutils literal notranslate"><span class="pre">DataStreamer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="hfovis.data.html#hfovis.data.streaming.DataStreamer.read"><code class="docutils literal notranslate"><span class="pre">DataStreamer.read()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hfovis.data.html#hfovis.data.streaming.DataStreamer.start"><code class="docutils literal notranslate"><span class="pre">DataStreamer.start()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hfovis.data.html#hfovis.data.streaming.DataStreamer.stop"><code class="docutils literal notranslate"><span class="pre">DataStreamer.stop()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="hfovis.data.html#hfovis.data.streaming.Streamer"><code class="docutils literal notranslate"><span class="pre">Streamer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="hfovis.data.html#hfovis.data.streaming.Streamer.read"><code class="docutils literal notranslate"><span class="pre">Streamer.read()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hfovis.data.html#hfovis.data.streaming.Streamer.start"><code class="docutils literal notranslate"><span class="pre">Streamer.start()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hfovis.data.html#hfovis.data.streaming.Streamer.stop"><code class="docutils literal notranslate"><span class="pre">Streamer.stop()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="hfovis.data.html#module-hfovis.data">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="hfovis.denoiser.html">hfovis.denoiser package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="hfovis.denoiser.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hfovis.denoiser.html#module-hfovis.denoiser.features">hfovis.denoiser.features module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="hfovis.denoiser.html#hfovis.denoiser.features.extract_omp_features"><code class="docutils literal notranslate"><span class="pre">extract_omp_features()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="hfovis.denoiser.html#module-hfovis.denoiser.normalize">hfovis.denoiser.normalize module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="hfovis.denoiser.html#hfovis.denoiser.normalize.data_norm"><code class="docutils literal notranslate"><span class="pre">data_norm()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="hfovis.denoiser.html#module-hfovis.denoiser.omp">hfovis.denoiser.omp module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="hfovis.denoiser.html#hfovis.denoiser.omp.batch_omp"><code class="docutils literal notranslate"><span class="pre">batch_omp()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="hfovis.denoiser.html#hfovis.denoiser.omp.project_and_select"><code class="docutils literal notranslate"><span class="pre">project_and_select()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="hfovis.denoiser.html#module-hfovis.denoiser.vfactor">hfovis.denoiser.vfactor module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="hfovis.denoiser.html#hfovis.denoiser.vfactor.compute_vfactor"><code class="docutils literal notranslate"><span class="pre">compute_vfactor()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="hfovis.denoiser.html#module-hfovis.denoiser.worker">hfovis.denoiser.worker module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="hfovis.denoiser.html#hfovis.denoiser.worker.DenoisingThread"><code class="docutils literal notranslate"><span class="pre">DenoisingThread</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="hfovis.denoiser.html#hfovis.denoiser.worker.DenoisingThread.classReady"><code class="docutils literal notranslate"><span class="pre">DenoisingThread.classReady</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hfovis.denoiser.html#hfovis.denoiser.worker.DenoisingThread.enqueue"><code class="docutils literal notranslate"><span class="pre">DenoisingThread.enqueue()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hfovis.denoiser.html#hfovis.denoiser.worker.DenoisingThread.histReady"><code class="docutils literal notranslate"><span class="pre">DenoisingThread.histReady</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hfovis.denoiser.html#hfovis.denoiser.worker.DenoisingThread.run"><code class="docutils literal notranslate"><span class="pre">DenoisingThread.run()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hfovis.denoiser.html#hfovis.denoiser.worker.DenoisingThread.stop"><code class="docutils literal notranslate"><span class="pre">DenoisingThread.stop()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="hfovis.denoiser.html#module-hfovis.denoiser">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="hfovis.detector.html">hfovis.detector package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="hfovis.detector.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hfovis.detector.html#module-hfovis.detector.config">hfovis.detector.config module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="hfovis.detector.html#hfovis.detector.config.DetectorConfig"><code class="docutils literal notranslate"><span class="pre">DetectorConfig</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="hfovis.detector.html#hfovis.detector.config.DetectorConfig.adaptive_threshold_num_windows"><code class="docutils literal notranslate"><span class="pre">DetectorConfig.adaptive_threshold_num_windows</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hfovis.detector.html#hfovis.detector.config.DetectorConfig.adaptive_threshold_num_windows_overlap"><code class="docutils literal notranslate"><span class="pre">DetectorConfig.adaptive_threshold_num_windows_overlap</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hfovis.detector.html#hfovis.detector.config.DetectorConfig.adaptive_threshold_overlap_ms"><code class="docutils literal notranslate"><span class="pre">DetectorConfig.adaptive_threshold_overlap_ms</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hfovis.detector.html#hfovis.detector.config.DetectorConfig.adaptive_threshold_window_size_ms"><code class="docutils literal notranslate"><span class="pre">DetectorConfig.adaptive_threshold_window_size_ms</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hfovis.detector.html#hfovis.detector.config.DetectorConfig.burst_window_overlap_ms"><code class="docutils literal notranslate"><span class="pre">DetectorConfig.burst_window_overlap_ms</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hfovis.detector.html#hfovis.detector.config.DetectorConfig.burst_window_size_ms"><code class="docutils literal notranslate"><span class="pre">DetectorConfig.burst_window_size_ms</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hfovis.detector.html#hfovis.detector.config.DetectorConfig.center_min_crossings"><code class="docutils literal notranslate"><span class="pre">DetectorConfig.center_min_crossings</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hfovis.detector.html#hfovis.detector.config.DetectorConfig.channels"><code class="docutils literal notranslate"><span class="pre">DetectorConfig.channels</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hfovis.detector.html#hfovis.detector.config.DetectorConfig.fast_ripple_band"><code class="docutils literal notranslate"><span class="pre">DetectorConfig.fast_ripple_band</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hfovis.detector.html#hfovis.detector.config.DetectorConfig.fs"><code class="docutils literal notranslate"><span class="pre">DetectorConfig.fs</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hfovis.detector.html#hfovis.detector.config.DetectorConfig.get_validation_messages"><code class="docutils literal notranslate"><span class="pre">DetectorConfig.get_validation_messages()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hfovis.detector.html#hfovis.detector.config.DetectorConfig.hfo_band"><code class="docutils literal notranslate"><span class="pre">DetectorConfig.hfo_band</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hfovis.detector.html#hfovis.detector.config.DetectorConfig.low_band"><code class="docutils literal notranslate"><span class="pre">DetectorConfig.low_band</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hfovis.detector.html#hfovis.detector.config.DetectorConfig.min_threshold"><code class="docutils literal notranslate"><span class="pre">DetectorConfig.min_threshold</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hfovis.detector.html#hfovis.detector.config.DetectorConfig.name"><code class="docutils literal notranslate"><span class="pre">DetectorConfig.name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hfovis.detector.html#hfovis.detector.config.DetectorConfig.ring_buffer_size_s"><code class="docutils literal notranslate"><span class="pre">DetectorConfig.ring_buffer_size_s</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hfovis.detector.html#hfovis.detector.config.DetectorConfig.ripple_band"><code class="docutils literal notranslate"><span class="pre">DetectorConfig.ripple_band</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hfovis.detector.html#hfovis.detector.config.DetectorConfig.side_max_crossings"><code class="docutils literal notranslate"><span class="pre">DetectorConfig.side_max_crossings</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hfovis.detector.html#hfovis.detector.config.DetectorConfig.threshold_multiplier"><code class="docutils literal notranslate"><span class="pre">DetectorConfig.threshold_multiplier</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hfovis.detector.html#hfovis.detector.config.DetectorConfig.update"><code class="docutils literal notranslate"><span class="pre">DetectorConfig.update()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hfovis.detector.html#hfovis.detector.config.DetectorConfig.validate"><code class="docutils literal notranslate"><span class="pre">DetectorConfig.validate()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hfovis.detector.html#hfovis.detector.config.DetectorConfig.visualization_window_size_ms"><code class="docutils literal notranslate"><span class="pre">DetectorConfig.visualization_window_size_ms</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="hfovis.detector.html#module-hfovis.detector.detector">hfovis.detector.detector module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="hfovis.detector.html#hfovis.detector.detector.RealTimeDetector"><code class="docutils literal notranslate"><span class="pre">RealTimeDetector</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="hfovis.detector.html#hfovis.detector.detector.RealTimeDetector.build_graph_dual_band"><code class="docutils literal notranslate"><span class="pre">RealTimeDetector.build_graph_dual_band()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hfovis.detector.html#hfovis.detector.detector.RealTimeDetector.build_graph_single_band"><code class="docutils literal notranslate"><span class="pre">RealTimeDetector.build_graph_single_band()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hfovis.detector.html#hfovis.detector.detector.RealTimeDetector.new_event"><code class="docutils literal notranslate"><span class="pre">RealTimeDetector.new_event</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hfovis.detector.html#hfovis.detector.detector.RealTimeDetector.run"><code class="docutils literal notranslate"><span class="pre">RealTimeDetector.run()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hfovis.detector.html#hfovis.detector.detector.RealTimeDetector.stop"><code class="docutils literal notranslate"><span class="pre">RealTimeDetector.stop()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="hfovis.detector.html#module-hfovis.detector">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="hfovis.gui.html">hfovis.gui package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="hfovis.gui.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hfovis.gui.html#module-hfovis.gui.config">hfovis.gui.config module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="hfovis.gui.html#hfovis.gui.config.GeneralConfig"><code class="docutils literal notranslate"><span class="pre">GeneralConfig</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="hfovis.gui.html#hfovis.gui.config.GeneralConfig.filtered_data_filename"><code class="docutils literal notranslate"><span class="pre">GeneralConfig.filtered_data_filename</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hfovis.gui.html#hfovis.gui.config.GeneralConfig.get_validation_messages"><code class="docutils literal notranslate"><span class="pre">GeneralConfig.get_validation_messages()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hfovis.gui.html#hfovis.gui.config.GeneralConfig.metadata_filename"><code class="docutils literal notranslate"><span class="pre">GeneralConfig.metadata_filename</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hfovis.gui.html#hfovis.gui.config.GeneralConfig.montage_location"><code class="docutils literal notranslate"><span class="pre">GeneralConfig.montage_location</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hfovis.gui.html#hfovis.gui.config.GeneralConfig.name"><code class="docutils literal notranslate"><span class="pre">GeneralConfig.name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hfovis.gui.html#hfovis.gui.config.GeneralConfig.raw_data_filename"><code class="docutils literal notranslate"><span class="pre">GeneralConfig.raw_data_filename</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hfovis.gui.html#hfovis.gui.config.GeneralConfig.update"><code class="docutils literal notranslate"><span class="pre">GeneralConfig.update()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hfovis.gui.html#hfovis.gui.config.GeneralConfig.validate"><code class="docutils literal notranslate"><span class="pre">GeneralConfig.validate()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="hfovis.gui.html#module-hfovis.gui.config_menu">hfovis.gui.config_menu module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="hfovis.gui.html#hfovis.gui.config_menu.ConfigMenu"><code class="docutils literal notranslate"><span class="pre">ConfigMenu</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="hfovis.gui.html#hfovis.gui.config_menu.ConfigMenu.apply_changes"><code class="docutils literal notranslate"><span class="pre">ConfigMenu.apply_changes()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hfovis.gui.html#hfovis.gui.config_menu.ConfigMenu.disable_editing"><code class="docutils literal notranslate"><span class="pre">ConfigMenu.disable_editing()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hfovis.gui.html#hfovis.gui.config_menu.ConfigMenu.display_errors"><code class="docutils literal notranslate"><span class="pre">ConfigMenu.display_errors()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hfovis.gui.html#hfovis.gui.config_menu.ConfigMenu.reset_defaults"><code class="docutils literal notranslate"><span class="pre">ConfigMenu.reset_defaults()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="hfovis.gui.html#hfovis.gui.config_menu.FilePickerWidget"><code class="docutils literal notranslate"><span class="pre">FilePickerWidget</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="hfovis.gui.html#hfovis.gui.config_menu.FilePickerWidget.open_dialog"><code class="docutils literal notranslate"><span class="pre">FilePickerWidget.open_dialog()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hfovis.gui.html#hfovis.gui.config_menu.FilePickerWidget.setEnabled"><code class="docutils literal notranslate"><span class="pre">FilePickerWidget.setEnabled()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hfovis.gui.html#hfovis.gui.config_menu.FilePickerWidget.setStyleSheet"><code class="docutils literal notranslate"><span class="pre">FilePickerWidget.setStyleSheet()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hfovis.gui.html#hfovis.gui.config_menu.FilePickerWidget.setText"><code class="docutils literal notranslate"><span class="pre">FilePickerWidget.setText()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hfovis.gui.html#hfovis.gui.config_menu.FilePickerWidget.setToolTip"><code class="docutils literal notranslate"><span class="pre">FilePickerWidget.setToolTip()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hfovis.gui.html#hfovis.gui.config_menu.FilePickerWidget.text"><code class="docutils literal notranslate"><span class="pre">FilePickerWidget.text()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="hfovis.gui.html#module-hfovis.gui.denoising_heatmap">hfovis.gui.denoising_heatmap module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="hfovis.gui.html#hfovis.gui.denoising_heatmap.DenoisingHeatmapPlot"><code class="docutils literal notranslate"><span class="pre">DenoisingHeatmapPlot</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="hfovis.gui.html#hfovis.gui.denoising_heatmap.DenoisingHeatmapPlot.update"><code class="docutils literal notranslate"><span class="pre">DenoisingHeatmapPlot.update()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hfovis.gui.html#hfovis.gui.denoising_heatmap.DenoisingHeatmapPlot.update_ticks"><code class="docutils literal notranslate"><span class="pre">DenoisingHeatmapPlot.update_ticks()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="hfovis.gui.html#module-hfovis.gui.frequency">hfovis.gui.frequency module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="hfovis.gui.html#hfovis.gui.frequency.FrequencyPlot"><code class="docutils literal notranslate"><span class="pre">FrequencyPlot</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="hfovis.gui.html#hfovis.gui.frequency.FrequencyPlot.update"><code class="docutils literal notranslate"><span class="pre">FrequencyPlot.update()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hfovis.gui.html#hfovis.gui.frequency.FrequencyPlot.update_ticks"><code class="docutils literal notranslate"><span class="pre">FrequencyPlot.update_ticks()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="hfovis.gui.html#module-hfovis.gui.main_window">hfovis.gui.main_window module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="hfovis.gui.html#hfovis.gui.main_window.MainWindow"><code class="docutils literal notranslate"><span class="pre">MainWindow</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="hfovis.gui.html#hfovis.gui.main_window.MainWindow.closeEvent"><code class="docutils literal notranslate"><span class="pre">MainWindow.closeEvent()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hfovis.gui.html#hfovis.gui.main_window.MainWindow.first_event"><code class="docutils literal notranslate"><span class="pre">MainWindow.first_event()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hfovis.gui.html#hfovis.gui.main_window.MainWindow.last_event"><code class="docutils literal notranslate"><span class="pre">MainWindow.last_event()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hfovis.gui.html#hfovis.gui.main_window.MainWindow.next_event"><code class="docutils literal notranslate"><span class="pre">MainWindow.next_event()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hfovis.gui.html#hfovis.gui.main_window.MainWindow.previous_event"><code class="docutils literal notranslate"><span class="pre">MainWindow.previous_event()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hfovis.gui.html#hfovis.gui.main_window.MainWindow.save"><code class="docutils literal notranslate"><span class="pre">MainWindow.save()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="hfovis.gui.html#module-hfovis.gui.model">hfovis.gui.model module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="hfovis.gui.html#hfovis.gui.model.EventModel"><code class="docutils literal notranslate"><span class="pre">EventModel</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="hfovis.gui.html#hfovis.gui.model.EventModel.append_batch"><code class="docutils literal notranslate"><span class="pre">EventModel.append_batch()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hfovis.gui.html#hfovis.gui.model.EventModel.append_denoise_counts"><code class="docutils literal notranslate"><span class="pre">EventModel.append_denoise_counts()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hfovis.gui.html#hfovis.gui.model.EventModel.save"><code class="docutils literal notranslate"><span class="pre">EventModel.save()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="hfovis.gui.html#module-hfovis.gui.raster">hfovis.gui.raster module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="hfovis.gui.html#hfovis.gui.raster.RasterPlot"><code class="docutils literal notranslate"><span class="pre">RasterPlot</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="hfovis.gui.html#hfovis.gui.raster.RasterPlot.set_raster_window"><code class="docutils literal notranslate"><span class="pre">RasterPlot.set_raster_window()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hfovis.gui.html#hfovis.gui.raster.RasterPlot.update"><code class="docutils literal notranslate"><span class="pre">RasterPlot.update()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="hfovis.gui.html#hfovis.gui.raster.RasterPlot.update_ticks"><code class="docutils literal notranslate"><span class="pre">RasterPlot.update_ticks()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="hfovis.gui.html#module-hfovis.gui.spectrogram">hfovis.gui.spectrogram module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="hfovis.gui.html#hfovis.gui.spectrogram.SpectrogramPlot"><code class="docutils literal notranslate"><span class="pre">SpectrogramPlot</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="hfovis.gui.html#hfovis.gui.spectrogram.SpectrogramPlot.update"><code class="docutils literal notranslate"><span class="pre">SpectrogramPlot.update()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="hfovis.gui.html#module-hfovis.gui.time_series">hfovis.gui.time_series module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="hfovis.gui.html#hfovis.gui.time_series.TimeSeriesPlot"><code class="docutils literal notranslate"><span class="pre">TimeSeriesPlot</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="hfovis.gui.html#hfovis.gui.time_series.TimeSeriesPlot.update"><code class="docutils literal notranslate"><span class="pre">TimeSeriesPlot.update()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="hfovis.gui.html#module-hfovis.gui">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading">¶</a></h2>
+</section>
+<section id="module-hfovis.interface">
+<span id="hfovis-interface-module"></span><h2>hfovis.interface module<a class="headerlink" href="#module-hfovis.interface" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="hfovis.interface.Ui_MainWindow">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">hfovis.interface.</span></span><span class="sig-name descname"><span class="pre">Ui_MainWindow</span></span><a class="reference internal" href="_modules/hfovis/interface.html#Ui_MainWindow"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfovis.interface.Ui_MainWindow" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p class="rubric">Methods</p>
+<table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><strong>retranslateUi</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>setupUi</strong></p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="hfovis.interface.Ui_MainWindow.retranslateUi">
+<span class="sig-name descname"><span class="pre">retranslateUi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">MainWindow</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hfovis/interface.html#Ui_MainWindow.retranslateUi"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfovis.interface.Ui_MainWindow.retranslateUi" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hfovis.interface.Ui_MainWindow.setupUi">
+<span class="sig-name descname"><span class="pre">setupUi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">MainWindow</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hfovis/interface.html#Ui_MainWindow.setupUi"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfovis.interface.Ui_MainWindow.setupUi" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-hfovis">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-hfovis" title="Link to this heading">¶</a></h2>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">hfovis package</a><ul>
+<li><a class="reference internal" href="#subpackages">Subpackages</a></li>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-hfovis.interface">hfovis.interface module</a><ul>
+<li><a class="reference internal" href="#hfovis.interface.Ui_MainWindow"><code class="docutils literal notranslate"><span class="pre">Ui_MainWindow</span></code></a><ul>
+<li><a class="reference internal" href="#hfovis.interface.Ui_MainWindow.retranslateUi"><code class="docutils literal notranslate"><span class="pre">Ui_MainWindow.retranslateUi()</span></code></a></li>
+<li><a class="reference internal" href="#hfovis.interface.Ui_MainWindow.setupUi"><code class="docutils literal notranslate"><span class="pre">Ui_MainWindow.setupUi()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-hfovis">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="index.html"
+                          title="previous chapter">hfovis documentation</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="hfovis.data.html"
+                          title="next chapter">hfovis.data package</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/hfovis.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="hfovis.data.html" title="hfovis.data package"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="hfovis documentation"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">hfovis 0.0.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">hfovis package</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2025, Raahi Jogani, Valentina Hrtonova, Behrang Besheli.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    </div>
+  </body>
+</html>

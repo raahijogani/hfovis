@@ -1,0 +1,1111 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>hfovis.gui package &#8212; hfovis 0.0.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/classic.css?v=2bf1fcf8" />
+    
+    <script src="_static/documentation_options.js?v=d45e8c67"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="hfovis.detector package" href="hfovis.detector.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="hfovis.detector.html" title="hfovis.detector package"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">hfovis 0.0.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="hfovis.html" accesskey="U">hfovis package</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">hfovis.gui package</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="hfovis-gui-package">
+<h1>hfovis.gui package<a class="headerlink" href="#hfovis-gui-package" title="Link to this heading">¶</a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading">¶</a></h2>
+</section>
+<section id="module-hfovis.gui.config">
+<span id="hfovis-gui-config-module"></span><h2>hfovis.gui.config module<a class="headerlink" href="#module-hfovis.gui.config" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="hfovis.gui.config.GeneralConfig">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">hfovis.gui.config.</span></span><span class="sig-name descname"><span class="pre">GeneralConfig</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">metadata_filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raw_data_filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filtered_data_filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">montage_location</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hfovis/gui/config.html#GeneralConfig"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfovis.gui.config.GeneralConfig" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#hfovis.gui.config.GeneralConfig.get_validation_messages" title="hfovis.gui.config.GeneralConfig.get_validation_messages"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_validation_messages</span></code></a>()</p></td>
+<td><p>Collects validation messages for each field in the dataclass.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#hfovis.gui.config.GeneralConfig.update" title="hfovis.gui.config.GeneralConfig.update"><code class="xref py py-obj docutils literal notranslate"><span class="pre">update</span></code></a>(**kwargs)</p></td>
+<td><p>Update the configuration with new values for specified fields.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#hfovis.gui.config.GeneralConfig.validate" title="hfovis.gui.config.GeneralConfig.validate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">validate</span></code></a>()</p></td>
+<td><p>Validates the configuration by checking each field against its validation criteria.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="hfovis.gui.config.GeneralConfig.filtered_data_filename">
+<span class="sig-name descname"><span class="pre">filtered_data_filename</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">''</span></em><a class="headerlink" href="#hfovis.gui.config.GeneralConfig.filtered_data_filename" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hfovis.gui.config.GeneralConfig.get_validation_messages">
+<span class="sig-name descname"><span class="pre">get_validation_messages</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/hfovis/gui/config.html#GeneralConfig.get_validation_messages"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfovis.gui.config.GeneralConfig.get_validation_messages" title="Link to this definition">¶</a></dt>
+<dd><p>Collects validation messages for each field in the dataclass.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>dict</dt><dd><p>A dictionary where keys are field names and values are error messages
+if the field does not meet its validation criteria.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="hfovis.gui.config.GeneralConfig.metadata_filename">
+<span class="sig-name descname"><span class="pre">metadata_filename</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">''</span></em><a class="headerlink" href="#hfovis.gui.config.GeneralConfig.metadata_filename" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="hfovis.gui.config.GeneralConfig.montage_location">
+<span class="sig-name descname"><span class="pre">montage_location</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">''</span></em><a class="headerlink" href="#hfovis.gui.config.GeneralConfig.montage_location" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="hfovis.gui.config.GeneralConfig.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'General'</span></em><a class="headerlink" href="#hfovis.gui.config.GeneralConfig.name" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="hfovis.gui.config.GeneralConfig.raw_data_filename">
+<span class="sig-name descname"><span class="pre">raw_data_filename</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">''</span></em><a class="headerlink" href="#hfovis.gui.config.GeneralConfig.raw_data_filename" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hfovis.gui.config.GeneralConfig.update">
+<span class="sig-name descname"><span class="pre">update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hfovis/gui/config.html#GeneralConfig.update"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfovis.gui.config.GeneralConfig.update" title="Link to this definition">¶</a></dt>
+<dd><p>Update the configuration with new values for specified fields.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>**kwargs</strong></dt><dd><p>Keyword arguments where keys are field names and values are the new values
+to set for those fields.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>ValueError</dt><dd><p>If a key in kwargs does not correspond to a field in the dataclass,</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hfovis.gui.config.GeneralConfig.validate">
+<span class="sig-name descname"><span class="pre">validate</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/hfovis/gui/config.html#GeneralConfig.validate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfovis.gui.config.GeneralConfig.validate" title="Link to this definition">¶</a></dt>
+<dd><p>Validates the configuration by checking each field against its validation
+criteria.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>ValueError</dt><dd><p>If any field does not meet its validation criteria, a ValueError is raised</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-hfovis.gui.config_menu">
+<span id="hfovis-gui-config-menu-module"></span><h2>hfovis.gui.config_menu module<a class="headerlink" href="#module-hfovis.gui.config_menu" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="hfovis.gui.config_menu.ConfigMenu">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">hfovis.gui.config_menu.</span></span><span class="sig-name descname"><span class="pre">ConfigMenu</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">QWidget</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">configs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hfovis/gui/config_menu.html#ConfigMenu"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfovis.gui.config_menu.ConfigMenu" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A configuration menu that displays a list of configurations in a vertical layout,
+each within its own group box. Each configuration is represented by a dataclass,
+and each field in the dataclass is displayed as a label and an input widget.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>parent</strong><span class="classifier">QtWidgets.QWidget</span></dt><dd><p>The parent widget for this configuration menu.</p>
+</dd>
+<dt><strong>configs</strong><span class="classifier">list</span></dt><dd><p>A list of dataclass instances representing the configurations to be displayed.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Attributes<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>configs</strong><span class="classifier">list</span></dt><dd></dd>
+<dt><strong>parent</strong><span class="classifier">QtWidgets.QWidget</span></dt><dd></dd>
+<dt><strong>vertical_layout</strong><span class="classifier">QtWidgets.QVBoxLayout</span></dt><dd></dd>
+<dt><strong>group_boxes</strong><span class="classifier">list[QtWidgets.QGroupBox]</span></dt><dd><p>A list of group boxes, one for each configuration.</p>
+</dd>
+<dt><strong>form_layouts</strong><span class="classifier">list[QtWidgets.QFormLayout]</span></dt><dd><p>A list of form layouts, one for each group box, containing the configuration
+fields.</p>
+</dd>
+<dt><strong>item_line_edits</strong><span class="classifier">dict</span></dt><dd><p>A dictionary mapping field names to their corresponding <cite>QLineEdit</cite> or
+<cite>FilePickerWidget</cite> instances for user input.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><strong>display_errors(messages: dict)</strong></p></td>
+<td><p>Displays error messages for fields that have validation issues by setting the style of the corresponding input widgets to indicate an error and setting their tooltips to the error messages.</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>apply_changes()</strong></p></td>
+<td><p>Applies changes made in the input widgets to the corresponding fields in the configurations. Validates the input and displays error messages if any issues are found.</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>reset_defaults()</strong></p></td>
+<td><p>Resets the input widgets to their default values as defined in the dataclass fields. Clears any error styles or tooltips.</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>disable_editing()</strong></p></td>
+<td><p>Disables editing of the input widgets based on the <cite>editable_after_start</cite> metadata of each field. If a field is not editable after the start, its input widget will be disabled.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="hfovis.gui.config_menu.ConfigMenu.apply_changes">
+<span class="sig-name descname"><span class="pre">apply_changes</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/hfovis/gui/config_menu.html#ConfigMenu.apply_changes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfovis.gui.config_menu.ConfigMenu.apply_changes" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hfovis.gui.config_menu.ConfigMenu.disable_editing">
+<span class="sig-name descname"><span class="pre">disable_editing</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/hfovis/gui/config_menu.html#ConfigMenu.disable_editing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfovis.gui.config_menu.ConfigMenu.disable_editing" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hfovis.gui.config_menu.ConfigMenu.display_errors">
+<span class="sig-name descname"><span class="pre">display_errors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">messages</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hfovis/gui/config_menu.html#ConfigMenu.display_errors"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfovis.gui.config_menu.ConfigMenu.display_errors" title="Link to this definition">¶</a></dt>
+<dd><p>Displays error messages for fields that have validation issues by setting the
+style of the corresponding input widgets to indicate an error and setting their
+tooltips to the error messages.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>messages</strong><span class="classifier">dict</span></dt><dd><p>A dictionary where keys are field names and values are error messages.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hfovis.gui.config_menu.ConfigMenu.reset_defaults">
+<span class="sig-name descname"><span class="pre">reset_defaults</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/hfovis/gui/config_menu.html#ConfigMenu.reset_defaults"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfovis.gui.config_menu.ConfigMenu.reset_defaults" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="hfovis.gui.config_menu.FilePickerWidget">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">hfovis.gui.config_menu.</span></span><span class="sig-name descname"><span class="pre">FilePickerWidget</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'find</span> <span class="pre">file'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_filter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'All</span> <span class="pre">Files</span> <span class="pre">(*)'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extension</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hfovis/gui/config_menu.html#FilePickerWidget"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfovis.gui.config_menu.FilePickerWidget" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">QWidget</span></code></p>
+<p>A widget that combines a <cite>QLineEdit</cite> and a <cite>QPushButton</cite> to allow users to select or
+create a file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>parent</strong><span class="classifier">QtWidgets.QWidget, optional</span></dt><dd><p>The parent widget for this widget.</p>
+</dd>
+<dt><strong>mode</strong><span class="classifier">{“find file”, “create file”}, default=”find file”</span></dt><dd><p>The mode of the file picker. “find file” allows users to select an existing file
+while “create file” allows users to specify a new file to create.</p>
+</dd>
+<dt><strong>file_filter</strong><span class="classifier">str, default=”All Files (*)”</span></dt><dd><p>The filter for the file dialog. This determines which files are shown in the dialog.</p>
+</dd>
+<dt><strong>extension</strong><span class="classifier">str, default=””</span></dt><dd><p>Used to add extension in case user doesn’t provide it when creating a file.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Attributes<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>line_edit</strong><span class="classifier">QtWidgets.QLineEdit</span></dt><dd><p>The line edit where the selected or created file path is displayed.</p>
+</dd>
+<dt><strong>browse_button</strong><span class="classifier">QtWidgets.QPushButton</span></dt><dd><p>The button that opens the file dialog for selecting or creating a file.</p>
+</dd>
+<dt><strong>mode</strong><span class="classifier">str</span></dt><dd><p>The mode of the file picker, either “find file” or “create file”.</p>
+</dd>
+<dt><strong>file_filter</strong><span class="classifier">str</span></dt><dd><p>The filter for the file dialog.</p>
+</dd>
+<dt><strong>extension</strong><span class="classifier">str</span></dt><dd><p>The file extension to append when creating a file.</p>
+</dd>
+<dt><strong>line_edit.setText(value: str)</strong></dt><dd><p>Set the text in the line edit to the specified value.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><strong>open_dialog()</strong></p></td>
+<td><p>Opens a file dialog based on the mode. If in “find file” mode, it allows the user to select an existing file. If in “create file” mode, it allows the user to specify a new file to create, appending the specified extension if necessary.</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>text() -&gt; str</strong></p></td>
+<td><p>Returns the text currently in the line edit.</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>setText(value: str)</strong></p></td>
+<td><p>Sets the text in the line edit to the specified value.</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>setToolTip(text: str)</strong></p></td>
+<td><p>Sets the tooltip for both the line edit and the browse button.</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>setEnabled(enabled: bool)</strong></p></td>
+<td><p>Enables or disables the line edit and browse button based on the provided boolean.</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>setStyleSheet(style: str)</strong></p></td>
+<td><p>Sets the style sheet for the line edit.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="hfovis.gui.config_menu.FilePickerWidget.open_dialog">
+<span class="sig-name descname"><span class="pre">open_dialog</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/hfovis/gui/config_menu.html#FilePickerWidget.open_dialog"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfovis.gui.config_menu.FilePickerWidget.open_dialog" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hfovis.gui.config_menu.FilePickerWidget.setEnabled">
+<span class="sig-name descname"><span class="pre">setEnabled</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">enabled</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hfovis/gui/config_menu.html#FilePickerWidget.setEnabled"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfovis.gui.config_menu.FilePickerWidget.setEnabled" title="Link to this definition">¶</a></dt>
+<dd><p>Enables or disables the line edit and browse button based on the provided
+boolean.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>enabled</strong><span class="classifier">bool</span></dt><dd><p>If True, enables the line edit and browse button; if False, disables them.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hfovis.gui.config_menu.FilePickerWidget.setStyleSheet">
+<span class="sig-name descname"><span class="pre">setStyleSheet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">style</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hfovis/gui/config_menu.html#FilePickerWidget.setStyleSheet"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfovis.gui.config_menu.FilePickerWidget.setStyleSheet" title="Link to this definition">¶</a></dt>
+<dd><p>Sets the style sheet for the line edit.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>style</strong><span class="classifier">str</span></dt><dd><p>The style sheet to apply to the line edit.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hfovis.gui.config_menu.FilePickerWidget.setText">
+<span class="sig-name descname"><span class="pre">setText</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hfovis/gui/config_menu.html#FilePickerWidget.setText"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfovis.gui.config_menu.FilePickerWidget.setText" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hfovis.gui.config_menu.FilePickerWidget.setToolTip">
+<span class="sig-name descname"><span class="pre">setToolTip</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hfovis/gui/config_menu.html#FilePickerWidget.setToolTip"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfovis.gui.config_menu.FilePickerWidget.setToolTip" title="Link to this definition">¶</a></dt>
+<dd><p>Sets the tooltip for both the line edit and the browse button.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>text</strong><span class="classifier">str</span></dt><dd><p>The text to set as the tooltip for both the line edit and the browse button.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hfovis.gui.config_menu.FilePickerWidget.text">
+<span class="sig-name descname"><span class="pre">text</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/hfovis/gui/config_menu.html#FilePickerWidget.text"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfovis.gui.config_menu.FilePickerWidget.text" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-hfovis.gui.denoising_heatmap">
+<span id="hfovis-gui-denoising-heatmap-module"></span><h2>hfovis.gui.denoising_heatmap module<a class="headerlink" href="#module-hfovis.gui.denoising_heatmap" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="hfovis.gui.denoising_heatmap.DenoisingHeatmapPlot">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">hfovis.gui.denoising_heatmap.</span></span><span class="sig-name descname"><span class="pre">DenoisingHeatmapPlot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plot_widget</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">PlotWidget</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">channel_groups</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_channels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">colormap</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ColorMap</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hfovis/gui/denoising_heatmap.html#DenoisingHeatmapPlot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfovis.gui.denoising_heatmap.DenoisingHeatmapPlot" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Logic for plotting denoising heatmap in event view.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>plot_widget</strong><span class="classifier">pg.PlotWidget</span></dt><dd><p>The plot widget from the main window where the heatmap should be drawn.</p>
+</dd>
+<dt><strong>channel_groups</strong><span class="classifier">list[tuple[int, str]]</span></dt><dd><p>List of tuples where each tuple contains a channel index and its label.</p>
+</dd>
+<dt><strong>num_channels</strong><span class="classifier">int</span></dt><dd><p>Total number of channels in the dataset.</p>
+</dd>
+<dt><strong>colormap</strong><span class="classifier">pg.ColorMap</span></dt><dd><p>Color map to be used for the heatmap.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Attributes<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>denoisingHeatmap</strong><span class="classifier">pg.PlotWidget</span></dt><dd></dd>
+<dt><strong>denoiseImg</strong><span class="classifier">pg.ImageItem</span></dt><dd></dd>
+<dt><strong>denoise_cbar</strong><span class="classifier">pg.ColorBarItem</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><strong>update_ticks(channel_groups: list[tuple[int, str]], num_channels: int)</strong></p></td>
+<td><p>Update the y-ticks with new channel groups.</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>update(hist_batch: np.ndarray)</strong></p></td>
+<td><p>Update the heatmap with the provided histogram batch.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="hfovis.gui.denoising_heatmap.DenoisingHeatmapPlot.update">
+<span class="sig-name descname"><span class="pre">update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hist_batch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hfovis/gui/denoising_heatmap.html#DenoisingHeatmapPlot.update"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfovis.gui.denoising_heatmap.DenoisingHeatmapPlot.update" title="Link to this definition">¶</a></dt>
+<dd><p>Update the heatmap with the provided histogram batch.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>hist_batch</strong><span class="classifier">np.ndarray</span></dt><dd><p>Histogram batch of shape (2, num_channels) containing counts for pseudo-HFO
+and real-HFO across channels.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hfovis.gui.denoising_heatmap.DenoisingHeatmapPlot.update_ticks">
+<span class="sig-name descname"><span class="pre">update_ticks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">channel_groups</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_channels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hfovis/gui/denoising_heatmap.html#DenoisingHeatmapPlot.update_ticks"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfovis.gui.denoising_heatmap.DenoisingHeatmapPlot.update_ticks" title="Link to this definition">¶</a></dt>
+<dd><p>Update the y-ticks with new channel groups.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>channel_groups</strong><span class="classifier">list[tuple[int, str]]</span></dt><dd><p>List of tuples where each tuple contains a channel index and its label.</p>
+</dd>
+<dt><strong>num_channels</strong><span class="classifier">int</span></dt><dd><p>Total number of channels in the dataset.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-hfovis.gui.frequency">
+<span id="hfovis-gui-frequency-module"></span><h2>hfovis.gui.frequency module<a class="headerlink" href="#module-hfovis.gui.frequency" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="hfovis.gui.frequency.FrequencyPlot">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">hfovis.gui.frequency.</span></span><span class="sig-name descname"><span class="pre">FrequencyPlot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plot_widget</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">PlotWidget</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">channel_groups</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_channels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">colormap</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ColorMap</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hfovis/gui/frequency.html#FrequencyPlot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfovis.gui.frequency.FrequencyPlot" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Logic for plotting frequency histogram in event view.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>plot_widget</strong><span class="classifier">pg.PlotWidget</span></dt><dd><p>The plot widget from the main window where the frequency histogram should be
+drawn.</p>
+</dd>
+<dt><strong>channel_groups</strong><span class="classifier">list[tuple[int, str]]</span></dt><dd><p>List of tuples where each tuple contains a channel index and its label.</p>
+</dd>
+<dt><strong>num_channels</strong><span class="classifier">int</span></dt><dd><p>Total number of channels in the dataset.</p>
+</dd>
+<dt><strong>fs</strong><span class="classifier">float</span></dt><dd><p>Sampling frequency of the signal.</p>
+</dd>
+<dt><strong>colormap</strong><span class="classifier">pg.ColorMap</span></dt><dd><p>Color map to be used for the frequency histogram.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Attributes<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>fs</strong><span class="classifier">float</span></dt><dd></dd>
+<dt><strong>frequencyPlot</strong><span class="classifier">pg.PlotWidget</span></dt><dd></dd>
+<dt><strong>num_channels</strong><span class="classifier">int</span></dt><dd></dd>
+<dt><strong>freq_bins</strong><span class="classifier">np.ndarray</span></dt><dd></dd>
+<dt><strong>freq_hist</strong><span class="classifier">np.ndarray</span></dt><dd></dd>
+<dt><strong>freqImg</strong><span class="classifier">pg.ImageItem</span></dt><dd></dd>
+<dt><strong>freq_cbar</strong><span class="classifier">pg.ColorBarItem</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><strong>update_ticks(channel_groups: list[tuple[int, str]], num_channels: int)</strong></p></td>
+<td><p>Update the x-axis ticks based on the provided channel groups.</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>update(filtered_batch: np.ndarray, chan_vec: np.ndarray) -&gt; np.ndarray</strong></p></td>
+<td><p>Update the frequency histogram with the provided filtered batch and channel vector.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="hfovis.gui.frequency.FrequencyPlot.update">
+<span class="sig-name descname"><span class="pre">update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filtered_batch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chan_vec</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="_modules/hfovis/gui/frequency.html#FrequencyPlot.update"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfovis.gui.frequency.FrequencyPlot.update" title="Link to this definition">¶</a></dt>
+<dd><p>Update the frequency histogram with the provided filtered batch and channel
+vector.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>filtered_batch</strong><span class="classifier">np.ndarray</span></dt><dd><p>Filtered event data for the batch as a 2D array (n_samples, n_channels).</p>
+</dd>
+<dt><strong>chan_vec</strong><span class="classifier">np.ndarray</span></dt><dd><p>Vector of channels associated with the events in the batch.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>np.ndarray</dt><dd><p>Updated frequency histogram counts, shape (n_bins, n_channels).</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hfovis.gui.frequency.FrequencyPlot.update_ticks">
+<span class="sig-name descname"><span class="pre">update_ticks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">channel_groups</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_channels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hfovis/gui/frequency.html#FrequencyPlot.update_ticks"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfovis.gui.frequency.FrequencyPlot.update_ticks" title="Link to this definition">¶</a></dt>
+<dd><p>Update the x-axis ticks based on the provided channel groups.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>channel_groups</strong><span class="classifier">list[tuple[int, str]]</span></dt><dd><p>List of tuples where each tuple contains a channel index and its label.</p>
+</dd>
+<dt><strong>num_channels</strong><span class="classifier">int</span></dt><dd><p>Total number of channels in the dataset.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-hfovis.gui.main_window">
+<span id="hfovis-gui-main-window-module"></span><h2>hfovis.gui.main_window module<a class="headerlink" href="#module-hfovis.gui.main_window" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="hfovis.gui.main_window.MainWindow">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">hfovis.gui.main_window.</span></span><span class="sig-name descname"><span class="pre">MainWindow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">streamer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="hfovis.data.html#hfovis.data.streaming.Streamer" title="hfovis.data.streaming.Streamer"><span class="pre">Streamer</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">channel_names</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_channels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hfovis/gui/main_window.html#MainWindow"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfovis.gui.main_window.MainWindow" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">QMainWindow</span></code>, <a class="reference internal" href="hfovis.html#hfovis.interface.Ui_MainWindow" title="hfovis.interface.Ui_MainWindow"><code class="xref py py-class docutils literal notranslate"><span class="pre">Ui_MainWindow</span></code></a></p>
+<p>Subclass of <cite>QMainWindow</cite> and <cite>hfovis.interface.Ui_MainWindow</cite>. Main window for the
+HFO Visualizer application.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>streamer</strong><span class="classifier">Streamer</span></dt><dd><p>The Streamer instance used to stream data from the EEG device.</p>
+</dd>
+<dt><strong>channel_names</strong><span class="classifier">list[str], optional</span></dt><dd><p>List of channel names to be used in the application. If None, will use the montage
+specified in the <cite>GeneralConfig</cite>.</p>
+</dd>
+<dt><strong>n_channels</strong><span class="classifier">int, optional</span></dt><dd><p>Number of channels to be used in the application. If None, will use the number of
+channels specified in the montage or the <cite>RealTimeDetector</cite> configuration.</p>
+</dd>
+<dt><strong>**kwargs</strong></dt><dd><p>Additional keyword arguments to be passed to the <cite>RealTimeDetector</cite>.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Attributes<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>streamer</strong><span class="classifier">Streamer</span></dt><dd></dd>
+<dt><strong>config</strong><span class="classifier">GeneralConfig</span></dt><dd><p>Configuration object containing general settings for the application.</p>
+</dd>
+<dt><strong>detector_thread</strong><span class="classifier">RealTimeDetector</span></dt><dd><p>Thread for real-time detection of HFOs.</p>
+</dd>
+<dt><strong>denoise_thread</strong><span class="classifier">DenoisingThread</span></dt><dd><p>Thread for denoising potential HFO candidates.</p>
+</dd>
+<dt><strong>channel_names</strong><span class="classifier">list[str]</span></dt><dd></dd>
+<dt><strong>channel_groups</strong><span class="classifier">list[tuple[int, str]]</span></dt><dd><p>List of tuples where each tuple contains a channel index and its label.</p>
+</dd>
+<dt><strong>show_latest</strong><span class="classifier">bool</span></dt><dd><p>Flag indicating whether to show the latest event in the plots.</p>
+</dd>
+<dt><strong>fs</strong><span class="classifier">float</span></dt><dd><p>Sampling frequency of the EEG data.</p>
+</dd>
+<dt><strong>config_menu</strong><span class="classifier">ConfigMenu</span></dt><dd></dd>
+<dt><strong>model</strong><span class="classifier">EventModel</span></dt><dd></dd>
+<dt><strong>timeSeriesPlot</strong><span class="classifier">TimeSeriesPlot</span></dt><dd></dd>
+<dt><strong>denoisingHeatmapPlot</strong><span class="classifier">DenoisingHeatmapPlot</span></dt><dd></dd>
+<dt><strong>spectrogramPlot</strong><span class="classifier">SpectrogramPlot</span></dt><dd></dd>
+<dt><strong>rasterPlot</strong><span class="classifier">RasterPlot</span></dt><dd></dd>
+<dt><strong>frequencyPlot</strong><span class="classifier">FrequencyPlot</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><strong>last_event()</strong></p></td>
+<td><p>Navigate to the last event in the event list.</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>first_event()</strong></p></td>
+<td><p>Navigate to the first event in the event list.</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>next_event()</strong></p></td>
+<td><p>Navigate to the next event in the event list.</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>previous_event()</strong></p></td>
+<td><p>Navigate to the previous event in the event list.</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>save()</strong></p></td>
+<td><p>Save the current events and metadata to files specified in the configuration.</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>closeEvent(event)</strong></p></td>
+<td><p>Handle the close event of the main window, saving data before closing.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="hfovis.gui.main_window.MainWindow.closeEvent">
+<span class="sig-name descname"><span class="pre">closeEvent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hfovis/gui/main_window.html#MainWindow.closeEvent"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfovis.gui.main_window.MainWindow.closeEvent" title="Link to this definition">¶</a></dt>
+<dd><p>Handle the close event of the main window, saving data before closing.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hfovis.gui.main_window.MainWindow.first_event">
+<span class="sig-name descname"><span class="pre">first_event</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/hfovis/gui/main_window.html#MainWindow.first_event"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfovis.gui.main_window.MainWindow.first_event" title="Link to this definition">¶</a></dt>
+<dd><p>Navigate to the first event in the event list.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hfovis.gui.main_window.MainWindow.last_event">
+<span class="sig-name descname"><span class="pre">last_event</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/hfovis/gui/main_window.html#MainWindow.last_event"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfovis.gui.main_window.MainWindow.last_event" title="Link to this definition">¶</a></dt>
+<dd><p>Navigate to the last event in the event list.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hfovis.gui.main_window.MainWindow.next_event">
+<span class="sig-name descname"><span class="pre">next_event</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/hfovis/gui/main_window.html#MainWindow.next_event"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfovis.gui.main_window.MainWindow.next_event" title="Link to this definition">¶</a></dt>
+<dd><p>Navigate to the next event in the event list.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hfovis.gui.main_window.MainWindow.previous_event">
+<span class="sig-name descname"><span class="pre">previous_event</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/hfovis/gui/main_window.html#MainWindow.previous_event"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfovis.gui.main_window.MainWindow.previous_event" title="Link to this definition">¶</a></dt>
+<dd><p>Navigate to the previous event in the event list.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hfovis.gui.main_window.MainWindow.save">
+<span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/hfovis/gui/main_window.html#MainWindow.save"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfovis.gui.main_window.MainWindow.save" title="Link to this definition">¶</a></dt>
+<dd><p>Save the current events and metadata to files specified in the
+configuration.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-hfovis.gui.model">
+<span id="hfovis-gui-model-module"></span><h2>hfovis.gui.model module<a class="headerlink" href="#module-hfovis.gui.model" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="hfovis.gui.model.EventModel">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">hfovis.gui.model.</span></span><span class="sig-name descname"><span class="pre">EventModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_channels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hfovis/gui/model.html#EventModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfovis.gui.model.EventModel" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Model for handling event data, including raw and filtered events, metadata,
+and denoise histogram counts.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>n_channels</strong><span class="classifier">int</span></dt><dd><p>Number of channels in the event data.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Attributes<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>raw_events</strong><span class="classifier">np.ndarray</span></dt><dd><p>Array of raw event data, shape (n_samples, n_channels).</p>
+</dd>
+<dt><strong>filtered_events</strong><span class="classifier">np.ndarray</span></dt><dd><p>Array of filtered event data, shape (n_samples, n_channels).</p>
+</dd>
+<dt><strong>meta</strong><span class="classifier">pd.DataFrame</span></dt><dd><p>DataFrame containing metadata for each event, including center, channel,
+threshold, and whether the event is real.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><strong>append_batch(event: dict) -&gt; tuple[np.ndarray, np.ndarray, np.ndarray]:</strong></p></td>
+<td><p>Appends a batch of events to the model and returns the raw and filtered event arrays, metadata DataFrame, and batch indices.</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>append_denoise_counts(hist_batch: np.ndarray) -&gt; np.ndarray:</strong></p></td>
+<td><p>Appends a batch of denoise histogram counts to the model and returns the updated histogram counts.</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>save(raw_filename: str, filt_filename: str, meta_filename: str):</strong></p></td>
+<td><p>Saves the raw events, filtered events, and metadata to specified files.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="hfovis.gui.model.EventModel.append_batch">
+<span class="sig-name descname"><span class="pre">append_batch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/hfovis/gui/model.html#EventModel.append_batch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfovis.gui.model.EventModel.append_batch" title="Link to this definition">¶</a></dt>
+<dd><p>Appends a batch of events to the model.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>event</strong><span class="classifier">dict</span></dt><dd><p>Dictionary containing the following keys:
+- “raw”: Raw event data as a 2D array (n_samples, n
+- “filtered”: Filtered event data as a 2D array (n_samples, n_channels).
+- “center”: Center of the event as a 1D array (n_samples,).
+- “channels”: Channels associated with the event as a 1D array (n_samples,).
+- “threshold”: Threshold values for the event as a 1D array (n_samples,).</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl>
+<dt>tuple[np.ndarray, np.ndarray, pd.DataFrame, np.ndarray, np.ndarray]</dt><dd><ul class="simple">
+<li><p>raw_batch: Raw event data for the batch as a 2D array</p></li>
+</ul>
+<p>(n_samples, n_channels).
+- filt_batch: Filtered event data for the batch as a 2D array (n_samples,
+n_channels).
+- batch_meta: DataFrame containing metadata
+- batch_indices: Indices of the events in the batch.
+- chan_vec: Vector of channels associated with the events in the batch.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hfovis.gui.model.EventModel.append_denoise_counts">
+<span class="sig-name descname"><span class="pre">append_denoise_counts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hist_batch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="_modules/hfovis/gui/model.html#EventModel.append_denoise_counts"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfovis.gui.model.EventModel.append_denoise_counts" title="Link to this definition">¶</a></dt>
+<dd><p>Appends a batch of denoise histogram counts to the model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>hist_batch</strong><span class="classifier">np.ndarray</span></dt><dd><p>Histogram batch of shape (2, n_channels) containing counts for pseudo-HFO
+and real-HFO across channels.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>np.ndarray</dt><dd><p>Updated denoise histogram counts, shape (2, n_channels).</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hfovis.gui.model.EventModel.save">
+<span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">raw_filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filt_filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">meta_filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hfovis/gui/model.html#EventModel.save"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfovis.gui.model.EventModel.save" title="Link to this definition">¶</a></dt>
+<dd><p>Saves the raw events, filtered events, and metadata to specified files.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>raw_filename</strong><span class="classifier">str</span></dt><dd><p>Filename to save the raw events (should be .pkl).</p>
+</dd>
+<dt><strong>filt_filename</strong><span class="classifier">str</span></dt><dd><p>Filename to save the filtered events (should be .npy).</p>
+</dd>
+<dt><strong>meta_filename</strong><span class="classifier">str</span></dt><dd><p>Filename to save the metadata DataFrame (should be .npy).</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-hfovis.gui.raster">
+<span id="hfovis-gui-raster-module"></span><h2>hfovis.gui.raster module<a class="headerlink" href="#module-hfovis.gui.raster" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="hfovis.gui.raster.RasterPlot">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">hfovis.gui.raster.</span></span><span class="sig-name descname"><span class="pre">RasterPlot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plot_widget</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">PlotWidget</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">channel_groups</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_channels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#hfovis.gui.model.EventModel" title="hfovis.gui.model.EventModel"><span class="pre">EventModel</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">pseudo_check_box</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">QCheckBox</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">event_num_box</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">SpinBox</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hfovis/gui/raster.html#RasterPlot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfovis.gui.raster.RasterPlot" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Logic for plotting raster plot in event view.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>plot_widget</strong><span class="classifier">pg.PlotWidget</span></dt><dd><p>The plot widget from the main window where the raster plot should be drawn.</p>
+</dd>
+<dt><strong>channel_groups</strong><span class="classifier">list[tuple[int, str]]</span></dt><dd><p>List of tuples where each tuple contains a channel index and its label.</p>
+</dd>
+<dt><strong>num_channels</strong><span class="classifier">int</span></dt><dd><p>Total number of channels in the dataset.</p>
+</dd>
+<dt><strong>model</strong><span class="classifier">EventModel</span></dt><dd><p>The event model containing metadata about events.</p>
+</dd>
+<dt><strong>pseudo_check_box</strong><span class="classifier">QCheckBox</span></dt><dd><p>Checkbox to toggle the visibility of pseudo events in the raster plot.</p>
+</dd>
+<dt><strong>event_num_box</strong><span class="classifier">pg.SpinBox</span></dt><dd><p>SpinBox to select the event number for highlighting in the raster plot.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Attributes<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>rasterPlot</strong><span class="classifier">pg.PlotWidget</span></dt><dd></dd>
+<dt><strong>model</strong><span class="classifier">EventModel</span></dt><dd></dd>
+<dt><strong>showPseudoEventBox</strong><span class="classifier">QCheckBox</span></dt><dd></dd>
+<dt><strong>eventNumBox</strong><span class="classifier">pg.SpinBox</span></dt><dd></dd>
+<dt><strong>windows_secs</strong><span class="classifier">float</span></dt><dd><p>The time window in seconds for the raster plot.</p>
+</dd>
+<dt><strong>rasterScatter</strong><span class="classifier">pg.ScatterPlotItem</span></dt><dd></dd>
+<dt><strong>selectedScatter</strong><span class="classifier">pg.ScatterPlotItem</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><strong>update_ticks(channel_groups: list[tuple[int, str]], num_channels: int)</strong></p></td>
+<td><p>Update the y-ticks with new channel groups.</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>update()</strong></p></td>
+<td><p>Update the raster plot with the current event data.</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>set_raster_window(secs: float)</strong></p></td>
+<td><p>Setter for the visible time window (callable from UI).</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="hfovis.gui.raster.RasterPlot.set_raster_window">
+<span class="sig-name descname"><span class="pre">set_raster_window</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">secs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hfovis/gui/raster.html#RasterPlot.set_raster_window"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfovis.gui.raster.RasterPlot.set_raster_window" title="Link to this definition">¶</a></dt>
+<dd><p>Setter for the visible time window (callable from UI).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>secs</strong><span class="classifier">float</span></dt><dd><p>The time window in seconds to set for the raster plot.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hfovis.gui.raster.RasterPlot.update">
+<span class="sig-name descname"><span class="pre">update</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/hfovis/gui/raster.html#RasterPlot.update"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfovis.gui.raster.RasterPlot.update" title="Link to this definition">¶</a></dt>
+<dd><p>Update the raster plot with the current event data. Initialization should’ve
+been done with pointers to the relevant objects, so this method doesn’t require
+any parameters.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hfovis.gui.raster.RasterPlot.update_ticks">
+<span class="sig-name descname"><span class="pre">update_ticks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">channel_groups</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_channels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hfovis/gui/raster.html#RasterPlot.update_ticks"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfovis.gui.raster.RasterPlot.update_ticks" title="Link to this definition">¶</a></dt>
+<dd><p>Update the y-ticks with new channel groups.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>channel_groups</strong><span class="classifier">list[tuple[int, str]]</span></dt><dd><p>List of tuples where each tuple contains a channel index and its label.</p>
+</dd>
+<dt><strong>num_channels</strong><span class="classifier">int</span></dt><dd><p>Total number of channels in the dataset.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-hfovis.gui.spectrogram">
+<span id="hfovis-gui-spectrogram-module"></span><h2>hfovis.gui.spectrogram module<a class="headerlink" href="#module-hfovis.gui.spectrogram" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="hfovis.gui.spectrogram.SpectrogramPlot">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">hfovis.gui.spectrogram.</span></span><span class="sig-name descname"><span class="pre">SpectrogramPlot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plot_widget</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">PlotWidget</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">colormap</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ColorMap</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hfovis/gui/spectrogram.html#SpectrogramPlot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfovis.gui.spectrogram.SpectrogramPlot" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Logic for plotting spectrogram in event view.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>plot_widget</strong><span class="classifier">pg.PlotWidget</span></dt><dd><p>The plot widget from the main window where the spectrogram should be drawn.</p>
+</dd>
+<dt><strong>fs</strong><span class="classifier">float</span></dt><dd><p>Sampling frequency of the signal.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Attributes<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>eventSpectrogram</strong><span class="classifier">pg.PlotWidget</span></dt><dd><p>The plot widget from the main window where the spectrogram should be drawn.</p>
+</dd>
+<dt><strong>fs</strong><span class="classifier">float</span></dt><dd></dd>
+<dt><strong>spec_a, spec_b</strong><span class="classifier">np.ndarray</span></dt><dd><p>Coefficients for the high-pass Butterworth filter.</p>
+</dd>
+<dt><strong>specImg</strong><span class="classifier">pg.ImageItem</span></dt><dd></dd>
+<dt><strong>cbar</strong><span class="classifier">pg.ColorBarItem</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><strong>update(sig: np.ndarray)</strong></p></td>
+<td><p>Updates the spectrogram with the provided signal.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="hfovis.gui.spectrogram.SpectrogramPlot.update">
+<span class="sig-name descname"><span class="pre">update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sig</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hfovis/gui/spectrogram.html#SpectrogramPlot.update"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfovis.gui.spectrogram.SpectrogramPlot.update" title="Link to this definition">¶</a></dt>
+<dd><p>Update the spectrogram with the provided signal.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>sig</strong><span class="classifier">np.ndarray</span></dt><dd><p>The signal to be processed and displayed as a spectrogram.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-hfovis.gui.time_series">
+<span id="hfovis-gui-time-series-module"></span><h2>hfovis.gui.time_series module<a class="headerlink" href="#module-hfovis.gui.time_series" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="hfovis.gui.time_series.TimeSeriesPlot">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">hfovis.gui.time_series.</span></span><span class="sig-name descname"><span class="pre">TimeSeriesPlot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">raw_plot</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">PlotWidget</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filtered_plot</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">PlotWidget</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hfovis/gui/time_series.html#TimeSeriesPlot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfovis.gui.time_series.TimeSeriesPlot" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Logic for plotting time series data in event view.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>raw_plot</strong><span class="classifier">pg.PlotWidget</span></dt><dd><p>The plot widget for raw time series data.</p>
+</dd>
+<dt><strong>filtered_plot</strong><span class="classifier">pg.PlotWidget</span></dt><dd><p>The plot widget for filtered time series data.</p>
+</dd>
+<dt><strong>fs</strong><span class="classifier">float</span></dt><dd><p>Sampling frequency of the signal.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Attributes<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>fs</strong><span class="classifier">float</span></dt><dd></dd>
+<dt><strong>rawPlot</strong><span class="classifier">pg.PlotWidget</span></dt><dd></dd>
+<dt><strong>filteredPlot</strong><span class="classifier">pg.PlotWidget</span></dt><dd></dd>
+<dt><strong>rawCurve</strong><span class="classifier">pg.PlotCurveItem</span></dt><dd></dd>
+<dt><strong>filtCurve</strong><span class="classifier">pg.PlotCurveItem</span></dt><dd></dd>
+<dt><strong>lowerThreshLine</strong><span class="classifier">pg.InfiniteLine</span></dt><dd></dd>
+<dt><strong>upperThreshLine</strong><span class="classifier">pg.InfiniteLine</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><strong>update(raw: np.ndarray, filt: np.ndarray, center: float, thr: float)</strong></p></td>
+<td><p>Update the plots with new raw and filtered data, center time, and threshold.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="hfovis.gui.time_series.TimeSeriesPlot.update">
+<span class="sig-name descname"><span class="pre">update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">raw</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">center</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">thr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hfovis/gui/time_series.html#TimeSeriesPlot.update"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfovis.gui.time_series.TimeSeriesPlot.update" title="Link to this definition">¶</a></dt>
+<dd><p>Update the plots with new raw and filtered data, center time, and threshold.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>raw</strong><span class="classifier">np.ndarray</span></dt><dd><p>Raw time series data.</p>
+</dd>
+<dt><strong>filt</strong><span class="classifier">np.ndarray</span></dt><dd><p>Filtered time series data.</p>
+</dd>
+<dt><strong>center</strong><span class="classifier">float</span></dt><dd><p>Center time for the plots.</p>
+</dd>
+<dt><strong>thr</strong><span class="classifier">float</span></dt><dd><p>Threshold value for the filtered data.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-hfovis.gui">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-hfovis.gui" title="Link to this heading">¶</a></h2>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">hfovis.gui package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-hfovis.gui.config">hfovis.gui.config module</a><ul>
+<li><a class="reference internal" href="#hfovis.gui.config.GeneralConfig"><code class="docutils literal notranslate"><span class="pre">GeneralConfig</span></code></a><ul>
+<li><a class="reference internal" href="#hfovis.gui.config.GeneralConfig.filtered_data_filename"><code class="docutils literal notranslate"><span class="pre">GeneralConfig.filtered_data_filename</span></code></a></li>
+<li><a class="reference internal" href="#hfovis.gui.config.GeneralConfig.get_validation_messages"><code class="docutils literal notranslate"><span class="pre">GeneralConfig.get_validation_messages()</span></code></a></li>
+<li><a class="reference internal" href="#hfovis.gui.config.GeneralConfig.metadata_filename"><code class="docutils literal notranslate"><span class="pre">GeneralConfig.metadata_filename</span></code></a></li>
+<li><a class="reference internal" href="#hfovis.gui.config.GeneralConfig.montage_location"><code class="docutils literal notranslate"><span class="pre">GeneralConfig.montage_location</span></code></a></li>
+<li><a class="reference internal" href="#hfovis.gui.config.GeneralConfig.name"><code class="docutils literal notranslate"><span class="pre">GeneralConfig.name</span></code></a></li>
+<li><a class="reference internal" href="#hfovis.gui.config.GeneralConfig.raw_data_filename"><code class="docutils literal notranslate"><span class="pre">GeneralConfig.raw_data_filename</span></code></a></li>
+<li><a class="reference internal" href="#hfovis.gui.config.GeneralConfig.update"><code class="docutils literal notranslate"><span class="pre">GeneralConfig.update()</span></code></a></li>
+<li><a class="reference internal" href="#hfovis.gui.config.GeneralConfig.validate"><code class="docutils literal notranslate"><span class="pre">GeneralConfig.validate()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-hfovis.gui.config_menu">hfovis.gui.config_menu module</a><ul>
+<li><a class="reference internal" href="#hfovis.gui.config_menu.ConfigMenu"><code class="docutils literal notranslate"><span class="pre">ConfigMenu</span></code></a><ul>
+<li><a class="reference internal" href="#hfovis.gui.config_menu.ConfigMenu.apply_changes"><code class="docutils literal notranslate"><span class="pre">ConfigMenu.apply_changes()</span></code></a></li>
+<li><a class="reference internal" href="#hfovis.gui.config_menu.ConfigMenu.disable_editing"><code class="docutils literal notranslate"><span class="pre">ConfigMenu.disable_editing()</span></code></a></li>
+<li><a class="reference internal" href="#hfovis.gui.config_menu.ConfigMenu.display_errors"><code class="docutils literal notranslate"><span class="pre">ConfigMenu.display_errors()</span></code></a></li>
+<li><a class="reference internal" href="#hfovis.gui.config_menu.ConfigMenu.reset_defaults"><code class="docutils literal notranslate"><span class="pre">ConfigMenu.reset_defaults()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#hfovis.gui.config_menu.FilePickerWidget"><code class="docutils literal notranslate"><span class="pre">FilePickerWidget</span></code></a><ul>
+<li><a class="reference internal" href="#hfovis.gui.config_menu.FilePickerWidget.open_dialog"><code class="docutils literal notranslate"><span class="pre">FilePickerWidget.open_dialog()</span></code></a></li>
+<li><a class="reference internal" href="#hfovis.gui.config_menu.FilePickerWidget.setEnabled"><code class="docutils literal notranslate"><span class="pre">FilePickerWidget.setEnabled()</span></code></a></li>
+<li><a class="reference internal" href="#hfovis.gui.config_menu.FilePickerWidget.setStyleSheet"><code class="docutils literal notranslate"><span class="pre">FilePickerWidget.setStyleSheet()</span></code></a></li>
+<li><a class="reference internal" href="#hfovis.gui.config_menu.FilePickerWidget.setText"><code class="docutils literal notranslate"><span class="pre">FilePickerWidget.setText()</span></code></a></li>
+<li><a class="reference internal" href="#hfovis.gui.config_menu.FilePickerWidget.setToolTip"><code class="docutils literal notranslate"><span class="pre">FilePickerWidget.setToolTip()</span></code></a></li>
+<li><a class="reference internal" href="#hfovis.gui.config_menu.FilePickerWidget.text"><code class="docutils literal notranslate"><span class="pre">FilePickerWidget.text()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-hfovis.gui.denoising_heatmap">hfovis.gui.denoising_heatmap module</a><ul>
+<li><a class="reference internal" href="#hfovis.gui.denoising_heatmap.DenoisingHeatmapPlot"><code class="docutils literal notranslate"><span class="pre">DenoisingHeatmapPlot</span></code></a><ul>
+<li><a class="reference internal" href="#hfovis.gui.denoising_heatmap.DenoisingHeatmapPlot.update"><code class="docutils literal notranslate"><span class="pre">DenoisingHeatmapPlot.update()</span></code></a></li>
+<li><a class="reference internal" href="#hfovis.gui.denoising_heatmap.DenoisingHeatmapPlot.update_ticks"><code class="docutils literal notranslate"><span class="pre">DenoisingHeatmapPlot.update_ticks()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-hfovis.gui.frequency">hfovis.gui.frequency module</a><ul>
+<li><a class="reference internal" href="#hfovis.gui.frequency.FrequencyPlot"><code class="docutils literal notranslate"><span class="pre">FrequencyPlot</span></code></a><ul>
+<li><a class="reference internal" href="#hfovis.gui.frequency.FrequencyPlot.update"><code class="docutils literal notranslate"><span class="pre">FrequencyPlot.update()</span></code></a></li>
+<li><a class="reference internal" href="#hfovis.gui.frequency.FrequencyPlot.update_ticks"><code class="docutils literal notranslate"><span class="pre">FrequencyPlot.update_ticks()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-hfovis.gui.main_window">hfovis.gui.main_window module</a><ul>
+<li><a class="reference internal" href="#hfovis.gui.main_window.MainWindow"><code class="docutils literal notranslate"><span class="pre">MainWindow</span></code></a><ul>
+<li><a class="reference internal" href="#hfovis.gui.main_window.MainWindow.closeEvent"><code class="docutils literal notranslate"><span class="pre">MainWindow.closeEvent()</span></code></a></li>
+<li><a class="reference internal" href="#hfovis.gui.main_window.MainWindow.first_event"><code class="docutils literal notranslate"><span class="pre">MainWindow.first_event()</span></code></a></li>
+<li><a class="reference internal" href="#hfovis.gui.main_window.MainWindow.last_event"><code class="docutils literal notranslate"><span class="pre">MainWindow.last_event()</span></code></a></li>
+<li><a class="reference internal" href="#hfovis.gui.main_window.MainWindow.next_event"><code class="docutils literal notranslate"><span class="pre">MainWindow.next_event()</span></code></a></li>
+<li><a class="reference internal" href="#hfovis.gui.main_window.MainWindow.previous_event"><code class="docutils literal notranslate"><span class="pre">MainWindow.previous_event()</span></code></a></li>
+<li><a class="reference internal" href="#hfovis.gui.main_window.MainWindow.save"><code class="docutils literal notranslate"><span class="pre">MainWindow.save()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-hfovis.gui.model">hfovis.gui.model module</a><ul>
+<li><a class="reference internal" href="#hfovis.gui.model.EventModel"><code class="docutils literal notranslate"><span class="pre">EventModel</span></code></a><ul>
+<li><a class="reference internal" href="#hfovis.gui.model.EventModel.append_batch"><code class="docutils literal notranslate"><span class="pre">EventModel.append_batch()</span></code></a></li>
+<li><a class="reference internal" href="#hfovis.gui.model.EventModel.append_denoise_counts"><code class="docutils literal notranslate"><span class="pre">EventModel.append_denoise_counts()</span></code></a></li>
+<li><a class="reference internal" href="#hfovis.gui.model.EventModel.save"><code class="docutils literal notranslate"><span class="pre">EventModel.save()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-hfovis.gui.raster">hfovis.gui.raster module</a><ul>
+<li><a class="reference internal" href="#hfovis.gui.raster.RasterPlot"><code class="docutils literal notranslate"><span class="pre">RasterPlot</span></code></a><ul>
+<li><a class="reference internal" href="#hfovis.gui.raster.RasterPlot.set_raster_window"><code class="docutils literal notranslate"><span class="pre">RasterPlot.set_raster_window()</span></code></a></li>
+<li><a class="reference internal" href="#hfovis.gui.raster.RasterPlot.update"><code class="docutils literal notranslate"><span class="pre">RasterPlot.update()</span></code></a></li>
+<li><a class="reference internal" href="#hfovis.gui.raster.RasterPlot.update_ticks"><code class="docutils literal notranslate"><span class="pre">RasterPlot.update_ticks()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-hfovis.gui.spectrogram">hfovis.gui.spectrogram module</a><ul>
+<li><a class="reference internal" href="#hfovis.gui.spectrogram.SpectrogramPlot"><code class="docutils literal notranslate"><span class="pre">SpectrogramPlot</span></code></a><ul>
+<li><a class="reference internal" href="#hfovis.gui.spectrogram.SpectrogramPlot.update"><code class="docutils literal notranslate"><span class="pre">SpectrogramPlot.update()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-hfovis.gui.time_series">hfovis.gui.time_series module</a><ul>
+<li><a class="reference internal" href="#hfovis.gui.time_series.TimeSeriesPlot"><code class="docutils literal notranslate"><span class="pre">TimeSeriesPlot</span></code></a><ul>
+<li><a class="reference internal" href="#hfovis.gui.time_series.TimeSeriesPlot.update"><code class="docutils literal notranslate"><span class="pre">TimeSeriesPlot.update()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-hfovis.gui">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="hfovis.detector.html"
+                          title="previous chapter">hfovis.detector package</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/hfovis.gui.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="hfovis.detector.html" title="hfovis.detector package"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">hfovis 0.0.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="hfovis.html" >hfovis package</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">hfovis.gui package</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2025, Raahi Jogani, Valentina Hrtonova, Behrang Besheli.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    </div>
+  </body>
+</html>

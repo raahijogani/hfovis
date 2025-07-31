@@ -50,6 +50,7 @@ The code is structured as follows:
         files. 
         - `streaming.py`: Creates virtual streams to simulate real-time data.
     - `denoiser/`: Modules for denoising HFO candidates.
+        - `data/` : Contains the model weights for the denoiser.
         - `omp.py`: Contains the orthogonal matching pursuit implementation.
         - `features.py`: Extracts features from the OMP results.
         - `vfactor.py`/`normalize.py`: Helpers for getting features.

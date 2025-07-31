@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>hfovis.gui.main_window &#8212; hfovis 0.0.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/classic.css?v=2bf1fcf8" />
+    
+    <script src="../../../_static/documentation_options.js?v=d45e8c67"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">hfovis 0.0.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">hfovis.gui.main_window</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for hfovis.gui.main_window</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">PyQt6</span><span class="w"> </span><span class="kn">import</span> <span class="n">QtCore</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">PyQt6.QtWidgets</span><span class="w"> </span><span class="kn">import</span> <span class="n">QMainWindow</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pyqtgraph</span><span class="w"> </span><span class="kn">import</span> <span class="n">colormap</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">hfovis.data.streaming</span><span class="w"> </span><span class="kn">import</span> <span class="n">Streamer</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">hfovis.denoiser</span><span class="w"> </span><span class="kn">import</span> <span class="n">DenoisingThread</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">hfovis.detector</span><span class="w"> </span><span class="kn">import</span> <span class="n">RealTimeDetector</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">hfovis.gui.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">GeneralConfig</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">hfovis.gui.config_menu</span><span class="w"> </span><span class="kn">import</span> <span class="n">ConfigMenu</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">hfovis.gui.denoising_heatmap</span><span class="w"> </span><span class="kn">import</span> <span class="n">DenoisingHeatmapPlot</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">hfovis.gui.frequency</span><span class="w"> </span><span class="kn">import</span> <span class="n">FrequencyPlot</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">hfovis.gui.model</span><span class="w"> </span><span class="kn">import</span> <span class="n">EventModel</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">hfovis.gui.raster</span><span class="w"> </span><span class="kn">import</span> <span class="n">RasterPlot</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">hfovis.gui.spectrogram</span><span class="w"> </span><span class="kn">import</span> <span class="n">SpectrogramPlot</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">hfovis.gui.time_series</span><span class="w"> </span><span class="kn">import</span> <span class="n">TimeSeriesPlot</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">hfovis.interface</span><span class="w"> </span><span class="kn">import</span> <span class="n">Ui_MainWindow</span>
+
+
+<div class="viewcode-block" id="MainWindow">
+<a class="viewcode-back" href="../../../hfovis.gui.html#hfovis.gui.main_window.MainWindow">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">MainWindow</span><span class="p">(</span><span class="n">QMainWindow</span><span class="p">,</span> <span class="n">Ui_MainWindow</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Subclass of `QMainWindow` and `hfovis.interface.Ui_MainWindow`. Main window for the</span>
+<span class="sd">    HFO Visualizer application.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    streamer : Streamer</span>
+<span class="sd">        The Streamer instance used to stream data from the EEG device.</span>
+<span class="sd">    channel_names : list[str], optional</span>
+<span class="sd">        List of channel names to be used in the application. If None, will use the montage</span>
+<span class="sd">        specified in the `GeneralConfig`.</span>
+<span class="sd">    n_channels : int, optional</span>
+<span class="sd">        Number of channels to be used in the application. If None, will use the number of</span>
+<span class="sd">        channels specified in the montage or the `RealTimeDetector` configuration.</span>
+<span class="sd">    **kwargs</span>
+<span class="sd">        Additional keyword arguments to be passed to the `RealTimeDetector`.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    streamer : Streamer</span>
+<span class="sd">    config : GeneralConfig</span>
+<span class="sd">        Configuration object containing general settings for the application.</span>
+<span class="sd">    detector_thread : RealTimeDetector</span>
+<span class="sd">        Thread for real-time detection of HFOs.</span>
+<span class="sd">    denoise_thread : DenoisingThread</span>
+<span class="sd">        Thread for denoising potential HFO candidates.</span>
+<span class="sd">    channel_names : list[str]</span>
+<span class="sd">    channel_groups : list[tuple[int, str]]</span>
+<span class="sd">        List of tuples where each tuple contains a channel index and its label.</span>
+<span class="sd">    show_latest : bool</span>
+<span class="sd">        Flag indicating whether to show the latest event in the plots.</span>
+<span class="sd">    fs : float</span>
+<span class="sd">        Sampling frequency of the EEG data.</span>
+<span class="sd">    config_menu : ConfigMenu</span>
+<span class="sd">    model : EventModel</span>
+<span class="sd">    timeSeriesPlot : TimeSeriesPlot</span>
+<span class="sd">    denoisingHeatmapPlot : DenoisingHeatmapPlot</span>
+<span class="sd">    spectrogramPlot : SpectrogramPlot</span>
+<span class="sd">    rasterPlot : RasterPlot</span>
+<span class="sd">    frequencyPlot : FrequencyPlot</span>
+
+<span class="sd">    Methods</span>
+<span class="sd">    -------</span>
+<span class="sd">    last_event()</span>
+<span class="sd">        Navigate to the last event in the event list.</span>
+<span class="sd">    first_event()</span>
+<span class="sd">        Navigate to the first event in the event list.</span>
+<span class="sd">    next_event()</span>
+<span class="sd">        Navigate to the next event in the event list.</span>
+<span class="sd">    previous_event()</span>
+<span class="sd">        Navigate to the previous event in the event list.</span>
+<span class="sd">    save()</span>
+<span class="sd">        Save the current events and metadata to files specified in the configuration.</span>
+<span class="sd">    closeEvent(event)</span>
+<span class="sd">        Handle the close event of the main window, saving data before closing.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">streamer</span><span class="p">:</span> <span class="n">Streamer</span><span class="p">,</span>
+        <span class="n">channel_names</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">n_channels</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setupUi</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">streamer</span> <span class="o">=</span> <span class="n">streamer</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">GeneralConfig</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">detector_thread</span> <span class="o">=</span> <span class="n">RealTimeDetector</span><span class="p">(</span>
+            <span class="n">streamer</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">montage_location</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">montage_location</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">channel_names</span> <span class="o">=</span> <span class="p">[</span><span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">f</span> <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">channel_groups</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_channel_groups</span><span class="p">(</span><span class="n">channel_names</span><span class="p">)</span>
+            <span class="n">n_channels</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">channel_names</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">channel_names</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">channel_names</span> <span class="o">=</span> <span class="n">channel_names</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">channel_groups</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_channel_groups</span><span class="p">(</span><span class="n">channel_names</span><span class="p">)</span>
+            <span class="n">n_channels</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">channel_names</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">detector_thread</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">channels</span><span class="p">:</span>
+            <span class="n">n_channels</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">detector_thread</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">channels</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">channel_names</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_channels</span><span class="p">)]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">channel_groups</span> <span class="o">=</span> <span class="p">[(</span><span class="n">i</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_channels</span><span class="p">)]</span>
+        <span class="k">elif</span> <span class="n">n_channels</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">channel_names</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_channels</span><span class="p">)]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">channel_groups</span> <span class="o">=</span> <span class="p">[(</span><span class="n">i</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_channels</span><span class="p">)]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;No channel names provided and no montage file specified in config.&quot;</span>
+            <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">detector_thread</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">channels</span> <span class="o">=</span> <span class="n">n_channels</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">detector_thread</span><span class="o">.</span><span class="n">build_graph_single_band</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">show_latest</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">fs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">detector_thread</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">fs</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">config_menu</span> <span class="o">=</span> <span class="n">ConfigMenu</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">configScrollAreaWidgetContents</span><span class="p">,</span>
+            <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">detector_thread</span><span class="o">.</span><span class="n">config</span><span class="p">],</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">EventModel</span><span class="p">(</span><span class="n">n_channels</span><span class="p">)</span>
+
+        <span class="c1"># Plots</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">timeSeriesPlot</span> <span class="o">=</span> <span class="n">TimeSeriesPlot</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rawEventPlot</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">filteredEventPlot</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">denoisingHeatmapPlot</span> <span class="o">=</span> <span class="n">DenoisingHeatmapPlot</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">denoisingHeatmap</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">channel_groups</span><span class="p">,</span>
+            <span class="n">n_channels</span><span class="p">,</span>
+            <span class="n">colormap</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;inferno&quot;</span><span class="p">),</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">spectrogramPlot</span> <span class="o">=</span> <span class="n">SpectrogramPlot</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">eventSpectrogram</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">,</span> <span class="n">colormap</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;turbo&quot;</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rasterPlot</span> <span class="o">=</span> <span class="n">RasterPlot</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rasterPlot</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">channel_groups</span><span class="p">,</span>
+            <span class="n">n_channels</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">showPseudoEventBox</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">eventNumBox</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">frequencyPlot</span> <span class="o">=</span> <span class="n">FrequencyPlot</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">frequencyPlot</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">channel_groups</span><span class="p">,</span>
+            <span class="n">n_channels</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">,</span>
+            <span class="n">colormap</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;inferno&quot;</span><span class="p">),</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_connect_ui</span><span class="p">()</span>
+
+    <span class="c1"># Slots</span>
+    <span class="nd">@QtCore</span><span class="o">.</span><span class="n">pyqtSlot</span><span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_on_event_received</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Slot that handles the reception of a new event from the detector thread.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        event : dict</span>
+<span class="sd">            The event data received from the detector thread. It should contain the raw</span>
+<span class="sd">            and filtered data, metadata, and indices of the event.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">old_len</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">meta</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">meta</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="mi">0</span>
+        <span class="n">was_at_end</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">eventNumBox</span><span class="o">.</span><span class="n">value</span><span class="p">()</span> <span class="o">==</span> <span class="n">old_len</span>
+
+        <span class="n">raw_batch</span><span class="p">,</span> <span class="n">filt_batch</span><span class="p">,</span> <span class="n">batch_meta</span><span class="p">,</span> <span class="n">batch_indices</span><span class="p">,</span> <span class="n">chan_vec</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">append_batch</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">frequencyPlot</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">filt_batch</span><span class="p">,</span> <span class="n">chan_vec</span><span class="p">)</span>
+
+        <span class="n">new_len</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">meta</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">eventNumBox</span><span class="o">.</span><span class="n">setRange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">new_len</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">numEventsLabel</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;of </span><span class="si">{</span><span class="n">new_len</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">was_at_end</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">eventNumBox</span><span class="o">.</span><span class="n">setValue</span><span class="p">(</span><span class="n">new_len</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rasterPlot</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">denoise_thread</span><span class="o">.</span><span class="n">enqueue</span><span class="p">(</span><span class="n">raw_batch</span><span class="p">,</span> <span class="n">batch_meta</span><span class="p">,</span> <span class="n">batch_indices</span><span class="p">)</span>
+
+    <span class="nd">@QtCore</span><span class="o">.</span><span class="n">pyqtSlot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_on_hist_ready</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hist_batch</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Slot that handles the reception of a histogram batch from the denoising thread.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        hist_batch : np.ndarray</span>
+<span class="sd">            The histogram batch data received from the denoising thread. It should be a</span>
+<span class="sd">            2D array where each row corresponds to a channel and each column corresponds</span>
+<span class="sd">            to a class (0 for pseudo-HFO, 1 for real-HFO).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">denoisingHeatmapPlot</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">hist_batch</span><span class="p">)</span>
+
+    <span class="nd">@QtCore</span><span class="o">.</span><span class="n">pyqtSlot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_on_classification_ready</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">indices</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">classes</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Slot that handles the reception of classification results from the denoising</span>
+<span class="sd">        thread.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        indices : np.ndarray</span>
+<span class="sd">            Indices of the events in the metadata DataFrame that were classified.</span>
+<span class="sd">        classes : np.ndarray</span>
+<span class="sd">            Classification results for the events, where 0 indicates a pseudo-HFO and 1</span>
+<span class="sd">            indicates a real-HFO.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">indices</span><span class="p">,</span> <span class="s2">&quot;is_real&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">classes</span> <span class="o">==</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_update_classification_label</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rasterPlot</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
+
+    <span class="c1"># Navigation methods</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_on_event_index_changed</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">meta</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">show_latest</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">eventNumBox</span><span class="o">.</span><span class="n">value</span><span class="p">()</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">meta</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_plot_event</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">eventNumBox</span><span class="o">.</span><span class="n">value</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rasterPlot</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
+
+<div class="viewcode-block" id="MainWindow.last_event">
+<a class="viewcode-back" href="../../../hfovis.gui.html#hfovis.gui.main_window.MainWindow.last_event">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">last_event</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Navigate to the last event in the event list.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">meta</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">eventNumBox</span><span class="o">.</span><span class="n">setValue</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">meta</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="MainWindow.first_event">
+<a class="viewcode-back" href="../../../hfovis.gui.html#hfovis.gui.main_window.MainWindow.first_event">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">first_event</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Navigate to the first event in the event list.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">meta</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">eventNumBox</span><span class="o">.</span><span class="n">setValue</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MainWindow.next_event">
+<a class="viewcode-back" href="../../../hfovis.gui.html#hfovis.gui.main_window.MainWindow.next_event">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">next_event</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Navigate to the next event in the event list.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">meta</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="n">i</span><span class="p">,</span> <span class="n">n</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">eventNumBox</span><span class="o">.</span><span class="n">value</span><span class="p">(),</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">meta</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">eventNumBox</span><span class="o">.</span><span class="n">setValue</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">n</span> <span class="k">else</span> <span class="mi">1</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MainWindow.previous_event">
+<a class="viewcode-back" href="../../../hfovis.gui.html#hfovis.gui.main_window.MainWindow.previous_event">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">previous_event</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Navigate to the previous event in the event list.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">meta</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="n">i</span><span class="p">,</span> <span class="n">n</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">eventNumBox</span><span class="o">.</span><span class="n">value</span><span class="p">(),</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">meta</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">eventNumBox</span><span class="o">.</span><span class="n">setValue</span><span class="p">(</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">n</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_connect_ui</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">eventNumBox</span><span class="o">.</span><span class="n">valueChanged</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_on_event_index_changed</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">nextEventButton</span><span class="o">.</span><span class="n">clicked</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">next_event</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">previousEventButton</span><span class="o">.</span><span class="n">clicked</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">previous_event</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lastEventButton</span><span class="o">.</span><span class="n">clicked</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">last_event</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">firstEventButton</span><span class="o">.</span><span class="n">clicked</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">first_event</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">showPseudoEventBox</span><span class="o">.</span><span class="n">toggled</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rasterPlot</span><span class="o">.</span><span class="n">update</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">windowLengthSpinBox</span><span class="o">.</span><span class="n">valueChanged</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rasterPlot</span><span class="o">.</span><span class="n">set_raster_window</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">startButton</span><span class="o">.</span><span class="n">clicked</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_start</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">saveButton</span><span class="o">.</span><span class="n">clicked</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">save</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">applyConfigButton</span><span class="o">.</span><span class="n">clicked</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_apply_config</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">resetDefaultsButton</span><span class="o">.</span><span class="n">clicked</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config_menu</span><span class="o">.</span><span class="n">reset_defaults</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_apply_config</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Apply the configuration changes made in the config menu.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config_menu</span><span class="o">.</span><span class="n">apply_changes</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">montage_location</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">montage_location</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">channel_names</span> <span class="o">=</span> <span class="p">[</span><span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">f</span> <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">channel_groups</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_channel_groups</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">channel_names</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">frequencyPlot</span><span class="o">.</span><span class="n">update_ticks</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">channel_groups</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">channel_names</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rasterPlot</span><span class="o">.</span><span class="n">update_ticks</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">channel_groups</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">channel_names</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">denoisingHeatmapPlot</span><span class="o">.</span><span class="n">update_ticks</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">channel_groups</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">channel_names</span><span class="p">)</span>
+            <span class="p">)</span>
+
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;denoise_thread&quot;</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">denoise_thread</span><span class="o">.</span><span class="n">num_channels</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">channel_names</span><span class="p">)</span>
+
+            <span class="c1"># Don&#39;t rebuild the graph if running</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">startButton</span><span class="o">.</span><span class="n">isEnabled</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">detector_thread</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">channels</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">channel_names</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">detector_thread</span><span class="o">.</span><span class="n">build_graph_single_band</span><span class="p">()</span>
+
+<div class="viewcode-block" id="MainWindow.save">
+<a class="viewcode-back" href="../../../hfovis.gui.html#hfovis.gui.main_window.MainWindow.save">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Save the current events and metadata to files specified in the</span>
+<span class="sd">        configuration.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">save</span><span class="p">(</span>
+            <span class="n">raw_filename</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">raw_data_filename</span><span class="p">,</span>
+            <span class="n">filt_filename</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">filtered_data_filename</span><span class="p">,</span>
+            <span class="n">meta_filename</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">metadata_filename</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_start</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_start_detector_thread</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_start_denoise_thread</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">startButton</span><span class="o">.</span><span class="n">setEnabled</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config_menu</span><span class="o">.</span><span class="n">disable_editing</span><span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_start_detector_thread</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">detector_thread</span><span class="o">.</span><span class="n">new_event</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_on_event_received</span><span class="p">,</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">ConnectionType</span><span class="o">.</span><span class="n">QueuedConnection</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">detector_thread</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_start_denoise_thread</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">denoise_thread</span> <span class="o">=</span> <span class="n">DenoisingThread</span><span class="p">(</span>
+            <span class="n">num_channels</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">channel_names</span><span class="p">),</span>
+            <span class="n">fs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">denoise_thread</span><span class="o">.</span><span class="n">histReady</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">denoisingHeatmapPlot</span><span class="o">.</span><span class="n">update</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">denoise_thread</span><span class="o">.</span><span class="n">classReady</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_on_classification_ready</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">denoise_thread</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+
+    <span class="c1"># Additional helpers</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_create_channel_groups</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">channel_names</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]:</span>
+        <span class="n">groups</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># prefix -&gt; first index</span>
+
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">label</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">channel_names</span><span class="p">):</span>
+            <span class="n">match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;([A-Z]+)&quot;</span><span class="p">,</span> <span class="n">label</span><span class="p">)</span>  <span class="c1"># Extract &quot;LA&quot;, &quot;LAH&quot;, etc.</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">match</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">prefix</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">prefix</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">groups</span><span class="p">:</span>
+                <span class="n">groups</span><span class="p">[</span><span class="n">prefix</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span>  <span class="c1"># Only store the first occurrence</span>
+
+        <span class="c1"># Convert to sorted list of ticks</span>
+        <span class="n">yticks</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">((</span><span class="n">idx</span><span class="p">,</span> <span class="n">prefix</span><span class="p">)</span> <span class="k">for</span> <span class="n">prefix</span><span class="p">,</span> <span class="n">idx</span> <span class="ow">in</span> <span class="n">groups</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+        <span class="k">return</span> <span class="n">yticks</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_update_classification_label</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">cur</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">eventNumBox</span><span class="o">.</span><span class="n">value</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="n">val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="n">cur</span><span class="p">,</span> <span class="s2">&quot;is_real&quot;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">pd</span><span class="o">.</span><span class="n">isna</span><span class="p">(</span><span class="n">val</span><span class="p">):</span>
+            <span class="n">text</span><span class="p">,</span> <span class="n">color</span> <span class="o">=</span> <span class="s2">&quot;Classification</span><span class="se">\n</span><span class="s2">pending&quot;</span><span class="p">,</span> <span class="s2">&quot;black&quot;</span>
+        <span class="k">elif</span> <span class="n">val</span><span class="p">:</span>
+            <span class="n">text</span><span class="p">,</span> <span class="n">color</span> <span class="o">=</span> <span class="s2">&quot;Real event&quot;</span><span class="p">,</span> <span class="s2">&quot;green&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">text</span><span class="p">,</span> <span class="n">color</span> <span class="o">=</span> <span class="s2">&quot;Pseudo event&quot;</span><span class="p">,</span> <span class="s2">&quot;red&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">eventClassificationLabel</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">eventClassificationLabel</span><span class="o">.</span><span class="n">setStyleSheet</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;color: </span><span class="si">{</span><span class="n">color</span><span class="si">}</span><span class="s2">;&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_plot_event</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">meta</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="ow">not</span> <span class="p">(</span><span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">idx</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">meta</span><span class="p">)):</span>
+            <span class="k">return</span>
+
+        <span class="n">raw</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">raw_events</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+        <span class="n">filt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">filtered_events</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+        <span class="n">row</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+        <span class="n">chan</span><span class="p">,</span> <span class="n">cent</span><span class="p">,</span> <span class="n">thresh</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">channel</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">center</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">threshold</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">timeSeriesPlot</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="n">filt</span><span class="p">,</span> <span class="n">cent</span><span class="p">,</span> <span class="n">thresh</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">spectrogramPlot</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">raw</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">channelLabel</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">channel_names</span><span class="p">[</span><span class="n">chan</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_update_classification_label</span><span class="p">()</span>
+
+<div class="viewcode-block" id="MainWindow.closeEvent">
+<a class="viewcode-back" href="../../../hfovis.gui.html#hfovis.gui.main_window.MainWindow.closeEvent">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">closeEvent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Handle the close event of the main window, saving data before closing.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+        <span class="n">event</span><span class="o">.</span><span class="n">accept</span><span class="p">()</span></div>
+</div>
+
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">hfovis 0.0.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">hfovis.gui.main_window</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2025, Raahi Jogani, Valentina Hrtonova, Behrang Besheli.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    </div>
+  </body>
+</html>

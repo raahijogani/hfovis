@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>hfovis.detector.detector &#8212; hfovis 0.0.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/classic.css?v=2bf1fcf8" />
+    
+    <script src="../../../_static/documentation_options.js?v=d45e8c67"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">hfovis 0.0.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">hfovis.detector.detector</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for hfovis.detector.detector</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">numpy.lib.stride_tricks</span><span class="w"> </span><span class="kn">import</span> <span class="n">sliding_window_view</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">PyQt6.QtCore</span><span class="w"> </span><span class="kn">import</span> <span class="n">QThread</span><span class="p">,</span> <span class="n">pyqtSignal</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.signal</span><span class="w"> </span><span class="kn">import</span> <span class="n">butter</span><span class="p">,</span> <span class="n">firwin</span><span class="p">,</span> <span class="n">lfilter</span><span class="p">,</span> <span class="n">sosfilt</span><span class="p">,</span> <span class="n">sosfilt_zi</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">streamz</span><span class="w"> </span><span class="kn">import</span> <span class="n">Stream</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">hfovis.data.buffering</span><span class="w"> </span><span class="kn">import</span> <span class="n">RingBuffer</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">hfovis.data.streaming</span><span class="w"> </span><span class="kn">import</span> <span class="n">Streamer</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">hfovis.detector.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">DetectorConfig</span>
+
+
+<div class="viewcode-block" id="RealTimeDetector">
+<a class="viewcode-back" href="../../../hfovis.detector.html#hfovis.detector.detector.RealTimeDetector">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">RealTimeDetector</span><span class="p">(</span><span class="n">QThread</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Subclass of `QThread` Real-time detector for high-frequency oscillations (HFOs) in</span>
+<span class="sd">    EEG data.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    stream : Streamer</span>
+<span class="sd">        A data stream object that has a `start()` method for starting the stream</span>
+<span class="sd">        and a `read()` method for reading a chunk from the stream.</span>
+
+<span class="sd">    parent : QObject, optional</span>
+
+<span class="sd">    **kwargs</span>
+<span class="sd">        Check `DetectorConfig` for available parameters.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    new_event : pyqtSignal</span>
+<span class="sd">        Signal emitted when a new event is detected.</span>
+<span class="sd">    stream : Streamer</span>
+<span class="sd">    config : DetectorConfig</span>
+<span class="sd">    ring_buffer : RingBuffer</span>
+<span class="sd">        Used to store raw data for when events are detected.</span>
+
+<span class="sd">    Methods</span>
+<span class="sd">    -------</span>
+<span class="sd">    stop()</span>
+<span class="sd">        Stops both the stream and the detector.</span>
+<span class="sd">    run()</span>
+<span class="sd">        Reads through the data stream and emits chunks tagged with a global index.</span>
+<span class="sd">    build_graph_single_band()</span>
+<span class="sd">        Builds the processing graph for single-band HFO detection.</span>
+<span class="sd">    build_graph_dual_band()</span>
+<span class="sd">        Builds the processing graph for dual-band HFO detection. Note: Still WIP.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">new_event</span> <span class="o">=</span> <span class="n">pyqtSignal</span><span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stream</span><span class="p">:</span> <span class="n">Streamer</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">parent</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stream</span> <span class="o">=</span> <span class="n">stream</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">DetectorConfig</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">build_graph_single_band</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_running</span> <span class="o">=</span> <span class="kc">True</span>
+
+<div class="viewcode-block" id="RealTimeDetector.stop">
+<a class="viewcode-back" href="../../../hfovis.detector.html#hfovis.detector.detector.RealTimeDetector.stop">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Stops both the stream and the detector.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_running</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stream</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="RealTimeDetector.run">
+<a class="viewcode-back" href="../../../hfovis.detector.html#hfovis.detector.detector.RealTimeDetector.run">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Reads through the data stream and emits chunks tagged with a global index.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stream</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">idx</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># Global index to tag chunks with global time stamp</span>
+            <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">_running</span><span class="p">:</span>
+                <span class="n">chunk</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stream</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">chunk</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># Last chunk in stream should be None</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">raw_stream</span><span class="o">.</span><span class="n">emit</span><span class="p">((</span><span class="n">idx</span><span class="p">,</span> <span class="n">chunk</span><span class="p">))</span>
+                <span class="n">idx</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">chunk</span><span class="p">)</span>  <span class="c1"># Update global index</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error in internal loop: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="RealTimeDetector.build_graph_single_band">
+<a class="viewcode-back" href="../../../hfovis.detector.html#hfovis.detector.detector.RealTimeDetector.build_graph_single_band">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">build_graph_single_band</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">raw_stream</span> <span class="o">=</span> <span class="n">Stream</span><span class="p">()</span>
+
+        <span class="c1"># Ring buffer is used to temporarily store raw data so that it can later</span>
+        <span class="c1"># be matched in time if events are detected.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ring_buffer</span> <span class="o">=</span> <span class="n">RingBuffer</span><span class="p">(</span>
+            <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">ring_buffer_size_s</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">fs</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">channels</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Send raw data to the ring buffer</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">raw_stream</span><span class="o">.</span><span class="n">sink</span><span class="p">(</span><span class="k">lambda</span> <span class="n">pair</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">ring_buffer</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+
+        <span class="c1"># Function to change global indexing of chunks to global indexing of individual</span>
+        <span class="c1"># samples. This will allow for precise matching of filtered data with raw data</span>
+        <span class="c1"># in the ring buffer regardless of frame shifts.</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">explode</span><span class="p">(</span><span class="n">pair</span><span class="p">):</span>
+            <span class="n">start</span><span class="p">,</span> <span class="n">chunk</span> <span class="o">=</span> <span class="n">pair</span>
+            <span class="n">idxs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">start</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">chunk</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
+            <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">idxs</span><span class="p">,</span> <span class="n">chunk</span><span class="p">))</span>
+
+        <span class="c1"># Create filters once</span>
+        <span class="n">dc_offset_sos</span> <span class="o">=</span> <span class="n">butter</span><span class="p">(</span>
+            <span class="mi">2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">low_band</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">fs</span><span class="p">,</span> <span class="n">btype</span><span class="o">=</span><span class="s2">&quot;high&quot;</span><span class="p">,</span> <span class="n">output</span><span class="o">=</span><span class="s2">&quot;sos&quot;</span>
+        <span class="p">)</span>
+        <span class="n">hfo_band_b</span> <span class="o">=</span> <span class="n">firwin</span><span class="p">(</span>
+            <span class="mi">65</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">hfo_band</span><span class="p">,</span>
+            <span class="n">fs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">fs</span><span class="p">,</span>
+            <span class="n">pass_zero</span><span class="o">=</span><span class="s2">&quot;bandpass&quot;</span><span class="p">,</span>
+            <span class="n">window</span><span class="o">=</span><span class="s2">&quot;hamming&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Initialize filter states</span>
+        <span class="n">dc_zi_init</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span>
+            <span class="n">sosfilt_zi</span><span class="p">(</span><span class="n">dc_offset_sos</span><span class="p">)[:,</span> <span class="p">:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">channels</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">2</span>
+        <span class="p">)</span>
+        <span class="n">fir_zi_init</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">64</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">channels</span><span class="p">))</span>
+
+        <span class="c1"># Define the processing functions</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">dc_block</span><span class="p">(</span><span class="n">pair</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="n">dc_zi_init</span><span class="p">):</span>
+            <span class="n">idx</span><span class="p">,</span> <span class="n">chunk</span> <span class="o">=</span> <span class="n">pair</span>
+            <span class="c1"># The state is maintained within this block and not reset every time the</span>
+            <span class="c1"># function is called.</span>
+            <span class="n">y</span><span class="p">,</span> <span class="n">state</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">sosfilt</span><span class="p">(</span><span class="n">dc_offset_sos</span><span class="p">,</span> <span class="n">chunk</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">zi</span><span class="o">=</span><span class="n">state</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">idx</span><span class="p">,</span> <span class="n">y</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">hfo_band_filter_block</span><span class="p">(</span><span class="n">pair</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="n">fir_zi_init</span><span class="p">):</span>
+            <span class="n">idx</span><span class="p">,</span> <span class="n">chunk</span> <span class="o">=</span> <span class="n">pair</span>
+            <span class="n">y</span><span class="p">,</span> <span class="n">state</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">lfilter</span><span class="p">(</span><span class="n">hfo_band_b</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">chunk</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">zi</span><span class="o">=</span><span class="n">state</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">idx</span><span class="p">,</span> <span class="n">y</span>
+
+        <span class="n">filtered</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">raw_stream</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">dc_block</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">hfo_band_filter_block</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">explode</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">flatten</span><span class="p">()</span>  <span class="c1"># Flatten the stream to emit individual samples</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Adaptive thresholding stream</span>
+        <span class="n">std_devs</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">filtered</span><span class="o">.</span><span class="n">sliding_window</span><span class="p">(</span>
+                <span class="nb">int</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">adaptive_threshold_window_size_ms</span>
+                    <span class="o">/</span> <span class="mi">1000</span>
+                    <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">fs</span>  <span class="c1"># Convert ms to samples</span>
+                <span class="p">),</span>
+                <span class="n">return_partial</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>  <span class="c1"># Prevents sending buffers that aren&#39;t full yet</span>
+            <span class="p">)</span>
+            <span class="o">.</span><span class="n">slice</span><span class="p">(</span>
+                <span class="n">step</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span>
+                    <span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">adaptive_threshold_window_size_ms</span>
+                        <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">adaptive_threshold_overlap_ms</span>
+                    <span class="p">)</span>
+                    <span class="o">/</span> <span class="mi">1000</span>
+                    <span class="c1"># Convert from overlap ms to step samples</span>
+                    <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">fs</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+            <span class="c1"># Remove the global index since it is not needed for the threshold and</span>
+            <span class="c1"># compute standard deviation over only the signal</span>
+            <span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">w</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">([</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">w</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>  <span class="c1">#</span>
+        <span class="p">)</span>
+        <span class="n">thresholds</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">std_devs</span><span class="o">.</span><span class="n">sliding_window</span><span class="p">(</span>
+                <span class="c1"># In this case, it might take a while to get enough standard deviations,</span>
+                <span class="c1"># so we will allow partial windows.</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">adaptive_threshold_num_windows</span><span class="p">,</span>
+                <span class="n">return_partial</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="o">.</span><span class="n">slice</span><span class="p">(</span>
+                <span class="n">step</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">adaptive_threshold_num_windows</span>
+                <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">adaptive_threshold_num_windows_overlap</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">w</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">threshold_multiplier</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Detection stream</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">classify</span><span class="p">(</span><span class="n">pair</span><span class="p">):</span>
+            <span class="c1"># Here we are given a threshold for each channel as well as the filtered</span>
+            <span class="c1"># window.</span>
+            <span class="n">thr</span><span class="p">,</span> <span class="n">data</span> <span class="o">=</span> <span class="n">pair</span>
+
+            <span class="c1"># Replace thresholds that are too low with the minimum</span>
+            <span class="n">thr</span><span class="p">[</span><span class="n">thr</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">min_threshold</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">min_threshold</span>
+
+            <span class="n">win_idx</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">win</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">data</span><span class="p">])</span>
+
+            <span class="c1"># Split of left and right thirds of the window</span>
+            <span class="n">third_of_window</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">win</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="mi">3</span><span class="p">)</span>
+            <span class="n">left_window</span> <span class="o">=</span> <span class="n">win</span><span class="p">[:</span><span class="n">third_of_window</span><span class="p">]</span>
+            <span class="n">right_window</span> <span class="o">=</span> <span class="n">win</span><span class="p">[</span><span class="o">-</span><span class="n">third_of_window</span><span class="p">:]</span>
+
+            <span class="c1"># Get the crossing matrices for left, right, and entire window. First for</span>
+            <span class="c1"># the positive thresholds.</span>
+            <span class="n">left_p_crossings</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_threshold_crossings</span><span class="p">(</span><span class="n">left_window</span><span class="p">,</span> <span class="n">thr</span><span class="p">)</span>
+            <span class="n">left_n_crossings</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_threshold_crossings</span><span class="p">(</span><span class="o">-</span><span class="n">left_window</span><span class="p">,</span> <span class="n">thr</span><span class="p">)</span>
+            <span class="n">right_p_crossings</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_threshold_crossings</span><span class="p">(</span><span class="n">right_window</span><span class="p">,</span> <span class="n">thr</span><span class="p">)</span>
+            <span class="n">right_n_crossings</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_threshold_crossings</span><span class="p">(</span><span class="o">-</span><span class="n">right_window</span><span class="p">,</span> <span class="n">thr</span><span class="p">)</span>
+            <span class="n">all_p_crossings</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_threshold_crossings</span><span class="p">(</span><span class="n">win</span><span class="p">,</span> <span class="n">thr</span><span class="p">)</span>
+            <span class="n">all_n_crossings</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_threshold_crossings</span><span class="p">(</span><span class="o">-</span><span class="n">win</span><span class="p">,</span> <span class="n">thr</span><span class="p">)</span>
+
+            <span class="c1"># Our left and right conditions are that there should not be more than the</span>
+            <span class="c1"># minimum number of crossings in the left and right thirds of the window.</span>
+            <span class="n">max_crossings</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">side_max_crossings</span>
+
+            <span class="n">left_p_burst_condition</span> <span class="o">=</span> <span class="n">left_p_crossings</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">max_crossings</span>
+            <span class="n">left_n_burst_condition</span> <span class="o">=</span> <span class="n">left_n_crossings</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">max_crossings</span>
+            <span class="n">left_burst_condition</span> <span class="o">=</span> <span class="n">left_p_burst_condition</span> <span class="o">&amp;</span> <span class="n">left_n_burst_condition</span>
+
+            <span class="n">right_p_burst_condition</span> <span class="o">=</span> <span class="n">right_p_crossings</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">max_crossings</span>
+            <span class="n">right_n_burst_condition</span> <span class="o">=</span> <span class="n">right_n_crossings</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">max_crossings</span>
+            <span class="n">right_burst_condition</span> <span class="o">=</span> <span class="n">right_p_burst_condition</span> <span class="o">&amp;</span> <span class="n">right_n_burst_condition</span>
+
+            <span class="c1"># Now we need to filter out channels where the crossings are not close</span>
+            <span class="c1"># enough to be in our HFO band.</span>
+            <span class="n">min_sample_distance</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">fs</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">hfo_band</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+            <span class="n">all_p_burst_channels</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sufficient_high_frequency_crossings</span><span class="p">(</span>
+                <span class="n">all_p_crossings</span><span class="p">,</span>
+                <span class="n">min_sample_distance</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">center_min_crossings</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">all_n_burst_channels</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sufficient_high_frequency_crossings</span><span class="p">(</span>
+                <span class="n">all_n_crossings</span><span class="p">,</span>
+                <span class="n">min_sample_distance</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">center_min_crossings</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">all_burst_condition</span> <span class="o">=</span> <span class="n">all_p_burst_channels</span> <span class="o">|</span> <span class="n">all_n_burst_channels</span>
+
+            <span class="c1"># This is a mask for the channels that meet the burst criteria to be HFO</span>
+            <span class="c1"># candidates.</span>
+            <span class="n">burst_channels</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">left_burst_condition</span> <span class="o">&amp;</span> <span class="n">right_burst_condition</span> <span class="o">&amp;</span> <span class="n">all_burst_condition</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">burst_channels</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+                <span class="k">return</span> <span class="kc">None</span>
+
+            <span class="c1"># Next, we use the mask to extract the relevant data</span>
+            <span class="n">channel_indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">burst_channels</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">filtered_seg</span> <span class="o">=</span> <span class="n">win</span><span class="p">[:,</span> <span class="n">burst_channels</span><span class="p">]</span>
+            <span class="n">raw_seg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ring_buffer</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">win_idx</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">win</span><span class="p">))[:,</span> <span class="n">burst_channels</span><span class="p">]</span>
+
+            <span class="c1"># Now we extract the indices of the center of the event.</span>
+            <span class="n">visualization_window_size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">visualization_window_size_ms</span> <span class="o">/</span> <span class="mi">1000</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">fs</span>
+            <span class="p">)</span>
+            <span class="n">peak_idx</span><span class="p">,</span> <span class="n">center_indices</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_center_extraction_indices</span><span class="p">(</span>
+                <span class="n">filtered_seg</span><span class="p">,</span>
+                <span class="n">visualization_window_size</span><span class="p">,</span>
+            <span class="p">)</span>
+
+            <span class="c1"># Now we need to convert the centers of the events to seconds.</span>
+            <span class="n">center</span> <span class="o">=</span> <span class="p">(</span><span class="n">peak_idx</span> <span class="o">+</span> <span class="n">win_idx</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">fs</span>
+
+            <span class="k">return</span> <span class="p">{</span>
+                <span class="s2">&quot;raw&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">take_along_axis</span><span class="p">(</span><span class="n">raw_seg</span><span class="p">,</span> <span class="n">center_indices</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span>
+                <span class="s2">&quot;filtered&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">take_along_axis</span><span class="p">(</span><span class="n">filtered_seg</span><span class="p">,</span> <span class="n">center_indices</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span>
+                <span class="s2">&quot;center&quot;</span><span class="p">:</span> <span class="n">center</span><span class="p">,</span>
+                <span class="s2">&quot;channels&quot;</span><span class="p">:</span> <span class="n">channel_indices</span><span class="p">,</span>
+                <span class="s2">&quot;threshold&quot;</span><span class="p">:</span> <span class="n">thr</span><span class="p">[</span><span class="n">burst_channels</span><span class="p">],</span>
+            <span class="p">}</span>
+
+        <span class="c1"># We use the same method as before to get overlapping windows for burst</span>
+        <span class="c1"># detection.</span>
+        <span class="n">burst_win</span> <span class="o">=</span> <span class="n">filtered</span><span class="o">.</span><span class="n">sliding_window</span><span class="p">(</span>
+            <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">burst_window_size_ms</span> <span class="o">/</span> <span class="mi">1000</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">fs</span><span class="p">),</span>
+            <span class="n">return_partial</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">slice</span><span class="p">(</span>
+            <span class="n">step</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span>
+                <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">burst_window_size_ms</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">burst_window_overlap_ms</span><span class="p">)</span>
+                <span class="o">/</span> <span class="mi">1000</span>
+                <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">fs</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">burst_events</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="c1"># Combining in this way will use the previous threshold since computing</span>
+            <span class="c1"># those will take longer.</span>
+            <span class="n">thresholds</span><span class="o">.</span><span class="n">combine_latest</span><span class="p">(</span><span class="n">burst_win</span><span class="p">,</span> <span class="n">emit_on</span><span class="o">=</span><span class="n">burst_win</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">classify</span><span class="p">)</span>
+            <span class="c1"># The classify function returns None if no channels meet the criteria, so we</span>
+            <span class="c1"># can filter those out.</span>
+            <span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="c1"># Finally we send the detected events to the GUI thread</span>
+        <span class="n">burst_events</span><span class="o">.</span><span class="n">sink</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">new_event</span><span class="o">.</span><span class="n">emit</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_threshold_crossings</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sig</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">thr</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Produce binary array of threshold crossings.</span>
+
+<span class="sd">        Parameters:</span>
+<span class="sd">        -----------</span>
+<span class="sd">        sig: np.ndarray</span>
+<span class="sd">            The signal data for which to count threshold crossings. This should have</span>
+<span class="sd">            shape (n_samples, n_channels).</span>
+<span class="sd">        thr: np.ndarray</span>
+<span class="sd">            The threshold values for each channel.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">        --------</span>
+<span class="sd">        np.ndarray</span>
+<span class="sd">            An array of shape (n_samples-1, n_channels) with 1&#39;s where there are</span>
+<span class="sd">            threshold crossings and 0&#39;s otherwise.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">above</span> <span class="o">=</span> <span class="n">sig</span> <span class="o">&gt;</span> <span class="n">thr</span>
+        <span class="c1"># We use np.diff to find the transitions from below to above the threshold</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">above</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_sufficient_high_frequency_crossings</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">crossings</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">min_sample_distance</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">min_cluster_crossings</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="c1"># Minimum number of samples needed to detect the number of cluster crossings</span>
+        <span class="c1"># with the minimum sample distance spacing.</span>
+        <span class="n">window_size</span> <span class="o">=</span> <span class="p">(</span><span class="n">min_cluster_crossings</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">min_sample_distance</span> <span class="o">+</span> <span class="mi">1</span>
+
+        <span class="c1"># Create sliding windows so we can check the number of crossings in each</span>
+        <span class="c1"># cluster.</span>
+        <span class="n">sw</span> <span class="o">=</span> <span class="n">sliding_window_view</span><span class="p">(</span><span class="n">crossings</span><span class="p">,</span> <span class="n">window_size</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">counts</span> <span class="o">=</span> <span class="n">sw</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">counts</span> <span class="o">&gt;=</span> <span class="n">min_cluster_crossings</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_center_extraction_indices</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">win</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">vis_win_length</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="n">half</span> <span class="o">=</span> <span class="n">vis_win_length</span> <span class="o">//</span> <span class="mi">2</span>
+
+        <span class="c1"># Find index of absolute maximum. This will be the center of the event.</span>
+        <span class="n">peak_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">win</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="c1"># Calculate the start index for the visualization window. If the peak is too</span>
+        <span class="c1"># close to the edge, we simply return the edge and compromise on having the peak</span>
+        <span class="c1"># be in the center.</span>
+        <span class="n">start_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">peak_idx</span> <span class="o">-</span> <span class="n">half</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">win</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">vis_win_length</span><span class="p">)</span>
+
+        <span class="c1"># Individually index each sample in the new window</span>
+        <span class="n">offsets</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">vis_win_length</span><span class="p">)[:,</span> <span class="kc">None</span><span class="p">]</span>
+
+        <span class="c1"># Add the offsets to the start indices to get the indices of the windows for</span>
+        <span class="c1"># each sample in our visualization window.</span>
+        <span class="k">return</span> <span class="n">peak_idx</span><span class="p">,</span> <span class="n">start_idx</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:]</span> <span class="o">+</span> <span class="n">offsets</span>
+
+<div class="viewcode-block" id="RealTimeDetector.build_graph_dual_band">
+<a class="viewcode-back" href="../../../hfovis.detector.html#hfovis.detector.detector.RealTimeDetector.build_graph_dual_band">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">build_graph_dual_band</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Send raw data to the ring buffer</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">raw_stream</span><span class="o">.</span><span class="n">sink</span><span class="p">(</span><span class="k">lambda</span> <span class="n">pair</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">ring_buffer</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+
+        <span class="c1"># Create filters once</span>
+        <span class="n">dc_offset_sos</span> <span class="o">=</span> <span class="n">butter</span><span class="p">(</span>
+            <span class="mi">2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">low_band</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">fs</span><span class="p">,</span> <span class="n">btype</span><span class="o">=</span><span class="s2">&quot;high&quot;</span><span class="p">,</span> <span class="n">output</span><span class="o">=</span><span class="s2">&quot;sos&quot;</span>
+        <span class="p">)</span>
+        <span class="n">r_b</span> <span class="o">=</span> <span class="n">firwin</span><span class="p">(</span>
+            <span class="mi">65</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">ripple_band</span><span class="p">,</span>
+            <span class="n">fs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">fs</span><span class="p">,</span>
+            <span class="n">pass_zero</span><span class="o">=</span><span class="s2">&quot;bandpass&quot;</span><span class="p">,</span>
+            <span class="n">window</span><span class="o">=</span><span class="s2">&quot;hamming&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">fr_b</span> <span class="o">=</span> <span class="n">firwin</span><span class="p">(</span>
+            <span class="mi">65</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">fast_ripple_band</span><span class="p">,</span>
+            <span class="n">fs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">fs</span><span class="p">,</span>
+            <span class="n">pass_zero</span><span class="o">=</span><span class="s2">&quot;bandpass&quot;</span><span class="p">,</span>
+            <span class="n">window</span><span class="o">=</span><span class="s2">&quot;hamming&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Initialize filter states</span>
+        <span class="n">dc_zi_init</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">sosfilt_zi</span><span class="p">(</span><span class="n">dc_offset_sos</span><span class="p">),</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">channels</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">T</span>
+        <span class="n">fir_zi_init</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">64</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">channels</span><span class="p">))</span>
+
+        <span class="c1"># Define the processing functions</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">dc_block</span><span class="p">(</span><span class="n">pair</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="n">dc_zi_init</span><span class="p">):</span>
+            <span class="n">idx</span><span class="p">,</span> <span class="n">chunk</span> <span class="o">=</span> <span class="n">pair</span>
+            <span class="n">y</span><span class="p">,</span> <span class="n">state</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">sosfilt</span><span class="p">(</span><span class="n">dc_offset_sos</span><span class="p">,</span> <span class="n">chunk</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">zi</span><span class="o">=</span><span class="n">state</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">idx</span><span class="p">,</span> <span class="n">y</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">ripple_filter</span><span class="p">(</span><span class="n">pair</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="n">fir_zi_init</span><span class="o">.</span><span class="n">copy</span><span class="p">()):</span>
+            <span class="n">idx</span><span class="p">,</span> <span class="n">chunk</span> <span class="o">=</span> <span class="n">pair</span>
+            <span class="n">y</span><span class="p">,</span> <span class="n">state</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">lfilter</span><span class="p">(</span><span class="n">r_b</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">chunk</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">zi</span><span class="o">=</span><span class="n">state</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">idx</span><span class="p">,</span> <span class="n">y</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">fast_ripple_filter</span><span class="p">(</span><span class="n">pair</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="n">fir_zi_init</span><span class="o">.</span><span class="n">copy</span><span class="p">()):</span>
+            <span class="n">idx</span><span class="p">,</span> <span class="n">chunk</span> <span class="o">=</span> <span class="n">pair</span>
+            <span class="n">y</span><span class="p">,</span> <span class="n">state</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">lfilter</span><span class="p">(</span><span class="n">fr_b</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">chunk</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">zi</span><span class="o">=</span><span class="n">state</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">idx</span><span class="p">,</span> <span class="n">y</span></div>
+</div>
+
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">hfovis 0.0.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">hfovis.detector.detector</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2025, Raahi Jogani, Valentina Hrtonova, Behrang Besheli.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    </div>
+  </body>
+</html>

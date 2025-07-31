@@ -1,0 +1,85 @@
+gui package
+===========
+
+Submodules
+----------
+
+gui.config module
+-----------------
+
+.. automodule:: gui.config
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+gui.config\_menu module
+-----------------------
+
+.. automodule:: gui.config_menu
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+gui.denoising\_heatmap module
+-----------------------------
+
+.. automodule:: gui.denoising_heatmap
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+gui.frequency module
+--------------------
+
+.. automodule:: gui.frequency
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+gui.main\_window module
+-----------------------
+
+.. automodule:: gui.main_window
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+gui.model module
+----------------
+
+.. automodule:: gui.model
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+gui.raster module
+-----------------
+
+.. automodule:: gui.raster
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+gui.spectrogram module
+----------------------
+
+.. automodule:: gui.spectrogram
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+gui.time\_series module
+-----------------------
+
+.. automodule:: gui.time_series
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+Module contents
+---------------
+
+.. automodule:: gui
+   :members:
+   :show-inheritance:
+   :undoc-members:

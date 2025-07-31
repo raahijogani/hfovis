@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>hfovis.gui.config &#8212; hfovis 0.0.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/classic.css?v=2bf1fcf8" />
+    
+    <script src="../../../_static/documentation_options.js?v=d45e8c67"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">hfovis 0.0.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">hfovis.gui.config</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for hfovis.gui.config</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">fields</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_is_valid_file</span><span class="p">(</span><span class="n">file_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">extension</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Check if the given file path is valid and has the specified extension.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    file_path : str</span>
+<span class="sd">        The file path to validate.</span>
+<span class="sd">    extension : str</span>
+<span class="sd">        The required file extension (e.g., &#39;.pkl&#39;, &#39;.npy&#39;).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    bool</span>
+<span class="sd">        True if the file path is valid and has the specified extension, False otherwise.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Empty string is considered valid</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">file_path</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">True</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">file_path</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="n">extension</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="c1"># Check if the directory exists</span>
+    <span class="n">directory</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">directory</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">directory</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="k">return</span> <span class="kc">True</span>
+
+
+<div class="viewcode-block" id="GeneralConfig">
+<a class="viewcode-back" href="../../../hfovis.gui.html#hfovis.gui.config.GeneralConfig">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">GeneralConfig</span><span class="p">:</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;General&quot;</span>
+
+    <span class="n">metadata_filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span>
+        <span class="n">default</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">metadata</span><span class="o">=</span><span class="p">{</span>
+            <span class="s2">&quot;label&quot;</span><span class="p">:</span> <span class="s2">&quot;Metadata Save Location (.pkl)&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Where to save the metadata file. Must be .pkl absolute path&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;valid&quot;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">_is_valid_file</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="s2">&quot;.pkl&quot;</span><span class="p">),</span>
+            <span class="s2">&quot;error_message&quot;</span><span class="p">:</span> <span class="s2">&quot;Metadata filename must be a valid .pkl file path&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;file_dialog&quot;</span><span class="p">:</span> <span class="s2">&quot;create file&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;file_filter&quot;</span><span class="p">:</span> <span class="s2">&quot;Pickle files (*.pkl)&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;file_extension&quot;</span><span class="p">:</span> <span class="s2">&quot;.pkl&quot;</span><span class="p">,</span>
+        <span class="p">},</span>
+    <span class="p">)</span>
+    <span class="n">raw_data_filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span>
+        <span class="n">default</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">metadata</span><span class="o">=</span><span class="p">{</span>
+            <span class="s2">&quot;label&quot;</span><span class="p">:</span> <span class="s2">&quot;Raw Data Save Location (.npy)&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Where to save the raw data file. Must be .npy absolute path&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;valid&quot;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">_is_valid_file</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="s2">&quot;.npy&quot;</span><span class="p">),</span>
+            <span class="s2">&quot;error_message&quot;</span><span class="p">:</span> <span class="s2">&quot;Raw data filename must be a valid .npy file path&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;file_dialog&quot;</span><span class="p">:</span> <span class="s2">&quot;create file&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;file_filter&quot;</span><span class="p">:</span> <span class="s2">&quot;Numpy files (*.npy)&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;file_extension&quot;</span><span class="p">:</span> <span class="s2">&quot;.npy&quot;</span><span class="p">,</span>
+        <span class="p">},</span>
+    <span class="p">)</span>
+    <span class="n">filtered_data_filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span>
+        <span class="n">default</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">metadata</span><span class="o">=</span><span class="p">{</span>
+            <span class="s2">&quot;label&quot;</span><span class="p">:</span> <span class="s2">&quot;Filtered Data Save Location (.npy)&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Where to save the filtered data file. Must be .npy absolute path&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;valid&quot;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">_is_valid_file</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="s2">&quot;.npy&quot;</span><span class="p">),</span>
+            <span class="s2">&quot;error_message&quot;</span><span class="p">:</span> <span class="s2">&quot;Filtered data filename must be a valid .npy file path&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;file_dialog&quot;</span><span class="p">:</span> <span class="s2">&quot;create file&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;file_filter&quot;</span><span class="p">:</span> <span class="s2">&quot;Numpy files (*.npy)&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;file_extension&quot;</span><span class="p">:</span> <span class="s2">&quot;.npy&quot;</span><span class="p">,</span>
+        <span class="p">},</span>
+    <span class="p">)</span>
+    <span class="n">montage_location</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span>
+        <span class="n">default</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">metadata</span><span class="o">=</span><span class="p">{</span>
+            <span class="s2">&quot;label&quot;</span><span class="p">:</span> <span class="s2">&quot;Montage Location&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Absolute path to channel montage. Each channel should be on a new line.&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;valid&quot;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">if</span> <span class="n">x</span> <span class="k">else</span> <span class="kc">True</span><span class="p">,</span>
+            <span class="s2">&quot;error_message&quot;</span><span class="p">:</span> <span class="s2">&quot;Montage location not found&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;file_dialog&quot;</span><span class="p">:</span> <span class="s2">&quot;find file&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;editable_after_start&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="p">},</span>
+    <span class="p">)</span>
+
+<div class="viewcode-block" id="GeneralConfig.get_validation_messages">
+<a class="viewcode-back" href="../../../hfovis.gui.html#hfovis.gui.config.GeneralConfig.get_validation_messages">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_validation_messages</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Collects validation messages for each field in the dataclass.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dict</span>
+<span class="sd">            A dictionary where keys are field names and values are error messages</span>
+<span class="sd">            if the field does not meet its validation criteria.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">messages</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+            <span class="n">meets_condition</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;valid&quot;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="kc">True</span><span class="p">)</span>
+            <span class="n">label</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;label&quot;</span><span class="p">,</span> <span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">meets_condition</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+                <span class="n">messages</span><span class="p">[</span><span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+                    <span class="s2">&quot;error_message&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Invalid value </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2"> for </span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">messages</span></div>
+
+
+<div class="viewcode-block" id="GeneralConfig.validate">
+<a class="viewcode-back" href="../../../hfovis.gui.html#hfovis.gui.config.GeneralConfig.validate">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">validate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Validates the configuration by checking each field against its validation</span>
+<span class="sd">        criteria.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If any field does not meet its validation criteria, a ValueError is raised</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">messages</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_validation_messages</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">messages</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Configuration validation failed: </span><span class="si">{</span><span class="n">messages</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="GeneralConfig.update">
+<a class="viewcode-back" href="../../../hfovis.gui.html#hfovis.gui.config.GeneralConfig.update">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Update the configuration with new values for specified fields.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        **kwargs</span>
+<span class="sd">            Keyword arguments where keys are field names and values are the new values</span>
+<span class="sd">            to set for those fields.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If a key in kwargs does not correspond to a field in the dataclass,</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+                <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid configuration key: </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">validate</span><span class="p">()</span></div>
+</div>
+
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">hfovis 0.0.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">hfovis.gui.config</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2025, Raahi Jogani, Valentina Hrtonova, Behrang Besheli.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    </div>
+  </body>
+</html>

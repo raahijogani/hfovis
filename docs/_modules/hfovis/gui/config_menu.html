@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>hfovis.gui.config_menu &#8212; hfovis 0.0.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/classic.css?v=2bf1fcf8" />
+    
+    <script src="../../../_static/documentation_options.js?v=d45e8c67"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">hfovis 0.0.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">hfovis.gui.config_menu</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for hfovis.gui.config_menu</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">_MISSING_TYPE</span><span class="p">,</span> <span class="n">fields</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">PyQt6</span><span class="w"> </span><span class="kn">import</span> <span class="n">QtWidgets</span>
+
+
+<div class="viewcode-block" id="FilePickerWidget">
+<a class="viewcode-back" href="../../../hfovis.gui.html#hfovis.gui.config_menu.FilePickerWidget">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">FilePickerWidget</span><span class="p">(</span><span class="n">QtWidgets</span><span class="o">.</span><span class="n">QWidget</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A widget that combines a `QLineEdit` and a `QPushButton` to allow users to select or</span>
+<span class="sd">    create a file.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    parent : QtWidgets.QWidget, optional</span>
+<span class="sd">        The parent widget for this widget.</span>
+<span class="sd">    mode : {&quot;find file&quot;, &quot;create file&quot;}, default=&quot;find file&quot;</span>
+<span class="sd">        The mode of the file picker. &quot;find file&quot; allows users to select an existing file</span>
+<span class="sd">        while &quot;create file&quot; allows users to specify a new file to create.</span>
+<span class="sd">    file_filter : str, default=&quot;All Files (*)&quot;</span>
+<span class="sd">        The filter for the file dialog. This determines which files are shown in the dialog.</span>
+<span class="sd">    extension : str, default=&quot;&quot;</span>
+<span class="sd">        Used to add extension in case user doesn&#39;t provide it when creating a file.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    line_edit : QtWidgets.QLineEdit</span>
+<span class="sd">        The line edit where the selected or created file path is displayed.</span>
+<span class="sd">    browse_button : QtWidgets.QPushButton</span>
+<span class="sd">        The button that opens the file dialog for selecting or creating a file.</span>
+<span class="sd">    mode : str</span>
+<span class="sd">        The mode of the file picker, either &quot;find file&quot; or &quot;create file&quot;.</span>
+<span class="sd">    file_filter : str</span>
+<span class="sd">        The filter for the file dialog.</span>
+<span class="sd">    extension : str</span>
+<span class="sd">        The file extension to append when creating a file.</span>
+<span class="sd">    line_edit.setText(value: str)</span>
+<span class="sd">        Set the text in the line edit to the specified value.</span>
+
+<span class="sd">    Methods</span>
+<span class="sd">    -------</span>
+<span class="sd">    open_dialog()</span>
+<span class="sd">        Opens a file dialog based on the mode. If in &quot;find file&quot; mode, it</span>
+<span class="sd">        allows the user to select an existing file. If in &quot;create file&quot; mode, it</span>
+<span class="sd">        allows the user to specify a new file to create, appending the specified</span>
+<span class="sd">        extension if necessary.</span>
+<span class="sd">    text() -&gt; str</span>
+<span class="sd">        Returns the text currently in the line edit.</span>
+<span class="sd">    setText(value: str)</span>
+<span class="sd">        Sets the text in the line edit to the specified value.</span>
+<span class="sd">    setToolTip(text: str)</span>
+<span class="sd">        Sets the tooltip for both the line edit and the browse button.</span>
+<span class="sd">    setEnabled(enabled: bool)</span>
+<span class="sd">        Enables or disables the line edit and browse button based on the provided boolean.</span>
+<span class="sd">    setStyleSheet(style: str)</span>
+<span class="sd">        Sets the style sheet for the line edit.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">parent</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;find file&quot;</span><span class="p">,</span>  <span class="c1"># &quot;find file&quot; or &quot;create file&quot;</span>
+        <span class="n">file_filter</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;All Files (*)&quot;</span><span class="p">,</span>
+        <span class="n">extension</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">parent</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">=</span> <span class="n">mode</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">file_filter</span> <span class="o">=</span> <span class="n">file_filter</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">extension</span> <span class="o">=</span> <span class="n">extension</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">line_edit</span> <span class="o">=</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QLineEdit</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">browse_button</span> <span class="o">=</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QPushButton</span><span class="p">(</span><span class="s2">&quot;Browse&quot;</span><span class="p">)</span>
+
+        <span class="n">layout</span> <span class="o">=</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QHBoxLayout</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">layout</span><span class="o">.</span><span class="n">setContentsMargins</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">line_edit</span><span class="p">)</span>
+        <span class="n">layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">browse_button</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">browse_button</span><span class="o">.</span><span class="n">clicked</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">open_dialog</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_append_extension</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">path</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">extension</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">path</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">extension</span><span class="p">):</span>
+            <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">path</span><span class="si">}{</span><span class="bp">self</span><span class="o">.</span><span class="n">extension</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">return</span> <span class="n">path</span>
+
+<div class="viewcode-block" id="FilePickerWidget.open_dialog">
+<a class="viewcode-back" href="../../../hfovis.gui.html#hfovis.gui.config_menu.FilePickerWidget.open_dialog">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">open_dialog</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;find file&quot;</span><span class="p">:</span>
+            <span class="n">path</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QFileDialog</span><span class="o">.</span><span class="n">getOpenFileName</span><span class="p">(</span>
+                <span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;Select File&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_filter</span>
+            <span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;create file&quot;</span><span class="p">:</span>
+            <span class="n">path</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QFileDialog</span><span class="o">.</span><span class="n">getSaveFileName</span><span class="p">(</span>
+                <span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;Create File&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_filter</span>
+            <span class="p">)</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_append_extension</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">path</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">line_edit</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="n">path</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="FilePickerWidget.text">
+<a class="viewcode-back" href="../../../hfovis.gui.html#hfovis.gui.config_menu.FilePickerWidget.text">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">text</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">line_edit</span><span class="o">.</span><span class="n">text</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="FilePickerWidget.setText">
+<a class="viewcode-back" href="../../../hfovis.gui.html#hfovis.gui.config_menu.FilePickerWidget.setText">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">setText</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">line_edit</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="n">value</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="FilePickerWidget.setToolTip">
+<a class="viewcode-back" href="../../../hfovis.gui.html#hfovis.gui.config_menu.FilePickerWidget.setToolTip">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">setToolTip</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sets the tooltip for both the line edit and the browse button.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        text : str</span>
+<span class="sd">            The text to set as the tooltip for both the line edit and the browse button.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">line_edit</span><span class="o">.</span><span class="n">setToolTip</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">browse_button</span><span class="o">.</span><span class="n">setToolTip</span><span class="p">(</span><span class="n">text</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="FilePickerWidget.setEnabled">
+<a class="viewcode-back" href="../../../hfovis.gui.html#hfovis.gui.config_menu.FilePickerWidget.setEnabled">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">setEnabled</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">enabled</span><span class="p">:</span> <span class="nb">bool</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Enables or disables the line edit and browse button based on the provided</span>
+<span class="sd">        boolean.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        enabled : bool</span>
+<span class="sd">            If True, enables the line edit and browse button; if False, disables them.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">line_edit</span><span class="o">.</span><span class="n">setEnabled</span><span class="p">(</span><span class="n">enabled</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">browse_button</span><span class="o">.</span><span class="n">setEnabled</span><span class="p">(</span><span class="n">enabled</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="FilePickerWidget.setStyleSheet">
+<a class="viewcode-back" href="../../../hfovis.gui.html#hfovis.gui.config_menu.FilePickerWidget.setStyleSheet">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">setStyleSheet</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">style</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sets the style sheet for the line edit.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        style : str</span>
+<span class="sd">            The style sheet to apply to the line edit.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">line_edit</span><span class="o">.</span><span class="n">setStyleSheet</span><span class="p">(</span><span class="n">style</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="ConfigMenu">
+<a class="viewcode-back" href="../../../hfovis.gui.html#hfovis.gui.config_menu.ConfigMenu">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ConfigMenu</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A configuration menu that displays a list of configurations in a vertical layout,</span>
+<span class="sd">    each within its own group box. Each configuration is represented by a dataclass,</span>
+<span class="sd">    and each field in the dataclass is displayed as a label and an input widget.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    parent : QtWidgets.QWidget</span>
+<span class="sd">        The parent widget for this configuration menu.</span>
+<span class="sd">    configs : list</span>
+<span class="sd">        A list of dataclass instances representing the configurations to be displayed.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    configs : list</span>
+<span class="sd">    parent : QtWidgets.QWidget</span>
+<span class="sd">    vertical_layout : QtWidgets.QVBoxLayout</span>
+<span class="sd">    group_boxes : list[QtWidgets.QGroupBox]</span>
+<span class="sd">        A list of group boxes, one for each configuration.</span>
+<span class="sd">    form_layouts : list[QtWidgets.QFormLayout]</span>
+<span class="sd">        A list of form layouts, one for each group box, containing the configuration</span>
+<span class="sd">        fields.</span>
+<span class="sd">    item_line_edits : dict</span>
+<span class="sd">        A dictionary mapping field names to their corresponding `QLineEdit` or</span>
+<span class="sd">        `FilePickerWidget` instances for user input.</span>
+
+<span class="sd">    Methods</span>
+<span class="sd">    -------</span>
+<span class="sd">    display_errors(messages: dict)</span>
+<span class="sd">        Displays error messages for fields that have validation issues by setting the</span>
+<span class="sd">        style of the corresponding input widgets to indicate an error and setting their</span>
+<span class="sd">        tooltips to the error messages.</span>
+<span class="sd">    apply_changes()</span>
+<span class="sd">        Applies changes made in the input widgets to the corresponding fields in the</span>
+<span class="sd">        configurations. Validates the input and displays error messages if any issues</span>
+<span class="sd">        are found.</span>
+<span class="sd">    reset_defaults()</span>
+<span class="sd">        Resets the input widgets to their default values as defined in the dataclass</span>
+<span class="sd">        fields. Clears any error styles or tooltips.</span>
+<span class="sd">    disable_editing()</span>
+<span class="sd">        Disables editing of the input widgets based on the `editable_after_start`</span>
+<span class="sd">        metadata of each field. If a field is not editable after the start, its input</span>
+<span class="sd">        widget will be disabled.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">:</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QWidget</span><span class="p">,</span> <span class="n">configs</span><span class="p">:</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">configs</span> <span class="o">=</span> <span class="n">configs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parent</span> <span class="o">=</span> <span class="n">parent</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">vertical_layout</span> <span class="o">=</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QVBoxLayout</span><span class="p">(</span><span class="n">parent</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">group_boxes</span> <span class="o">=</span> <span class="p">[</span><span class="n">QtWidgets</span><span class="o">.</span><span class="n">QGroupBox</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">name</span><span class="p">)</span> <span class="k">for</span> <span class="n">config</span> <span class="ow">in</span> <span class="n">configs</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">form_layouts</span> <span class="o">=</span> <span class="p">[</span><span class="n">QtWidgets</span><span class="o">.</span><span class="n">QFormLayout</span><span class="p">()</span> <span class="k">for</span> <span class="n">group_box</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">group_boxes</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">item_line_edits</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">for</span> <span class="n">config</span><span class="p">,</span> <span class="n">group_box</span><span class="p">,</span> <span class="n">form_layout</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">configs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">group_boxes</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">form_layouts</span>
+        <span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_add_items</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">form_layout</span><span class="p">)</span>
+            <span class="n">group_box</span><span class="o">.</span><span class="n">setLayout</span><span class="p">(</span><span class="n">form_layout</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">vertical_layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="n">group_box</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_add_items</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">form_layout</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">(</span><span class="n">config</span><span class="p">):</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="n">field</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;label&quot;</span><span class="p">,</span> <span class="n">field</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+            <span class="n">label</span> <span class="o">=</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QLabel</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+
+            <span class="n">file_dialog_mode</span> <span class="o">=</span> <span class="n">field</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;file_dialog&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="n">file_filter</span> <span class="o">=</span> <span class="n">field</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;file_filter&quot;</span><span class="p">,</span> <span class="s2">&quot;All Files (*)&quot;</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">file_dialog_mode</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;find file&quot;</span><span class="p">,</span> <span class="s2">&quot;create file&quot;</span><span class="p">):</span>
+                <span class="n">line_edit</span> <span class="o">=</span> <span class="n">FilePickerWidget</span><span class="p">(</span>
+                    <span class="n">parent</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span>
+                    <span class="n">mode</span><span class="o">=</span><span class="n">file_dialog_mode</span><span class="p">,</span>
+                    <span class="n">file_filter</span><span class="o">=</span><span class="n">file_filter</span><span class="p">,</span>
+                    <span class="n">extension</span><span class="o">=</span><span class="n">field</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;file_extension&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">),</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">line_edit</span> <span class="o">=</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QLineEdit</span><span class="p">()</span>
+
+            <span class="c1"># Store the line_edit for validation &amp; apply_changes</span>
+            <span class="k">assert</span> <span class="n">field</span><span class="o">.</span><span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">item_line_edits</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Duplicate field name &#39;</span><span class="si">{</span>
+<span class="w">                </span><span class="n">field</span><span class="o">.</span><span class="n">name</span>
+<span class="w">            </span><span class="si">}</span><span class="s2">&#39;&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">item_line_edits</span><span class="p">[</span><span class="n">field</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">line_edit</span>
+
+            <span class="c1"># Set default value</span>
+            <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">field</span><span class="o">.</span><span class="n">default_factory</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">_MISSING_TYPE</span><span class="p">:</span>
+                <span class="n">default_list</span> <span class="o">=</span> <span class="n">field</span><span class="o">.</span><span class="n">default_factory</span><span class="p">()</span>
+                <span class="n">default_value</span> <span class="o">=</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">default_list</span><span class="p">))</span>
+            <span class="k">elif</span> <span class="n">field</span><span class="o">.</span><span class="n">default</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">default_value</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">field</span><span class="o">.</span><span class="n">default</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">default_value</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+            <span class="n">line_edit</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="n">default_value</span><span class="p">)</span>
+
+            <span class="c1"># Set tooltip</span>
+            <span class="n">tooltip</span> <span class="o">=</span> <span class="n">field</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;description&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">tooltip</span><span class="p">:</span>
+                <span class="n">line_edit</span><span class="o">.</span><span class="n">setToolTip</span><span class="p">(</span><span class="n">tooltip</span><span class="p">)</span>
+                <span class="n">label</span><span class="o">.</span><span class="n">setToolTip</span><span class="p">(</span><span class="n">tooltip</span><span class="p">)</span>
+
+            <span class="n">form_layout</span><span class="o">.</span><span class="n">addRow</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">line_edit</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ConfigMenu.display_errors">
+<a class="viewcode-back" href="../../../hfovis.gui.html#hfovis.gui.config_menu.ConfigMenu.display_errors">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">display_errors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">messages</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Displays error messages for fields that have validation issues by setting the</span>
+<span class="sd">        style of the corresponding input widgets to indicate an error and setting their</span>
+<span class="sd">        tooltips to the error messages.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        messages : dict</span>
+<span class="sd">            A dictionary where keys are field names and values are error messages.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">config</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">configs</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">(</span><span class="n">config</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">field</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="n">messages</span><span class="p">:</span>
+                    <span class="n">message</span> <span class="o">=</span> <span class="n">messages</span><span class="p">[</span><span class="n">field</span><span class="o">.</span><span class="n">name</span><span class="p">]</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">item_line_edits</span><span class="p">[</span><span class="n">field</span><span class="o">.</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">setStyleSheet</span><span class="p">(</span>
+                        <span class="s2">&quot;border: 1px solid red;&quot;</span>
+                    <span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">item_line_edits</span><span class="p">[</span><span class="n">field</span><span class="o">.</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">setToolTip</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">item_line_edits</span><span class="p">[</span><span class="n">field</span><span class="o">.</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">setStyleSheet</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">item_line_edits</span><span class="p">[</span><span class="n">field</span><span class="o">.</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">setToolTip</span><span class="p">(</span>
+                        <span class="n">field</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;description&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+                    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ConfigMenu.apply_changes">
+<a class="viewcode-back" href="../../../hfovis.gui.html#hfovis.gui.config_menu.ConfigMenu.apply_changes">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">apply_changes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">formatting_messages</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">validation_messages</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">config</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">configs</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">(</span><span class="n">config</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">field</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">item_line_edits</span><span class="p">:</span>
+                    <span class="n">line_edit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">item_line_edits</span><span class="p">[</span><span class="n">field</span><span class="o">.</span><span class="n">name</span><span class="p">]</span>
+                    <span class="n">value</span> <span class="o">=</span> <span class="n">line_edit</span><span class="o">.</span><span class="n">text</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">field</span><span class="o">.</span><span class="n">default_factory</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">_MISSING_TYPE</span><span class="p">:</span>
+                            <span class="n">attr</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">value</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)))</span>
+                        <span class="k">elif</span> <span class="n">field</span><span class="o">.</span><span class="n">type</span> <span class="ow">is</span> <span class="nb">int</span><span class="p">:</span>
+                            <span class="n">attr</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+                        <span class="k">elif</span> <span class="n">field</span><span class="o">.</span><span class="n">type</span> <span class="ow">is</span> <span class="nb">float</span><span class="p">:</span>
+                            <span class="n">attr</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+                        <span class="k">elif</span> <span class="n">field</span><span class="o">.</span><span class="n">type</span> <span class="ow">is</span> <span class="nb">str</span><span class="p">:</span>
+                            <span class="n">attr</span> <span class="o">=</span> <span class="n">value</span>
+                    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                        <span class="n">formatting_messages</span><span class="p">[</span><span class="n">field</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;Invalid formatting&quot;</span>
+                        <span class="k">continue</span>
+
+                    <span class="nb">setattr</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">field</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span>
+            <span class="n">validation_messages</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">get_validation_messages</span><span class="p">())</span>
+
+        <span class="c1"># Formatting messages take precedence</span>
+        <span class="n">validation_messages</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">formatting_messages</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">display_errors</span><span class="p">(</span><span class="n">validation_messages</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ConfigMenu.reset_defaults">
+<a class="viewcode-back" href="../../../hfovis.gui.html#hfovis.gui.config_menu.ConfigMenu.reset_defaults">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">reset_defaults</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">config</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">configs</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">(</span><span class="n">config</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">field</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">item_line_edits</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">item_line_edits</span><span class="p">[</span><span class="n">field</span><span class="o">.</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">isEnabled</span><span class="p">():</span>
+                        <span class="k">continue</span>
+                    <span class="n">line_edit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">item_line_edits</span><span class="p">[</span><span class="n">field</span><span class="o">.</span><span class="n">name</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">field</span><span class="o">.</span><span class="n">default_factory</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">_MISSING_TYPE</span><span class="p">:</span>
+                        <span class="n">value</span> <span class="o">=</span> <span class="n">field</span><span class="o">.</span><span class="n">default_factory</span><span class="p">()</span>
+                        <span class="n">default_value</span> <span class="o">=</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">))</span>
+                    <span class="k">elif</span> <span class="n">field</span><span class="o">.</span><span class="n">default</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="n">value</span> <span class="o">=</span> <span class="n">field</span><span class="o">.</span><span class="n">default</span>
+                        <span class="n">default_value</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">field</span><span class="o">.</span><span class="n">default</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">value</span> <span class="o">=</span> <span class="kc">None</span>
+                        <span class="n">default_value</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+                    <span class="nb">setattr</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">field</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+                    <span class="n">line_edit</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="n">default_value</span><span class="p">)</span>
+                    <span class="n">line_edit</span><span class="o">.</span><span class="n">setStyleSheet</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+                    <span class="n">line_edit</span><span class="o">.</span><span class="n">setToolTip</span><span class="p">(</span><span class="n">field</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;description&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="ConfigMenu.disable_editing">
+<a class="viewcode-back" href="../../../hfovis.gui.html#hfovis.gui.config_menu.ConfigMenu.disable_editing">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">disable_editing</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">config</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">configs</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">(</span><span class="n">config</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">field</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">item_line_edits</span><span class="p">:</span>
+                    <span class="n">line_edit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">item_line_edits</span><span class="p">[</span><span class="n">field</span><span class="o">.</span><span class="n">name</span><span class="p">]</span>
+                    <span class="n">line_edit</span><span class="o">.</span><span class="n">setEnabled</span><span class="p">(</span>
+                        <span class="n">field</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;editable_after_start&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+                    <span class="p">)</span></div>
+</div>
+
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">hfovis 0.0.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">hfovis.gui.config_menu</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2025, Raahi Jogani, Valentina Hrtonova, Behrang Besheli.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    </div>
+  </body>
+</html>

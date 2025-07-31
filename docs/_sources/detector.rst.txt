@@ -1,0 +1,29 @@
+detector package
+================
+
+Submodules
+----------
+
+detector.config module
+----------------------
+
+.. automodule:: detector.config
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+detector.detector module
+------------------------
+
+.. automodule:: detector.detector
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+Module contents
+---------------
+
+.. automodule:: detector
+   :members:
+   :show-inheritance:
+   :undoc-members:
