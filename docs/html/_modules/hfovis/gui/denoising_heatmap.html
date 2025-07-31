@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>hfovis.gui.denoising_heatmap &#8212; hfovis 0.0.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/classic.css?v=2bf1fcf8" />
+    
+    <script src="../../../_static/documentation_options.js?v=d45e8c67"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">hfovis 0.0.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">hfovis.gui.denoising_heatmap</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for hfovis.gui.denoising_heatmap</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pyqtgraph</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pg</span>
+
+
+<div class="viewcode-block" id="DenoisingHeatmapPlot">
+<a class="viewcode-back" href="../../../hfovis.gui.html#hfovis.gui.denoising_heatmap.DenoisingHeatmapPlot">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">DenoisingHeatmapPlot</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Logic for plotting denoising heatmap in event view.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    plot_widget : pg.PlotWidget</span>
+<span class="sd">        The plot widget from the main window where the heatmap should be drawn.</span>
+<span class="sd">    channel_groups : list[tuple[int, str]]</span>
+<span class="sd">        List of tuples where each tuple contains a channel index and its label.</span>
+<span class="sd">    num_channels : int</span>
+<span class="sd">        Total number of channels in the dataset.</span>
+<span class="sd">    colormap : pg.ColorMap</span>
+<span class="sd">        Color map to be used for the heatmap.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    denoisingHeatmap : pg.PlotWidget</span>
+<span class="sd">    denoiseImg : pg.ImageItem</span>
+<span class="sd">    denoise_cbar : pg.ColorBarItem</span>
+
+<span class="sd">    Methods</span>
+<span class="sd">    -------</span>
+<span class="sd">    update_ticks(channel_groups: list[tuple[int, str]], num_channels: int)</span>
+<span class="sd">        Update the y-ticks with new channel groups.</span>
+<span class="sd">    update(hist_batch: np.ndarray)</span>
+<span class="sd">        Update the heatmap with the provided histogram batch.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">plot_widget</span><span class="p">:</span> <span class="n">pg</span><span class="o">.</span><span class="n">PlotWidget</span><span class="p">,</span>
+        <span class="n">channel_groups</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]],</span>
+        <span class="n">num_channels</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">colormap</span><span class="p">:</span> <span class="n">pg</span><span class="o">.</span><span class="n">ColorMap</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">denoisingHeatmap</span> <span class="o">=</span> <span class="n">plot_widget</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">denoiseImg</span> <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">ImageItem</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">denoisingHeatmap</span><span class="o">.</span><span class="n">addItem</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">denoiseImg</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">denoisingHeatmap</span><span class="o">.</span><span class="n">setBackground</span><span class="p">(</span><span class="s2">&quot;#f8f8f8&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">denoisingHeatmap</span><span class="o">.</span><span class="n">getPlotItem</span><span class="p">()</span><span class="o">.</span><span class="n">getAxis</span><span class="p">(</span><span class="s2">&quot;left&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">setPen</span><span class="p">(</span><span class="s2">&quot;k&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">denoisingHeatmap</span><span class="o">.</span><span class="n">getPlotItem</span><span class="p">()</span><span class="o">.</span><span class="n">getAxis</span><span class="p">(</span><span class="s2">&quot;bottom&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">setPen</span><span class="p">(</span><span class="s2">&quot;k&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">denoisingHeatmap</span><span class="o">.</span><span class="n">getPlotItem</span><span class="p">()</span><span class="o">.</span><span class="n">getAxis</span><span class="p">(</span><span class="s2">&quot;left&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">setTextPen</span><span class="p">(</span><span class="s2">&quot;k&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">denoisingHeatmap</span><span class="o">.</span><span class="n">getPlotItem</span><span class="p">()</span><span class="o">.</span><span class="n">getAxis</span><span class="p">(</span><span class="s2">&quot;bottom&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">setTextPen</span><span class="p">(</span><span class="s2">&quot;k&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">denoisingHeatmap</span><span class="o">.</span><span class="n">getPlotItem</span><span class="p">()</span><span class="o">.</span><span class="n">getAxis</span><span class="p">(</span><span class="s2">&quot;bottom&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">setTickPen</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">denoisingHeatmap</span><span class="o">.</span><span class="n">getPlotItem</span><span class="p">()</span><span class="o">.</span><span class="n">getAxis</span><span class="p">(</span><span class="s2">&quot;left&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">setTickPen</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">denoisingHeatmap</span><span class="o">.</span><span class="n">getPlotItem</span><span class="p">()</span><span class="o">.</span><span class="n">getAxis</span><span class="p">(</span><span class="s2">&quot;bottom&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">setStyle</span><span class="p">(</span>
+            <span class="n">hideOverlappingLabels</span><span class="o">=</span><span class="kc">False</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">denoisingHeatmap</span><span class="o">.</span><span class="n">setLabel</span><span class="p">(</span><span class="s2">&quot;left&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">denoisingHeatmap</span><span class="o">.</span><span class="n">setLabel</span><span class="p">(</span><span class="s2">&quot;bottom&quot;</span><span class="p">,</span> <span class="s2">&quot;Channel&quot;</span><span class="p">)</span>
+
+        <span class="c1"># fixed y-ticks at 0 and 1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">denoisingHeatmap</span><span class="o">.</span><span class="n">getPlotItem</span><span class="p">()</span><span class="o">.</span><span class="n">getAxis</span><span class="p">(</span><span class="s2">&quot;left&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">setTicks</span><span class="p">(</span>
+            <span class="p">[[(</span><span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;Pseudo-HFO&quot;</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;Real-HFO&quot;</span><span class="p">)]]</span>
+        <span class="p">)</span>
+        <span class="c1"># Set x-ticks</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">denoisingHeatmap</span><span class="o">.</span><span class="n">getAxis</span><span class="p">(</span><span class="s2">&quot;bottom&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">setTicks</span><span class="p">([</span><span class="n">channel_groups</span><span class="p">])</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">denoisingHeatmap</span><span class="o">.</span><span class="n">getViewBox</span><span class="p">()</span><span class="o">.</span><span class="n">setDefaultPadding</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">denoisingHeatmap</span><span class="o">.</span><span class="n">getPlotItem</span><span class="p">()</span><span class="o">.</span><span class="n">setContentsMargins</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+        <span class="c1"># add colorbar</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">denoise_cbar</span> <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">ColorBarItem</span><span class="p">(</span>
+            <span class="n">colorMap</span><span class="o">=</span><span class="n">colormap</span><span class="p">,</span>
+            <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Count&quot;</span><span class="p">,</span>
+            <span class="n">interactive</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">pen</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">hoverPen</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">hoverBrush</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">denoise_cbar</span><span class="o">.</span><span class="n">setImageItem</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">denoiseImg</span><span class="p">,</span> <span class="n">insert_in</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">denoisingHeatmap</span><span class="o">.</span><span class="n">getPlotItem</span><span class="p">()</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">denoise_cbar</span><span class="o">.</span><span class="n">getAxis</span><span class="p">(</span><span class="s2">&quot;right&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">setTextPen</span><span class="p">(</span><span class="s2">&quot;k&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">denoise_cbar</span><span class="o">.</span><span class="n">getAxis</span><span class="p">(</span><span class="s2">&quot;left&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">setTextPen</span><span class="p">(</span><span class="s2">&quot;k&quot;</span><span class="p">)</span>
+
+        <span class="c1"># cumulative counts across all batches</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_denoise_hist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="n">num_channels</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+
+<div class="viewcode-block" id="DenoisingHeatmapPlot.update_ticks">
+<a class="viewcode-back" href="../../../hfovis.gui.html#hfovis.gui.denoising_heatmap.DenoisingHeatmapPlot.update_ticks">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update_ticks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">channel_groups</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]],</span> <span class="n">num_channels</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Update the y-ticks with new channel groups.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        channel_groups : list[tuple[int, str]]</span>
+<span class="sd">            List of tuples where each tuple contains a channel index and its label.</span>
+<span class="sd">        num_channels : int</span>
+<span class="sd">            Total number of channels in the dataset.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">denoisingHeatmap</span><span class="o">.</span><span class="n">getAxis</span><span class="p">(</span><span class="s2">&quot;bottom&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">setTicks</span><span class="p">([</span><span class="n">channel_groups</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">denoisingHeatmap</span><span class="o">.</span><span class="n">setYRange</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_denoise_hist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="n">num_channels</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DenoisingHeatmapPlot.update">
+<a class="viewcode-back" href="../../../hfovis.gui.html#hfovis.gui.denoising_heatmap.DenoisingHeatmapPlot.update">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hist_batch</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Update the heatmap with the provided histogram batch.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        hist_batch : np.ndarray</span>
+<span class="sd">            Histogram batch of shape (2, num_channels) containing counts for pseudo-HFO</span>
+<span class="sd">            and real-HFO across channels.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_denoise_hist</span> <span class="o">+=</span> <span class="n">hist_batch</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">denoiseImg</span><span class="o">.</span><span class="n">setImage</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_denoise_hist</span><span class="p">,</span> <span class="n">autoLevels</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="n">h</span><span class="p">,</span> <span class="n">w</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_denoise_hist</span><span class="o">.</span><span class="n">shape</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">denoiseImg</span><span class="o">.</span><span class="n">setRect</span><span class="p">(</span><span class="n">pg</span><span class="o">.</span><span class="n">QtCore</span><span class="o">.</span><span class="n">QRectF</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">h</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">denoise_cbar</span><span class="o">.</span><span class="n">setLevels</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_denoise_hist</span><span class="p">)))</span>
+        <span class="n">axis</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">denoise_cbar</span><span class="o">.</span><span class="n">getAxis</span><span class="p">(</span><span class="s2">&quot;right&quot;</span><span class="p">)</span>
+        <span class="n">maxv</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_denoise_hist</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+        <span class="n">axis</span><span class="o">.</span><span class="n">setTicks</span><span class="p">([[(</span><span class="n">maxv</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">maxv</span><span class="p">)))]])</span></div>
+</div>
+
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">hfovis 0.0.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">hfovis.gui.denoising_heatmap</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2025, Raahi Jogani, Valentina Hrtonova, Behrang Besheli.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    </div>
+  </body>
+</html>

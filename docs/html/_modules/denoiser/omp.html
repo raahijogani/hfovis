@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>denoiser.omp &#8212; hfovis 0.0.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../_static/classic.css?v=2bf1fcf8" />
+    
+    <script src="../../_static/documentation_options.js?v=d45e8c67"></script>
+    <script src="../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">hfovis 0.0.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">denoiser.omp</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for denoiser.omp</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">numba</span><span class="w"> </span><span class="kn">import</span> <span class="n">njit</span><span class="p">,</span> <span class="n">prange</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.linalg</span><span class="w"> </span><span class="kn">import</span> <span class="n">cho_factor</span><span class="p">,</span> <span class="n">cho_solve</span>
+
+
+<div class="viewcode-block" id="project_and_select">
+<a class="viewcode-back" href="../../denoiser.html#denoiser.omp.project_and_select">[docs]</a>
+<span class="nd">@njit</span><span class="p">(</span>
+    <span class="s2">&quot;void(float64[:, :], int64[:], int64[:, :], int64, int64)&quot;</span><span class="p">,</span>
+    <span class="n">parallel</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">fastmath</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">project_and_select</span><span class="p">(</span>
+    <span class="n">DtR</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">support_lens</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">supports</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">E</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">K</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Selects the best atom for each event based on the projections.</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">    ----------</span>
+<span class="sd">    DtR : np.ndarray</span>
+<span class="sd">        The projections of the residuals onto the dictionary atoms, shape (K, E).</span>
+<span class="sd">    support_lens : np.ndarray</span>
+<span class="sd">        Current lengths of the supports for each event, shape (E,).</span>
+<span class="sd">    supports : np.ndarray</span>
+<span class="sd">        Indices of selected atoms for each event, shape (max_atoms, E).</span>
+<span class="sd">    E : int</span>
+<span class="sd">        Number of events.</span>
+<span class="sd">    K : int</span>
+<span class="sd">        Number of atoms in the dictionary.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># DtR = D.T @ residuals (passed in)</span>
+    <span class="c1"># Updates supports, computes new coefficients via small-matrix solves (optional here)</span>
+    <span class="c1"># Returns updated support_lens and supports and flags to stop</span>
+    <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">prange</span><span class="p">(</span><span class="n">E</span><span class="p">):</span>
+        <span class="c1"># select largest projection</span>
+        <span class="n">best</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="n">argmax</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">K</span><span class="p">):</span>
+            <span class="n">val</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">DtR</span><span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="n">e</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">val</span> <span class="o">&gt;</span> <span class="n">best</span><span class="p">:</span>
+                <span class="n">best</span> <span class="o">=</span> <span class="n">val</span>
+                <span class="n">argmax</span> <span class="o">=</span> <span class="n">k</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="n">argmax</span>
+        <span class="n">supports</span><span class="p">[</span><span class="n">support_lens</span><span class="p">[</span><span class="n">e</span><span class="p">],</span> <span class="n">e</span><span class="p">]</span> <span class="o">=</span> <span class="n">idx</span>
+        <span class="n">support_lens</span><span class="p">[</span><span class="n">e</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">return</span></div>
+
+
+
+<div class="viewcode-block" id="batch_omp">
+<a class="viewcode-back" href="../../denoiser.html#denoiser.omp.batch_omp">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">batch_omp</span><span class="p">(</span><span class="n">D</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">max_atoms</span><span class="p">,</span> <span class="n">err_thresh</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">err_diff_thresh</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">min_iters</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Batch Orthogonal Matching Pursuit (OMP) algorithm.</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">    -----------</span>
+<span class="sd">    D : np.ndarray</span>
+<span class="sd">        Dictionary matrix of shape (n_samples, K), where K is the number of atoms.</span>
+<span class="sd">    X : np.ndarray</span>
+<span class="sd">        Input data matrix of shape (n_samples, E), where E is the number of events.</span>
+<span class="sd">    max_atoms : int</span>
+<span class="sd">        Maximum number of atoms to select.</span>
+<span class="sd">    err_thresh : float, optional</span>
+<span class="sd">        Error threshold for stopping criteria. Default is -1 (no threshold).</span>
+<span class="sd">    err_diff_thresh : float, optional</span>
+<span class="sd">        Error difference threshold for stopping criteria. Default is -1 (no threshold).</span>
+<span class="sd">    min_iters : int, optional</span>
+<span class="sd">        Minimum number of iterations to run. Default is 5.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">    --------</span>
+<span class="sd">    supports : np.ndarray</span>
+<span class="sd">        Indices of selected atoms for each event, shape (max_atoms, E).</span>
+<span class="sd">    residual_history : np.ndarray</span>
+<span class="sd">        History of residuals at each iteration, shape (max_atoms + 1, n_samples, E).</span>
+<span class="sd">    errors : np.ndarray</span>
+<span class="sd">        Relative errors at each iteration, shape (max_atoms, E).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">n</span><span class="p">,</span> <span class="n">K</span> <span class="o">=</span> <span class="n">D</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">_</span><span class="p">,</span> <span class="n">E</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">DtX</span> <span class="o">=</span> <span class="n">D</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">X</span>
+    <span class="n">residuals</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">coeffs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">K</span><span class="p">,</span> <span class="n">E</span><span class="p">))</span>
+    <span class="n">supports</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">max_atoms</span><span class="p">,</span> <span class="n">E</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+    <span class="n">support_lens</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">E</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+    <span class="n">errors</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">max_atoms</span><span class="p">,</span> <span class="n">E</span><span class="p">))</span>
+
+    <span class="c1"># Store residuals per iteration: shape (max_atoms + 1, n, E)</span>
+    <span class="n">residual_history</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">max_atoms</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">E</span><span class="p">))</span>
+    <span class="n">residual_history</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">residuals</span>
+
+    <span class="k">for</span> <span class="n">it</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">max_atoms</span><span class="p">):</span>
+        <span class="n">DtR</span> <span class="o">=</span> <span class="n">D</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">residuals</span>
+        <span class="n">project_and_select</span><span class="p">(</span><span class="n">DtR</span><span class="p">,</span> <span class="n">support_lens</span><span class="p">,</span> <span class="n">supports</span><span class="p">,</span> <span class="n">E</span><span class="p">,</span> <span class="n">K</span><span class="p">)</span>
+
+        <span class="c1"># Solve least squares for each event</span>
+        <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">E</span><span class="p">):</span>
+            <span class="n">sel</span> <span class="o">=</span> <span class="n">supports</span><span class="p">[:</span> <span class="n">support_lens</span><span class="p">[</span><span class="n">e</span><span class="p">],</span> <span class="n">e</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sel</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">Gs</span> <span class="o">=</span> <span class="n">D</span><span class="p">[:,</span> <span class="n">sel</span><span class="p">]</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">D</span><span class="p">[:,</span> <span class="n">sel</span><span class="p">]</span>
+            <span class="n">rhs</span> <span class="o">=</span> <span class="n">DtX</span><span class="p">[</span><span class="n">sel</span><span class="p">,</span> <span class="n">e</span><span class="p">]</span>
+            <span class="n">cfac</span><span class="p">,</span> <span class="n">low</span> <span class="o">=</span> <span class="n">cho_factor</span><span class="p">(</span><span class="n">Gs</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">overwrite_a</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">check_finite</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="n">sol</span> <span class="o">=</span> <span class="n">cho_solve</span><span class="p">((</span><span class="n">cfac</span><span class="p">,</span> <span class="n">low</span><span class="p">),</span> <span class="n">rhs</span><span class="p">,</span> <span class="n">overwrite_b</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">coeffs</span><span class="p">[</span><span class="n">sel</span><span class="p">,</span> <span class="n">e</span><span class="p">]</span> <span class="o">=</span> <span class="n">sol</span>
+
+        <span class="n">Y</span> <span class="o">=</span> <span class="n">D</span> <span class="o">@</span> <span class="n">coeffs</span>
+        <span class="n">residuals</span> <span class="o">=</span> <span class="n">X</span> <span class="o">-</span> <span class="n">Y</span>
+        <span class="n">residual_history</span><span class="p">[</span><span class="n">it</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">residuals</span>  <span class="c1"># save this step&#39;s residual</span>
+
+        <span class="n">curr_err</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">residuals</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">errors</span><span class="p">[</span><span class="n">it</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">curr_err</span>
+
+        <span class="k">if</span> <span class="n">it</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">&gt;=</span> <span class="n">min_iters</span><span class="p">:</span>
+            <span class="n">prev_err</span> <span class="o">=</span> <span class="n">errors</span><span class="p">[</span><span class="n">it</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="p">:]</span>
+            <span class="n">err_diff</span> <span class="o">=</span> <span class="n">prev_err</span> <span class="o">-</span> <span class="n">curr_err</span>
+            <span class="n">stop</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span>
+                <span class="p">(</span><span class="n">err_thresh</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">curr_err</span> <span class="o">&lt;</span> <span class="n">err_thresh</span><span class="p">)</span>
+                <span class="o">|</span> <span class="p">(</span><span class="n">err_diff_thresh</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">err_diff</span> <span class="o">&lt;</span> <span class="n">err_diff_thresh</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">stop</span><span class="p">:</span>
+                <span class="k">break</span>
+
+    <span class="k">return</span> <span class="n">supports</span><span class="p">,</span> <span class="n">residual_history</span><span class="p">[:</span> <span class="n">it</span> <span class="o">+</span> <span class="mi">2</span><span class="p">],</span> <span class="n">errors</span><span class="p">[:</span> <span class="n">it</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span></div>
+
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">hfovis 0.0.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">denoiser.omp</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2025, Raahi Jogani, Valentina Hrtonova, Behrang Besheli.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    </div>
+  </body>
+</html>

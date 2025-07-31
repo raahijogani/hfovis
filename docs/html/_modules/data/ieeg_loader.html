@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>data.ieeg_loader &#8212; hfovis 0.0.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../_static/classic.css?v=2bf1fcf8" />
+    
+    <script src="../../_static/documentation_options.js?v=d45e8c67"></script>
+    <script src="../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">hfovis 0.0.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">data.ieeg_loader</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for data.ieeg_loader</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">.loaders</span><span class="w"> </span><span class="kn">import</span> <span class="n">IEEGDataLoader</span>
+
+
+<div class="viewcode-block" id="load_ieeg_from_fileinfo">
+<a class="viewcode-back" href="../../data.html#data.ieeg_loader.load_ieeg_from_fileinfo">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">load_ieeg_from_fileinfo</span><span class="p">(</span><span class="n">file_info</span><span class="p">,</span> <span class="n">data_path</span><span class="p">,</span> <span class="n">annotations_path</span><span class="p">,</span> <span class="n">baseline</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Load iEEG data from file information.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    file_info : dict</span>
+<span class="sd">        Dictionary containing file information with keys like &#39;Filename_baseline&#39;, &#39;subject&#39;, &#39;SOZ&#39;, and &#39;outcome&#39;.</span>
+<span class="sd">    data_path : str</span>
+<span class="sd">        Path to the directory containing iEEG data files.</span>
+<span class="sd">    annotations_path : str</span>
+<span class="sd">        Path to the directory containing annotations files. A dummy can be provided if</span>
+<span class="sd">        not used.</span>
+<span class="sd">    baseline : str</span>
+<span class="sd">        Baseline identifier, typically &#39;baseline&#39; or &#39;postbaseline&#39;.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    tuple</span>
+<span class="sd">        A tuple containing:</span>
+<span class="sd">        - data : np.ndarray</span>
+<span class="sd">            The iEEG data array.</span>
+<span class="sd">        - fs : int</span>
+<span class="sd">            The sampling frequency of the iEEG data.</span>
+<span class="sd">        - channel_names : list</span>
+<span class="sd">            List of channel names in the iEEG data.</span>
+<span class="sd">        - subject_info : dict</span>
+<span class="sd">            Dictionary containing subject information with keys &#39;subject&#39;, &#39;SOZ&#39;, and &#39;outcome&#39;.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">loader</span> <span class="o">=</span> <span class="n">IEEGDataLoader</span><span class="p">(</span><span class="n">annotations_path</span><span class="p">,</span> <span class="n">data_path</span><span class="p">)</span>
+    <span class="n">montage</span><span class="p">,</span> <span class="n">patientInfo</span><span class="p">,</span> <span class="n">data</span> <span class="o">=</span> <span class="n">loader</span><span class="o">.</span><span class="n">load_data</span><span class="p">(</span><span class="n">file_info</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;Filename_</span><span class="si">{</span><span class="n">baseline</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">])</span>
+
+    <span class="n">fs</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="nb">int</span><span class="p">(</span><span class="n">montage</span><span class="p">[</span><span class="s2">&quot;SampleRate&quot;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">montage</span><span class="p">[</span><span class="s2">&quot;SampleRate&quot;</span><span class="p">],</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">))</span>
+        <span class="k">else</span> <span class="nb">int</span><span class="p">(</span><span class="n">montage</span><span class="p">[</span><span class="s2">&quot;SampleRate&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
+    <span class="p">)</span>
+    <span class="n">channel_names</span> <span class="o">=</span> <span class="n">montage</span><span class="p">[</span><span class="s2">&quot;ChannelNames&quot;</span><span class="p">]</span>
+
+    <span class="n">subject_info</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;subject&quot;</span><span class="p">:</span> <span class="n">file_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;subject&quot;</span><span class="p">),</span>
+        <span class="s2">&quot;SOZ&quot;</span><span class="p">:</span> <span class="n">file_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;SOZ&quot;</span><span class="p">,</span> <span class="p">[]),</span>
+        <span class="s2">&quot;outcome&quot;</span><span class="p">:</span> <span class="n">file_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;outcome&quot;</span><span class="p">),</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="n">data</span><span class="p">,</span> <span class="n">fs</span><span class="p">,</span> <span class="n">channel_names</span><span class="p">,</span> <span class="n">subject_info</span></div>
+
+
+
+<div class="viewcode-block" id="load_annotations">
+<a class="viewcode-back" href="../../data.html#data.ieeg_loader.load_annotations">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">load_annotations</span><span class="p">(</span><span class="n">data_path</span><span class="p">,</span> <span class="n">annotations_path</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Load annotations from the specified path.&quot;&quot;&quot;</span>
+    <span class="n">loader</span> <span class="o">=</span> <span class="n">IEEGDataLoader</span><span class="p">(</span><span class="n">annotations_path</span><span class="p">,</span> <span class="n">data_path</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">loader</span><span class="o">.</span><span class="n">load_annotations</span><span class="p">()</span></div>
+
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">hfovis 0.0.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">data.ieeg_loader</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2025, Raahi Jogani, Valentina Hrtonova, Behrang Besheli.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    </div>
+  </body>
+</html>

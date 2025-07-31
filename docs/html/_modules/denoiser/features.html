@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>denoiser.features &#8212; hfovis 0.0.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../_static/classic.css?v=2bf1fcf8" />
+    
+    <script src="../../_static/documentation_options.js?v=d45e8c67"></script>
+    <script src="../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">hfovis 0.0.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">denoiser.features</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for denoiser.features</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">joblib</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.signal</span><span class="w"> </span><span class="kn">import</span> <span class="n">butter</span><span class="p">,</span> <span class="n">detrend</span><span class="p">,</span> <span class="n">filtfilt</span><span class="p">,</span> <span class="n">resample</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.signal.windows</span><span class="w"> </span><span class="kn">import</span> <span class="n">tukey</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.normalize</span><span class="w"> </span><span class="kn">import</span> <span class="n">data_norm</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.omp</span><span class="w"> </span><span class="kn">import</span> <span class="n">batch_omp</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.vfactor</span><span class="w"> </span><span class="kn">import</span> <span class="n">compute_vfactor</span>
+
+<span class="n">bL</span><span class="p">,</span> <span class="n">aL</span> <span class="o">=</span> <span class="n">butter</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="mi">2048</span><span class="p">,</span> <span class="n">btype</span><span class="o">=</span><span class="s2">&quot;high&quot;</span><span class="p">)</span>
+<span class="n">bH</span><span class="p">,</span> <span class="n">aH</span> <span class="o">=</span> <span class="n">butter</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="p">(</span><span class="mi">80</span><span class="p">,</span> <span class="mi">600</span><span class="p">),</span> <span class="n">fs</span><span class="o">=</span><span class="mi">2048</span><span class="p">,</span> <span class="n">btype</span><span class="o">=</span><span class="s2">&quot;bandpass&quot;</span><span class="p">)</span>
+<span class="n">data_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">),</span> <span class="s2">&quot;data&quot;</span><span class="p">)</span>
+<span class="n">gabor_data</span> <span class="o">=</span> <span class="n">joblib</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">data_dir</span><span class="p">,</span> <span class="s2">&quot;gabor_dictionary_full.pkl&quot;</span><span class="p">))</span>
+<span class="n">dictionary</span> <span class="o">=</span> <span class="n">gabor_data</span><span class="p">[</span><span class="s2">&quot;Dictionary&quot;</span><span class="p">]</span>
+<span class="n">dh_freq</span> <span class="o">=</span> <span class="n">gabor_data</span><span class="p">[</span><span class="s2">&quot;DHfrq&quot;</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="extract_omp_features">
+<a class="viewcode-back" href="../../denoiser.html#denoiser.features.extract_omp_features">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">extract_omp_features</span><span class="p">(</span>
+    <span class="n">signal</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">n_iter</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span>
+    <span class="n">bL</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">bL</span><span class="p">,</span>
+    <span class="n">aL</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">aL</span><span class="p">,</span>
+    <span class="n">bH</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">bH</span><span class="p">,</span>
+    <span class="n">aH</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">aH</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Extract features using OMP.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    signal : np.ndarray</span>
+<span class="sd">        Input signal to extract features from. Expected shape is (n_samples, n_events).</span>
+<span class="sd">        This will be resampled to 512 samples.</span>
+<span class="sd">    n_iter : int, default=50</span>
+<span class="sd">        Number of iterations for OMP. Default is 50.</span>
+<span class="sd">    bL : np.ndarray, optional</span>
+<span class="sd">        Coefficients for the high-pass filter. Default is a 1st order Butterworth filter</span>
+<span class="sd">        at 1 Hz.</span>
+<span class="sd">    aL : np.ndarray, optional</span>
+<span class="sd">        Denominator coefficients for the high-pass filter. Default is a 1st order</span>
+<span class="sd">        Butterworth filter at 1 Hz.</span>
+<span class="sd">    bH : np.ndarray, optional</span>
+<span class="sd">        Coefficients for the band-pass filter. Default is a 4th order Butterworth filter</span>
+<span class="sd">        between 80 Hz and 600 Hz.</span>
+<span class="sd">    aH : np.ndarray, optional</span>
+<span class="sd">        Denominator coefficients for the band-pass filter. Default is a 4th order</span>
+<span class="sd">        Butterworth filter between 80 Hz and 600 Hz.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    np.ndarray</span>
+<span class="sd">        Extracted features of shape (n_events, 155).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># === Preprocessing ===</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">resample</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="mi">512</span><span class="p">)</span>
+    <span class="n">n_samples</span><span class="p">,</span> <span class="n">n_events</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span>
+
+    <span class="n">data_unnormalized</span> <span class="o">=</span> <span class="n">detrend</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;constant&quot;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">data_detrended</span> <span class="o">=</span> <span class="n">detrend</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;linear&quot;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">data_normalized</span> <span class="o">=</span> <span class="n">data_norm</span><span class="p">(</span><span class="n">data_detrended</span><span class="p">,</span> <span class="n">norm_type</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="n">data_dc_filt</span> <span class="o">=</span> <span class="n">filtfilt</span><span class="p">(</span>
+        <span class="n">bL</span><span class="p">,</span>
+        <span class="n">aL</span><span class="p">,</span>
+        <span class="n">data_normalized</span><span class="p">,</span>
+        <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+        <span class="n">method</span><span class="o">=</span><span class="s2">&quot;pad&quot;</span><span class="p">,</span>
+        <span class="n">padlen</span><span class="o">=</span><span class="mi">3</span> <span class="o">*</span> <span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">aL</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">bL</span><span class="p">))</span> <span class="o">-</span> <span class="mi">1</span><span class="p">),</span>
+    <span class="p">)</span>
+    <span class="n">hfo_unormalized</span> <span class="o">=</span> <span class="n">filtfilt</span><span class="p">(</span>
+        <span class="n">bH</span><span class="p">,</span>
+        <span class="n">aH</span><span class="p">,</span>
+        <span class="n">data_unnormalized</span><span class="p">,</span>
+        <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+        <span class="n">method</span><span class="o">=</span><span class="s2">&quot;pad&quot;</span><span class="p">,</span>
+        <span class="n">padlen</span><span class="o">=</span><span class="mi">3</span> <span class="o">*</span> <span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">aH</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">bH</span><span class="p">))</span> <span class="o">-</span> <span class="mi">1</span><span class="p">),</span>
+    <span class="p">)</span>
+
+    <span class="c1"># === OMP ===</span>
+    <span class="n">supports</span><span class="p">,</span> <span class="n">residual_history</span><span class="p">,</span> <span class="n">errors</span> <span class="o">=</span> <span class="n">batch_omp</span><span class="p">(</span><span class="n">dictionary</span><span class="p">,</span> <span class="n">data_dc_filt</span><span class="p">,</span> <span class="n">n_iter</span><span class="p">)</span>
+
+    <span class="c1"># === Feature 1: Residual Errors (shape: n_iter × n_events)</span>
+    <span class="c1"># Transpose to shape (n_events, n_iter)</span>
+    <span class="n">res_errors</span> <span class="o">=</span> <span class="n">errors</span><span class="p">[:</span><span class="n">n_iter</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">T</span>
+
+    <span class="c1"># === Feature 2: V-Factors (shape: (n_events, n_iter+1))</span>
+    <span class="n">window</span> <span class="o">=</span> <span class="p">(</span><span class="n">tukey</span><span class="p">(</span><span class="n">n_samples</span><span class="p">,</span> <span class="mf">0.25</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">/</span> <span class="mf">1.5</span>
+    <span class="n">vfactors</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_events</span><span class="p">,</span> <span class="n">n_iter</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_iter</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="n">windowed_res</span> <span class="o">=</span> <span class="n">residual_history</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">*</span> <span class="n">window</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span>
+        <span class="n">vfactors</span><span class="p">[:,</span> <span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">compute_vfactor</span><span class="p">(</span><span class="n">windowed_res</span><span class="p">)</span>
+
+    <span class="c1"># === Feature 3: Line noise count up to each iteration (n_iter × n_events)</span>
+    <span class="c1"># Result shape: (n_events, n_iter)</span>
+    <span class="n">line_noise_counts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_events</span><span class="p">,</span> <span class="n">n_iter</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_iter</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="n">freqs_selected</span> <span class="o">=</span> <span class="n">dh_freq</span><span class="p">[</span><span class="n">supports</span><span class="p">[:</span><span class="n">k</span><span class="p">,</span> <span class="p">:]]</span>
+        <span class="c1"># Check line noise in range 50–70 Hz</span>
+        <span class="n">is_line_noise</span> <span class="o">=</span> <span class="p">(</span><span class="n">freqs_selected</span> <span class="o">&gt;</span> <span class="mi">50</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">freqs_selected</span> <span class="o">&lt;</span> <span class="mi">70</span><span class="p">)</span>
+        <span class="n">line_noise_counts</span><span class="p">[:,</span> <span class="n">k</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">is_line_noise</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="c1"># === Feature 4: Signal stats (4 values per event)</span>
+    <span class="n">sd</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">data_unnormalized</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">ddof</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ptp</span><span class="p">(</span><span class="n">data_unnormalized</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">sd_h</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">hfo_unormalized</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">ddof</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">rng_h</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ptp</span><span class="p">(</span><span class="n">hfo_unormalized</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="c1"># === Concatenate all features ===</span>
+    <span class="c1"># Each event: [residuals (n_iter), vfactors (n_iter+1), line_noise (n_iter), sd, rng, sd_h, rng_h]</span>
+    <span class="n">features</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span>
+        <span class="p">[</span>
+            <span class="n">res_errors</span><span class="p">,</span>
+            <span class="n">vfactors</span><span class="p">,</span>
+            <span class="n">line_noise_counts</span><span class="p">,</span>
+            <span class="n">sd</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">T</span><span class="p">,</span>
+            <span class="n">rng</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">T</span><span class="p">,</span>
+            <span class="n">sd_h</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">T</span><span class="p">,</span>
+            <span class="n">rng_h</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">T</span><span class="p">,</span>
+        <span class="p">],</span>
+        <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="p">)</span>  <span class="c1"># shape (n_events, 3*n_iter + 1 + 4)</span>
+
+    <span class="k">return</span> <span class="n">features</span></div>
+
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">hfovis 0.0.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">denoiser.features</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2025, Raahi Jogani, Valentina Hrtonova, Behrang Besheli.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    </div>
+  </body>
+</html>

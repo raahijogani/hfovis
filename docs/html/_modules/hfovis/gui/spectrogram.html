@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>hfovis.gui.spectrogram &#8212; hfovis 0.0.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/classic.css?v=2bf1fcf8" />
+    
+    <script src="../../../_static/documentation_options.js?v=d45e8c67"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">hfovis 0.0.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">hfovis.gui.spectrogram</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for hfovis.gui.spectrogram</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pyqtgraph</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pg</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.signal</span><span class="w"> </span><span class="kn">import</span> <span class="n">butter</span><span class="p">,</span> <span class="n">detrend</span><span class="p">,</span> <span class="n">filtfilt</span><span class="p">,</span> <span class="n">spectrogram</span>
+
+
+<div class="viewcode-block" id="SpectrogramPlot">
+<a class="viewcode-back" href="../../../hfovis.gui.html#hfovis.gui.spectrogram.SpectrogramPlot">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SpectrogramPlot</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Logic for plotting spectrogram in event view.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    plot_widget : pg.PlotWidget</span>
+<span class="sd">        The plot widget from the main window where the spectrogram should be drawn.</span>
+<span class="sd">    fs : float</span>
+<span class="sd">        Sampling frequency of the signal.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    eventSpectrogram : pg.PlotWidget</span>
+<span class="sd">        The plot widget from the main window where the spectrogram should be drawn.</span>
+<span class="sd">    fs : float</span>
+<span class="sd">    spec_a, spec_b : np.ndarray</span>
+<span class="sd">        Coefficients for the high-pass Butterworth filter.</span>
+<span class="sd">    specImg : pg.ImageItem</span>
+<span class="sd">    cbar : pg.ColorBarItem</span>
+
+<span class="sd">    Methods</span>
+<span class="sd">    -------</span>
+<span class="sd">    update(sig: np.ndarray)</span>
+<span class="sd">        Updates the spectrogram with the provided signal.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">plot_widget</span><span class="p">:</span> <span class="n">pg</span><span class="o">.</span><span class="n">PlotWidget</span><span class="p">,</span> <span class="n">fs</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">colormap</span><span class="p">:</span> <span class="n">pg</span><span class="o">.</span><span class="n">ColorMap</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">eventSpectrogram</span> <span class="o">=</span> <span class="n">plot_widget</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fs</span> <span class="o">=</span> <span class="n">fs</span>
+
+        <span class="c1"># Create high pass parameters for spectrogram</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">spec_a</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">spec_b</span> <span class="o">=</span> <span class="n">butter</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">16</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">,</span> <span class="n">btype</span><span class="o">=</span><span class="s2">&quot;highpass&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Set light background</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">eventSpectrogram</span><span class="o">.</span><span class="n">setBackground</span><span class="p">(</span><span class="s2">&quot;#f8f8f8&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">eventSpectrogram</span><span class="o">.</span><span class="n">getPlotItem</span><span class="p">()</span><span class="o">.</span><span class="n">getAxis</span><span class="p">(</span><span class="s2">&quot;bottom&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">setPen</span><span class="p">(</span><span class="s2">&quot;k&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">eventSpectrogram</span><span class="o">.</span><span class="n">getPlotItem</span><span class="p">()</span><span class="o">.</span><span class="n">getAxis</span><span class="p">(</span><span class="s2">&quot;left&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">setPen</span><span class="p">(</span><span class="s2">&quot;k&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">eventSpectrogram</span><span class="o">.</span><span class="n">getPlotItem</span><span class="p">()</span><span class="o">.</span><span class="n">getAxis</span><span class="p">(</span><span class="s2">&quot;bottom&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">setTextPen</span><span class="p">(</span><span class="s2">&quot;k&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">eventSpectrogram</span><span class="o">.</span><span class="n">getPlotItem</span><span class="p">()</span><span class="o">.</span><span class="n">getAxis</span><span class="p">(</span><span class="s2">&quot;left&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">setTextPen</span><span class="p">(</span><span class="s2">&quot;k&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">eventSpectrogram</span><span class="o">.</span><span class="n">getPlotItem</span><span class="p">()</span><span class="o">.</span><span class="n">getAxis</span><span class="p">(</span><span class="s2">&quot;bottom&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">setTickPen</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">eventSpectrogram</span><span class="o">.</span><span class="n">getPlotItem</span><span class="p">()</span><span class="o">.</span><span class="n">getAxis</span><span class="p">(</span><span class="s2">&quot;left&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">setTickPen</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+
+        <span class="c1"># Get rid of padding</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">eventSpectrogram</span><span class="o">.</span><span class="n">getViewBox</span><span class="p">()</span><span class="o">.</span><span class="n">setDefaultPadding</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">eventSpectrogram</span><span class="o">.</span><span class="n">getPlotItem</span><span class="p">()</span><span class="o">.</span><span class="n">setContentsMargins</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">specImg</span> <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">ImageItem</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">eventSpectrogram</span><span class="o">.</span><span class="n">addItem</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">specImg</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cbar</span> <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">ColorBarItem</span><span class="p">(</span><span class="n">colorMap</span><span class="o">=</span><span class="n">colormap</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Power (dB)&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cbar</span><span class="o">.</span><span class="n">getAxis</span><span class="p">(</span><span class="s2">&quot;right&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">setPen</span><span class="p">(</span><span class="s2">&quot;k&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cbar</span><span class="o">.</span><span class="n">getAxis</span><span class="p">(</span><span class="s2">&quot;right&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">setTextPen</span><span class="p">(</span><span class="s2">&quot;k&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cbar</span><span class="o">.</span><span class="n">getAxis</span><span class="p">(</span><span class="s2">&quot;left&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">setLabel</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s2">&quot;k&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cbar</span><span class="o">.</span><span class="n">setImageItem</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">specImg</span><span class="p">,</span> <span class="n">insert_in</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">eventSpectrogram</span><span class="o">.</span><span class="n">getPlotItem</span><span class="p">()</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">eventSpectrogram</span><span class="o">.</span><span class="n">setLabel</span><span class="p">(</span><span class="s2">&quot;bottom&quot;</span><span class="p">,</span> <span class="s2">&quot;Time&quot;</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;s&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">eventSpectrogram</span><span class="o">.</span><span class="n">setLabel</span><span class="p">(</span><span class="s2">&quot;left&quot;</span><span class="p">,</span> <span class="s2">&quot;Frequency&quot;</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;Hz&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="SpectrogramPlot.update">
+<a class="viewcode-back" href="../../../hfovis.gui.html#hfovis.gui.spectrogram.SpectrogramPlot.update">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sig</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Update the spectrogram with the provided signal.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        sig : np.ndarray</span>
+<span class="sd">            The signal to be processed and displayed as a spectrogram.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">sig</span> <span class="o">=</span> <span class="n">filtfilt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">spec_a</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">spec_b</span><span class="p">,</span> <span class="n">sig</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">sig</span> <span class="o">=</span> <span class="n">detrend</span><span class="p">(</span><span class="n">sig</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;constant&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Normalize by l2 norm</span>
+        <span class="n">sig</span> <span class="o">=</span> <span class="n">sig</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">sig</span><span class="p">)</span>
+
+        <span class="n">f</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">Zxx</span> <span class="o">=</span> <span class="n">spectrogram</span><span class="p">(</span>
+            <span class="n">sig</span><span class="p">,</span>
+            <span class="n">fs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">fs</span><span class="p">,</span>
+            <span class="n">window</span><span class="o">=</span><span class="s2">&quot;hann&quot;</span><span class="p">,</span>
+            <span class="n">nperseg</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span>
+            <span class="n">noverlap</span><span class="o">=</span><span class="mi">127</span><span class="p">,</span>
+            <span class="n">nfft</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span>
+            <span class="n">scaling</span><span class="o">=</span><span class="s2">&quot;density&quot;</span><span class="p">,</span>
+            <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;magnitude&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="n">f</span> <span class="o">&lt;=</span> <span class="mi">600</span>
+        <span class="n">Zxx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">Zxx</span><span class="p">[</span><span class="n">mask</span><span class="p">])</span>
+        <span class="n">Zxx</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">Zxx</span><span class="p">)</span>
+        <span class="n">Z</span> <span class="o">=</span> <span class="mi">20</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">Zxx</span> <span class="o">+</span> <span class="mf">1e-6</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">specImg</span><span class="o">.</span><span class="n">setImage</span><span class="p">(</span>
+            <span class="n">Z</span><span class="p">,</span> <span class="n">autoLevels</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">autoDownsample</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">axes</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">}</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">specImg</span><span class="o">.</span><span class="n">setRect</span><span class="p">(</span>
+            <span class="n">pg</span><span class="o">.</span><span class="n">QtCore</span><span class="o">.</span><span class="n">QRectF</span><span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">f</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">t</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">f</span><span class="p">[</span><span class="n">mask</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">f</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cbar</span><span class="o">.</span><span class="n">setLevels</span><span class="p">((</span><span class="o">-</span><span class="mi">35</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span></div>
+</div>
+
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">hfovis 0.0.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">hfovis.gui.spectrogram</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2025, Raahi Jogani, Valentina Hrtonova, Behrang Besheli.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    </div>
+  </body>
+</html>

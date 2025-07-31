@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>hfovis.gui.raster &#8212; hfovis 0.0.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/classic.css?v=2bf1fcf8" />
+    
+    <script src="../../../_static/documentation_options.js?v=d45e8c67"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">hfovis 0.0.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">hfovis.gui.raster</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for hfovis.gui.raster</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pyqtgraph</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pg</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">PyQt6.QtWidgets</span><span class="w"> </span><span class="kn">import</span> <span class="n">QCheckBox</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">hfovis.gui.model</span><span class="w"> </span><span class="kn">import</span> <span class="n">EventModel</span>
+
+
+<div class="viewcode-block" id="RasterPlot">
+<a class="viewcode-back" href="../../../hfovis.gui.html#hfovis.gui.raster.RasterPlot">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">RasterPlot</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Logic for plotting raster plot in event view.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    plot_widget : pg.PlotWidget</span>
+<span class="sd">        The plot widget from the main window where the raster plot should be drawn.</span>
+<span class="sd">    channel_groups : list[tuple[int, str]]</span>
+<span class="sd">        List of tuples where each tuple contains a channel index and its label.</span>
+<span class="sd">    num_channels : int</span>
+<span class="sd">        Total number of channels in the dataset.</span>
+<span class="sd">    model : EventModel</span>
+<span class="sd">        The event model containing metadata about events.</span>
+<span class="sd">    pseudo_check_box : QCheckBox</span>
+<span class="sd">        Checkbox to toggle the visibility of pseudo events in the raster plot.</span>
+<span class="sd">    event_num_box : pg.SpinBox</span>
+<span class="sd">        SpinBox to select the event number for highlighting in the raster plot.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    rasterPlot : pg.PlotWidget</span>
+<span class="sd">    model : EventModel</span>
+<span class="sd">    showPseudoEventBox : QCheckBox</span>
+<span class="sd">    eventNumBox : pg.SpinBox</span>
+<span class="sd">    windows_secs : float</span>
+<span class="sd">        The time window in seconds for the raster plot.</span>
+<span class="sd">    rasterScatter : pg.ScatterPlotItem</span>
+<span class="sd">    selectedScatter : pg.ScatterPlotItem</span>
+
+<span class="sd">    Methods</span>
+<span class="sd">    -------</span>
+<span class="sd">    update_ticks(channel_groups: list[tuple[int, str]], num_channels: int)</span>
+<span class="sd">        Update the y-ticks with new channel groups.</span>
+<span class="sd">    update()</span>
+<span class="sd">        Update the raster plot with the current event data.</span>
+<span class="sd">    set_raster_window(secs: float)</span>
+<span class="sd">        Setter for the visible time window (callable from UI).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">plot_widget</span><span class="p">:</span> <span class="n">pg</span><span class="o">.</span><span class="n">PlotWidget</span><span class="p">,</span>
+        <span class="n">channel_groups</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]],</span>
+        <span class="n">num_channels</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">model</span><span class="p">:</span> <span class="n">EventModel</span><span class="p">,</span>
+        <span class="n">pseudo_check_box</span><span class="p">:</span> <span class="n">QCheckBox</span><span class="p">,</span>
+        <span class="n">event_num_box</span><span class="p">:</span> <span class="n">pg</span><span class="o">.</span><span class="n">SpinBox</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rasterPlot</span> <span class="o">=</span> <span class="n">plot_widget</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">showPseudoEventBox</span> <span class="o">=</span> <span class="n">pseudo_check_box</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">eventNumBox</span> <span class="o">=</span> <span class="n">event_num_box</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">window_secs</span> <span class="o">=</span> <span class="mf">10.0</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">rasterScatter</span> <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">ScatterPlotItem</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">brush</span><span class="o">=</span><span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">pen</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">rasterPlot</span><span class="o">.</span><span class="n">addItem</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rasterScatter</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">rasterPlot</span><span class="o">.</span><span class="n">setBackground</span><span class="p">(</span><span class="s2">&quot;#f8f8f8&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rasterPlot</span><span class="o">.</span><span class="n">getPlotItem</span><span class="p">()</span><span class="o">.</span><span class="n">getViewBox</span><span class="p">()</span><span class="o">.</span><span class="n">setBackgroundColor</span><span class="p">(</span><span class="s2">&quot;k&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rasterPlot</span><span class="o">.</span><span class="n">getPlotItem</span><span class="p">()</span><span class="o">.</span><span class="n">getAxis</span><span class="p">(</span><span class="s2">&quot;bottom&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">setTextPen</span><span class="p">(</span><span class="s2">&quot;k&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rasterPlot</span><span class="o">.</span><span class="n">getPlotItem</span><span class="p">()</span><span class="o">.</span><span class="n">getAxis</span><span class="p">(</span><span class="s2">&quot;left&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">setTextPen</span><span class="p">(</span><span class="s2">&quot;k&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">rasterPlot</span><span class="o">.</span><span class="n">setLabel</span><span class="p">(</span><span class="s2">&quot;left&quot;</span><span class="p">,</span> <span class="s2">&quot;Channel&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rasterPlot</span><span class="o">.</span><span class="n">setLabel</span><span class="p">(</span><span class="s2">&quot;bottom&quot;</span><span class="p">,</span> <span class="s2">&quot;Time&quot;</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;s&quot;</span><span class="p">)</span>
+
+        <span class="c1"># hide auto-scale and menu buttons</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rasterPlot</span><span class="o">.</span><span class="n">getPlotItem</span><span class="p">()</span><span class="o">.</span><span class="n">hideButtons</span><span class="p">()</span>
+
+        <span class="c1"># add a special scatter for the “selected” event</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">selectedScatter</span> <span class="o">=</span> <span class="n">pg</span><span class="o">.</span><span class="n">ScatterPlotItem</span><span class="p">(</span>
+            <span class="n">size</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+            <span class="n">symbol</span><span class="o">=</span><span class="s2">&quot;x&quot;</span><span class="p">,</span>
+            <span class="n">pen</span><span class="o">=</span><span class="s2">&quot;w&quot;</span><span class="p">,</span>  <span class="c1"># default, will be updated per‐point</span>
+            <span class="n">brush</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rasterPlot</span><span class="o">.</span><span class="n">addItem</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">selectedScatter</span><span class="p">)</span>
+
+        <span class="c1"># Fixed y‑ticks with channel labels</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rasterPlot</span><span class="o">.</span><span class="n">getAxis</span><span class="p">(</span><span class="s2">&quot;left&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">setTicks</span><span class="p">([</span><span class="n">channel_groups</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rasterPlot</span><span class="o">.</span><span class="n">setYRange</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">num_channels</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">rasterPlot</span><span class="o">.</span><span class="n">setMouseEnabled</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>  <span class="c1"># disable mouse</span>
+
+<div class="viewcode-block" id="RasterPlot.update_ticks">
+<a class="viewcode-back" href="../../../hfovis.gui.html#hfovis.gui.raster.RasterPlot.update_ticks">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update_ticks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">channel_groups</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]],</span> <span class="n">num_channels</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Update the y-ticks with new channel groups.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        channel_groups : list[tuple[int, str]]</span>
+<span class="sd">            List of tuples where each tuple contains a channel index and its label.</span>
+<span class="sd">        num_channels : int</span>
+<span class="sd">            Total number of channels in the dataset.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rasterPlot</span><span class="o">.</span><span class="n">getAxis</span><span class="p">(</span><span class="s2">&quot;left&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">setTicks</span><span class="p">([</span><span class="n">channel_groups</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rasterPlot</span><span class="o">.</span><span class="n">setYRange</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">num_channels</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="RasterPlot.update">
+<a class="viewcode-back" href="../../../hfovis.gui.html#hfovis.gui.raster.RasterPlot.update">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Update the raster plot with the current event data. Initialization should&#39;ve</span>
+<span class="sd">        been done with pointers to the relevant objects, so this method doesn&#39;t require</span>
+<span class="sd">        any parameters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">meta</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="c1"># — build color list for *all* events —</span>
+        <span class="n">vals</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">meta</span><span class="p">[</span><span class="s2">&quot;is_real&quot;</span><span class="p">]</span>
+        <span class="n">brushes</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">vals</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">pd</span><span class="o">.</span><span class="n">isna</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>
+                <span class="n">brushes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;w&quot;</span><span class="p">)</span>  <span class="c1"># pending</span>
+            <span class="k">elif</span> <span class="n">v</span><span class="p">:</span>
+                <span class="n">brushes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;g&quot;</span><span class="p">)</span>  <span class="c1"># real</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">brushes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;r&quot;</span><span class="p">)</span>  <span class="c1"># pseudo</span>
+
+        <span class="c1"># — mask out pseudo unless checkbox ticked —</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">showPseudoEventBox</span><span class="o">.</span><span class="n">isChecked</span><span class="p">():</span>
+            <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">vals</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">mask</span> <span class="o">=</span> <span class="p">(</span><span class="n">vals</span><span class="o">.</span><span class="n">isna</span><span class="p">()</span> <span class="o">|</span> <span class="n">vals</span><span class="p">)</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
+
+        <span class="n">times</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">meta</span><span class="p">[</span><span class="s2">&quot;center&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()[</span><span class="n">mask</span><span class="p">]</span>
+        <span class="n">chans</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">meta</span><span class="p">[</span><span class="s2">&quot;channel&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()[</span><span class="n">mask</span><span class="p">]</span>
+        <span class="n">colors</span> <span class="o">=</span> <span class="p">[</span><span class="n">brushes</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">mask</span><span class="p">)[</span><span class="mi">0</span><span class="p">]]</span>
+
+        <span class="c1"># redraw main dots</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rasterScatter</span><span class="o">.</span><span class="n">setData</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">times</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">chans</span><span class="p">,</span> <span class="n">brush</span><span class="o">=</span><span class="n">colors</span><span class="p">)</span>
+
+        <span class="c1"># — now draw the “×” at the selected event —</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">eventNumBox</span><span class="o">.</span><span class="n">value</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">idx</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">meta</span><span class="p">):</span>
+            <span class="n">t_sel</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">meta</span><span class="p">[</span><span class="s2">&quot;center&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">iat</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span>
+            <span class="n">chan_sel</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">meta</span><span class="p">[</span><span class="s2">&quot;channel&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">iat</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span>
+            <span class="n">v</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">meta</span><span class="p">[</span><span class="s2">&quot;is_real&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">iat</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="n">pd</span><span class="o">.</span><span class="n">isna</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>
+                <span class="n">sel_color</span> <span class="o">=</span> <span class="s2">&quot;w&quot;</span>
+            <span class="k">elif</span> <span class="n">v</span><span class="p">:</span>
+                <span class="n">sel_color</span> <span class="o">=</span> <span class="s2">&quot;g&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">sel_color</span> <span class="o">=</span> <span class="s2">&quot;r&quot;</span>
+
+            <span class="c1"># always draw exactly one “×”</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">selectedScatter</span><span class="o">.</span><span class="n">setData</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="p">[</span><span class="n">t_sel</span><span class="p">],</span> <span class="n">y</span><span class="o">=</span><span class="p">[</span><span class="n">chan_sel</span><span class="p">],</span> <span class="n">pen</span><span class="o">=</span><span class="n">sel_color</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">eventNumBox</span><span class="o">.</span><span class="n">value</span><span class="p">()</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">meta</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_update_raster_view</span><span class="p">(</span>
+                <span class="nb">max</span><span class="p">(</span><span class="n">times</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">meta</span><span class="p">[</span><span class="s2">&quot;center&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">iat</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_center_raster_on_event</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">meta</span><span class="p">[</span><span class="s2">&quot;center&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">iat</span><span class="p">[</span><span class="n">idx</span><span class="p">]))</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_center_raster_on_event</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t_center</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+        <span class="n">T</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">window_secs</span>
+        <span class="n">t_last</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">meta</span><span class="p">[</span><span class="s2">&quot;center&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">half</span> <span class="o">=</span> <span class="n">T</span> <span class="o">/</span> <span class="mi">2</span>
+
+        <span class="n">lo</span> <span class="o">=</span> <span class="n">t_center</span> <span class="o">-</span> <span class="n">half</span>
+        <span class="n">hi</span> <span class="o">=</span> <span class="n">t_center</span> <span class="o">+</span> <span class="n">half</span>
+
+        <span class="k">if</span> <span class="n">lo</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">lo</span><span class="p">,</span> <span class="n">hi</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">t_last</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">hi</span> <span class="o">&gt;</span> <span class="n">t_last</span><span class="p">:</span>
+            <span class="n">hi</span><span class="p">,</span> <span class="n">lo</span> <span class="o">=</span> <span class="n">t_last</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">t_last</span> <span class="o">-</span> <span class="n">T</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">rasterPlot</span><span class="o">.</span><span class="n">setXRange</span><span class="p">(</span><span class="n">lo</span><span class="p">,</span> <span class="n">hi</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_update_raster_view</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">newest_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rasterPlot</span><span class="o">.</span><span class="n">setXRange</span><span class="p">(</span>
+            <span class="n">newest_time</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">window_secs</span><span class="p">,</span> <span class="n">newest_time</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">0</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="RasterPlot.set_raster_window">
+<a class="viewcode-back" href="../../../hfovis.gui.html#hfovis.gui.raster.RasterPlot.set_raster_window">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_raster_window</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">secs</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Setter for the visible time window (callable from UI).</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        secs : float</span>
+<span class="sd">            The time window in seconds to set for the raster plot.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">window_secs</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">secs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">meta</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update</span><span class="p">()</span></div>
+</div>
+
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">hfovis 0.0.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">hfovis.gui.raster</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2025, Raahi Jogani, Valentina Hrtonova, Behrang Besheli.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    </div>
+  </body>
+</html>

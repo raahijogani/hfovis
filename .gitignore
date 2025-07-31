@@ -198,3 +198,5 @@ cython_debug/
 
 # Scratch testing Python files
 scratch/
+
+docs/build/

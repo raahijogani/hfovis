@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>hfovis.data package &#8212; hfovis 0.0.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/classic.css?v=2bf1fcf8" />
+    
+    <script src="_static/documentation_options.js?v=d45e8c67"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">hfovis 0.0.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">hfovis.data package</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="hfovis-data-package">
+<h1>hfovis.data package<a class="headerlink" href="#hfovis-data-package" title="Link to this heading">¶</a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading">¶</a></h2>
+</section>
+<section id="module-hfovis.data.buffering">
+<span id="hfovis-data-buffering-module"></span><h2>hfovis.data.buffering module<a class="headerlink" href="#module-hfovis.data.buffering" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="hfovis.data.buffering.RingBuffer">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">hfovis.data.buffering.</span></span><span class="sig-name descname"><span class="pre">RingBuffer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">samples</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">channels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hfovis/data/buffering.html#RingBuffer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfovis.data.buffering.RingBuffer" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A simple ring buffer implementation for storing samples in a circular manner.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>samples</strong><span class="classifier">int</span></dt><dd><p>The total number of samples the buffer can hold.</p>
+</dd>
+<dt><strong>channels</strong><span class="classifier">int</span></dt><dd><p>The number of channels in the data.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Attributes<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>buf</strong><span class="classifier">np.ndarray</span></dt><dd><p>The underlying buffer storing the samples.</p>
+</dd>
+<dt><strong>n</strong><span class="classifier">int</span></dt><dd><p>The total number of samples the buffer can hold.</p>
+</dd>
+<dt><strong>wptr</strong><span class="classifier">int</span></dt><dd><p>The write pointer indicating the next position to write in the buffer.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><strong>write(chunk: np.ndarray)</strong></p></td>
+<td><p>Writes a chunk of data into the buffer, wrapping around if necessary.</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>read(start_idx: int, length: int) -&gt; np.ndarray</strong></p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="hfovis.data.buffering.RingBuffer.read">
+<span class="sig-name descname"><span class="pre">read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start_idx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hfovis/data/buffering.html#RingBuffer.read"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfovis.data.buffering.RingBuffer.read" title="Link to this definition">¶</a></dt>
+<dd><p>Reads a chunk of data from the buffer starting at <cite>start_idx</cite> for <cite>length</cite>
+samples. The read operation wraps around the buffer if necessary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>start_idx</strong><span class="classifier">int</span></dt><dd><p>The starting index from which to read in the buffer.</p>
+</dd>
+<dt><strong>length</strong><span class="classifier">int</span></dt><dd><p>The number of samples to read from the buffer.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>np.ndarray</dt><dd><p>The chunk of data read from the buffer. It will be a 2D array with
+shape (length, n_channels).</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hfovis.data.buffering.RingBuffer.write">
+<span class="sig-name descname"><span class="pre">write</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chunk</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hfovis/data/buffering.html#RingBuffer.write"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfovis.data.buffering.RingBuffer.write" title="Link to this definition">¶</a></dt>
+<dd><p>Writes a chunk of data into the buffer, wrapping around if necessary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>chunk</strong><span class="classifier">np.ndarray</span></dt><dd><p>The chunk of data to write into the buffer. It should be a 2D array
+with shape (n_samples, n_channels).</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-hfovis.data.ieeg_loader">
+<span id="hfovis-data-ieeg-loader-module"></span><h2>hfovis.data.ieeg_loader module<a class="headerlink" href="#module-hfovis.data.ieeg_loader" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="hfovis.data.ieeg_loader.load_annotations">
+<span class="sig-prename descclassname"><span class="pre">hfovis.data.ieeg_loader.</span></span><span class="sig-name descname"><span class="pre">load_annotations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">annotations_path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hfovis/data/ieeg_loader.html#load_annotations"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfovis.data.ieeg_loader.load_annotations" title="Link to this definition">¶</a></dt>
+<dd><p>Load annotations from the specified path.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="hfovis.data.ieeg_loader.load_ieeg_from_fileinfo">
+<span class="sig-prename descclassname"><span class="pre">hfovis.data.ieeg_loader.</span></span><span class="sig-name descname"><span class="pre">load_ieeg_from_fileinfo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">annotations_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">baseline</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hfovis/data/ieeg_loader.html#load_ieeg_from_fileinfo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfovis.data.ieeg_loader.load_ieeg_from_fileinfo" title="Link to this definition">¶</a></dt>
+<dd><p>Load iEEG data from file information.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>file_info</strong><span class="classifier">dict</span></dt><dd><p>Dictionary containing file information with keys like ‘Filename_baseline’, ‘subject’, ‘SOZ’, and ‘outcome’.</p>
+</dd>
+<dt><strong>data_path</strong><span class="classifier">str</span></dt><dd><p>Path to the directory containing iEEG data files.</p>
+</dd>
+<dt><strong>annotations_path</strong><span class="classifier">str</span></dt><dd><p>Path to the directory containing annotations files. A dummy can be provided if
+not used.</p>
+</dd>
+<dt><strong>baseline</strong><span class="classifier">str</span></dt><dd><p>Baseline identifier, typically ‘baseline’ or ‘postbaseline’.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl>
+<dt>tuple</dt><dd><p>A tuple containing:
+- data : np.ndarray</p>
+<blockquote>
+<div><p>The iEEG data array.</p>
+</div></blockquote>
+<ul class="simple">
+<li><dl class="simple">
+<dt>fs<span class="classifier">int</span></dt><dd><p>The sampling frequency of the iEEG data.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>channel_names<span class="classifier">list</span></dt><dd><p>List of channel names in the iEEG data.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>subject_info<span class="classifier">dict</span></dt><dd><p>Dictionary containing subject information with keys ‘subject’, ‘SOZ’, and ‘outcome’.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-hfovis.data.loaders">
+<span id="hfovis-data-loaders-module"></span><h2>hfovis.data.loaders module<a class="headerlink" href="#module-hfovis.data.loaders" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="hfovis.data.loaders.IEEGDataLoader">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">hfovis.data.loaders.</span></span><span class="sig-name descname"><span class="pre">IEEGDataLoader</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">annotations_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hfovis/data/loaders.html#IEEGDataLoader"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfovis.data.loaders.IEEGDataLoader" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#hfovis.data.loaders.IEEGDataLoader.extract_data" title="hfovis.data.loaders.IEEGDataLoader.extract_data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">extract_data</span></code></a>(item)</p></td>
+<td><p>Recursively extract data from HDF5 items.</p></td>
+</tr>
+</tbody>
+</table>
+<table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><strong>load_annotations</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>load_data</strong></p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="hfovis.data.loaders.IEEGDataLoader.extract_data">
+<span class="sig-name descname"><span class="pre">extract_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hfovis/data/loaders.html#IEEGDataLoader.extract_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfovis.data.loaders.IEEGDataLoader.extract_data" title="Link to this definition">¶</a></dt>
+<dd><p>Recursively extract data from HDF5 items.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hfovis.data.loaders.IEEGDataLoader.load_annotations">
+<span class="sig-name descname"><span class="pre">load_annotations</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/hfovis/data/loaders.html#IEEGDataLoader.load_annotations"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfovis.data.loaders.IEEGDataLoader.load_annotations" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hfovis.data.loaders.IEEGDataLoader.load_data">
+<span class="sig-name descname"><span class="pre">load_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mat_file_path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hfovis/data/loaders.html#IEEGDataLoader.load_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfovis.data.loaders.IEEGDataLoader.load_data" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-hfovis.data.streaming">
+<span id="hfovis-data-streaming-module"></span><h2>hfovis.data.streaming module<a class="headerlink" href="#module-hfovis.data.streaming" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="hfovis.data.streaming.DataStreamer">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">hfovis.data.streaming.</span></span><span class="sig-name descname"><span class="pre">DataStreamer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chunk_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interval_s</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_queue_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">100</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hfovis/data/streaming.html#DataStreamer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfovis.data.streaming.DataStreamer" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#hfovis.data.streaming.Streamer" title="hfovis.data.streaming.Streamer"><code class="xref py py-class docutils literal notranslate"><span class="pre">Streamer</span></code></a></p>
+<p>A simple data streamer that emits chunks of data at a specified rate.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>data</strong><span class="classifier">np.ndarray</span></dt><dd><p>The data to be streamed, should be a 2D array where each row is a
+chunk of data.</p>
+</dd>
+<dt><strong>chunk_size</strong><span class="classifier">int, default=1</span></dt><dd><p>The size of each chunk to emit. Defaults to 1.</p>
+</dd>
+<dt><strong>interval_s</strong><span class="classifier">float, default=0.0</span></dt><dd><p>The interval in seconds between emitted chunks. Defaults to 0.0 (no delay).</p>
+</dd>
+<dt><strong>max_queue_size</strong><span class="classifier">int, default=100</span></dt><dd><p>Maximum size of the internal queue used to buffer emitted chunks.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Attributes<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>data</strong><span class="classifier">np.ndarray</span></dt><dd></dd>
+<dt><strong>chunk_size</strong><span class="classifier">int</span></dt><dd></dd>
+<dt><strong>interval</strong><span class="classifier">float</span></dt><dd></dd>
+<dt><strong>source</strong><span class="classifier">Stream</span></dt><dd><p>The source stream that emits data chunks.</p>
+</dd>
+<dt><strong>throttled</strong><span class="classifier">Stream</span></dt><dd><p>A throttled version of the source stream that limits the rate of emitted chunks.</p>
+</dd>
+<dt><strong>queue</strong><span class="classifier">queue.Queue</span></dt><dd><p>A thread-safe queue for delivering chunks to the <cite>read()</cite> method.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><strong>start()</strong></p></td>
+<td><p>Start the streaming process in a background thread.</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>read(timeout=None)</strong></p></td>
+<td><p>Retrieve the next chunk of data. Blocks by default; returns None when the stream ends.</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>stop()</strong></p></td>
+<td><p>Stop producing further data and wait for the producer thread to finish.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="hfovis.data.streaming.DataStreamer.read">
+<span class="sig-name descname"><span class="pre">read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hfovis/data/streaming.html#DataStreamer.read"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfovis.data.streaming.DataStreamer.read" title="Link to this definition">¶</a></dt>
+<dd><p>Retrieve next chunk.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>timeout</strong><span class="classifier">float, optional</span></dt><dd><p>Maximum time to wait for data before returning None. If None, blocks
+indefinitely.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hfovis.data.streaming.DataStreamer.start">
+<span class="sig-name descname"><span class="pre">start</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/hfovis/data/streaming.html#DataStreamer.start"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfovis.data.streaming.DataStreamer.start" title="Link to this definition">¶</a></dt>
+<dd><p>Begin streaming in background.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hfovis.data.streaming.DataStreamer.stop">
+<span class="sig-name descname"><span class="pre">stop</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/hfovis/data/streaming.html#DataStreamer.stop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfovis.data.streaming.DataStreamer.stop" title="Link to this definition">¶</a></dt>
+<dd><p>Stop producing further data and wait for producer to finish.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="hfovis.data.streaming.Streamer">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">hfovis.data.streaming.</span></span><span class="sig-name descname"><span class="pre">Streamer</span></span><a class="reference internal" href="_modules/hfovis/data/streaming.html#Streamer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfovis.data.streaming.Streamer" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></p>
+<p>Abstract base class for streaming data. Provides a common interface for
+starting, reading, and stopping a data stream.</p>
+<p>Subclasses must implement the <cite>start</cite>, <cite>read</cite>, and <cite>stop</cite> methods.</p>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#hfovis.data.streaming.Streamer.read" title="hfovis.data.streaming.Streamer.read"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read</span></code></a>([timeout])</p></td>
+<td><p>Read the next chunk of data.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#hfovis.data.streaming.Streamer.start" title="hfovis.data.streaming.Streamer.start"><code class="xref py py-obj docutils literal notranslate"><span class="pre">start</span></code></a>()</p></td>
+<td><p>Start the streaming process.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#hfovis.data.streaming.Streamer.stop" title="hfovis.data.streaming.Streamer.stop"><code class="xref py py-obj docutils literal notranslate"><span class="pre">stop</span></code></a>()</p></td>
+<td><p>Stop the streaming process.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="hfovis.data.streaming.Streamer.read">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hfovis/data/streaming.html#Streamer.read"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfovis.data.streaming.Streamer.read" title="Link to this definition">¶</a></dt>
+<dd><p>Read the next chunk of data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>timeout</strong><span class="classifier">float, optional</span></dt><dd><p>Maximum time to wait for data before returning None. If None, blocks
+indefinitely.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hfovis.data.streaming.Streamer.start">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">start</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/hfovis/data/streaming.html#Streamer.start"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfovis.data.streaming.Streamer.start" title="Link to this definition">¶</a></dt>
+<dd><p>Start the streaming process.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hfovis.data.streaming.Streamer.stop">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">stop</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/hfovis/data/streaming.html#Streamer.stop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfovis.data.streaming.Streamer.stop" title="Link to this definition">¶</a></dt>
+<dd><p>Stop the streaming process.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-hfovis.data">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-hfovis.data" title="Link to this heading">¶</a></h2>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">hfovis.data package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-hfovis.data.buffering">hfovis.data.buffering module</a><ul>
+<li><a class="reference internal" href="#hfovis.data.buffering.RingBuffer"><code class="docutils literal notranslate"><span class="pre">RingBuffer</span></code></a><ul>
+<li><a class="reference internal" href="#hfovis.data.buffering.RingBuffer.read"><code class="docutils literal notranslate"><span class="pre">RingBuffer.read()</span></code></a></li>
+<li><a class="reference internal" href="#hfovis.data.buffering.RingBuffer.write"><code class="docutils literal notranslate"><span class="pre">RingBuffer.write()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-hfovis.data.ieeg_loader">hfovis.data.ieeg_loader module</a><ul>
+<li><a class="reference internal" href="#hfovis.data.ieeg_loader.load_annotations"><code class="docutils literal notranslate"><span class="pre">load_annotations()</span></code></a></li>
+<li><a class="reference internal" href="#hfovis.data.ieeg_loader.load_ieeg_from_fileinfo"><code class="docutils literal notranslate"><span class="pre">load_ieeg_from_fileinfo()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-hfovis.data.loaders">hfovis.data.loaders module</a><ul>
+<li><a class="reference internal" href="#hfovis.data.loaders.IEEGDataLoader"><code class="docutils literal notranslate"><span class="pre">IEEGDataLoader</span></code></a><ul>
+<li><a class="reference internal" href="#hfovis.data.loaders.IEEGDataLoader.extract_data"><code class="docutils literal notranslate"><span class="pre">IEEGDataLoader.extract_data()</span></code></a></li>
+<li><a class="reference internal" href="#hfovis.data.loaders.IEEGDataLoader.load_annotations"><code class="docutils literal notranslate"><span class="pre">IEEGDataLoader.load_annotations()</span></code></a></li>
+<li><a class="reference internal" href="#hfovis.data.loaders.IEEGDataLoader.load_data"><code class="docutils literal notranslate"><span class="pre">IEEGDataLoader.load_data()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-hfovis.data.streaming">hfovis.data.streaming module</a><ul>
+<li><a class="reference internal" href="#hfovis.data.streaming.DataStreamer"><code class="docutils literal notranslate"><span class="pre">DataStreamer</span></code></a><ul>
+<li><a class="reference internal" href="#hfovis.data.streaming.DataStreamer.read"><code class="docutils literal notranslate"><span class="pre">DataStreamer.read()</span></code></a></li>
+<li><a class="reference internal" href="#hfovis.data.streaming.DataStreamer.start"><code class="docutils literal notranslate"><span class="pre">DataStreamer.start()</span></code></a></li>
+<li><a class="reference internal" href="#hfovis.data.streaming.DataStreamer.stop"><code class="docutils literal notranslate"><span class="pre">DataStreamer.stop()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#hfovis.data.streaming.Streamer"><code class="docutils literal notranslate"><span class="pre">Streamer</span></code></a><ul>
+<li><a class="reference internal" href="#hfovis.data.streaming.Streamer.read"><code class="docutils literal notranslate"><span class="pre">Streamer.read()</span></code></a></li>
+<li><a class="reference internal" href="#hfovis.data.streaming.Streamer.start"><code class="docutils literal notranslate"><span class="pre">Streamer.start()</span></code></a></li>
+<li><a class="reference internal" href="#hfovis.data.streaming.Streamer.stop"><code class="docutils literal notranslate"><span class="pre">Streamer.stop()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-hfovis.data">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/hfovis.data.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">hfovis 0.0.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">hfovis.data package</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2025, Raahi Jogani, Valentina Hrtonova, Behrang Besheli.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    </div>
+  </body>
+</html>
