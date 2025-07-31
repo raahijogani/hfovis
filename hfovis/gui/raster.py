@@ -7,6 +7,45 @@ from hfovis.gui.model import EventModel
 
 
 class RasterPlot:
+    """
+    Logic for plotting raster plot in event view.
+
+    Parameters
+    ----------
+    plot_widget : pg.PlotWidget
+        The plot widget from the main window where the raster plot should be drawn.
+    channel_groups : list[tuple[int, str]]
+        List of tuples where each tuple contains a channel index and its label.
+    num_channels : int
+        Total number of channels in the dataset.
+    model : EventModel
+        The event model containing metadata about events.
+    pseudo_check_box : QCheckBox
+        Checkbox to toggle the visibility of pseudo events in the raster plot.
+    event_num_box : pg.SpinBox
+        SpinBox to select the event number for highlighting in the raster plot.
+
+    Attributes
+    ----------
+    rasterPlot : pg.PlotWidget
+    model : EventModel
+    showPseudoEventBox : QCheckBox
+    eventNumBox : pg.SpinBox
+    windows_secs : float
+        The time window in seconds for the raster plot.
+    rasterScatter : pg.ScatterPlotItem
+    selectedScatter : pg.ScatterPlotItem
+
+    Methods
+    -------
+    update_ticks(channel_groups: list[tuple[int, str]], num_channels: int)
+        Update the y-ticks with new channel groups.
+    update()
+        Update the raster plot with the current event data.
+    set_raster_window(secs: float)
+        Setter for the visible time window (callable from UI).
+    """
+
     def __init__(
         self,
         plot_widget: pg.PlotWidget,
@@ -53,11 +92,25 @@ class RasterPlot:
         self.rasterPlot.setMouseEnabled(x=False, y=False)  # disable mouse
 
     def update_ticks(self, channel_groups: list[tuple[int, str]], num_channels: int):
-        """Update the y-ticks with new channel groups."""
+        """
+        Update the y-ticks with new channel groups.
+
+        Parameters
+        ----------
+        channel_groups : list[tuple[int, str]]
+            List of tuples where each tuple contains a channel index and its label.
+        num_channels : int
+            Total number of channels in the dataset.
+        """
         self.rasterPlot.getAxis("left").setTicks([channel_groups])
         self.rasterPlot.setYRange(-0.5, num_channels - 0.5, padding=0)
 
     def update(self):
+        """
+        Update the raster plot with the current event data. Initialization should've
+        been done with pointers to the relevant objects, so this method doesn't require
+        any parameters.
+        """
         if self.model.meta is None:
             return
 
@@ -130,7 +183,14 @@ class RasterPlot:
         )
 
     def set_raster_window(self, secs: float):
-        """Setter for the visible time window (callable from UI)."""
+        """
+        Setter for the visible time window (callable from UI).
+
+        Parameters
+        ----------
+        secs : float
+            The time window in seconds to set for the raster plot.
+        """
         self.window_secs = float(secs)
         if self.model.meta is not None:
             self.update()

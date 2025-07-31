@@ -21,6 +21,63 @@ from hfovis.interface import Ui_MainWindow
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
+    """
+    Subclass of `QMainWindow` and `hfovis.interface.Ui_MainWindow`. Main window for the
+    HFO Visualizer application.
+
+    Parameters
+    ----------
+    streamer : Streamer
+        The Streamer instance used to stream data from the EEG device.
+    channel_names : list[str], optional
+        List of channel names to be used in the application. If None, will use the montage
+        specified in the `GeneralConfig`.
+    n_channels : int, optional
+        Number of channels to be used in the application. If None, will use the number of
+        channels specified in the montage or the `RealTimeDetector` configuration.
+    **kwargs
+        Additional keyword arguments to be passed to the `RealTimeDetector`.
+
+    Attributes
+    ----------
+    streamer : Streamer
+    config : GeneralConfig
+        Configuration object containing general settings for the application.
+    detector_thread : RealTimeDetector
+        Thread for real-time detection of HFOs.
+    denoise_thread : DenoisingThread
+        Thread for denoising potential HFO candidates.
+    channel_names : list[str]
+    channel_groups : list[tuple[int, str]]
+        List of tuples where each tuple contains a channel index and its label.
+    show_latest : bool
+        Flag indicating whether to show the latest event in the plots.
+    fs : float
+        Sampling frequency of the EEG data.
+    config_menu : ConfigMenu
+    model : EventModel
+    timeSeriesPlot : TimeSeriesPlot
+    denoisingHeatmapPlot : DenoisingHeatmapPlot
+    spectrogramPlot : SpectrogramPlot
+    rasterPlot : RasterPlot
+    frequencyPlot : FrequencyPlot
+
+    Methods
+    -------
+    last_event()
+        Navigate to the last event in the event list.
+    first_event()
+        Navigate to the first event in the event list.
+    next_event()
+        Navigate to the next event in the event list.
+    previous_event()
+        Navigate to the previous event in the event list.
+    save()
+        Save the current events and metadata to files specified in the configuration.
+    closeEvent(event)
+        Handle the close event of the main window, saving data before closing.
+    """
+
     def __init__(
         self,
         streamer: Streamer,
@@ -108,6 +165,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     # Slots
     @QtCore.pyqtSlot(dict)
     def _on_event_received(self, event: dict):
+        """
+        Slot that handles the reception of a new event from the detector thread.
+
+        Parameters
+        ----------
+        event : dict
+            The event data received from the detector thread. It should contain the raw
+            and filtered data, metadata, and indices of the event.
+        """
         old_len = len(self.model.meta) if self.model.meta is not None else 0
         was_at_end = self.eventNumBox.value() == old_len
 
@@ -129,10 +195,32 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     @QtCore.pyqtSlot(np.ndarray)
     def _on_hist_ready(self, hist_batch: np.ndarray):
+        """
+        Slot that handles the reception of a histogram batch from the denoising thread.
+
+        Parameters
+        ----------
+        hist_batch : np.ndarray
+            The histogram batch data received from the denoising thread. It should be a
+            2D array where each row corresponds to a channel and each column corresponds
+            to a class (0 for pseudo-HFO, 1 for real-HFO).
+        """
         self.denoisingHeatmapPlot.update(hist_batch)
 
     @QtCore.pyqtSlot(np.ndarray, np.ndarray)
     def _on_classification_ready(self, indices: np.ndarray, classes: np.ndarray):
+        """
+        Slot that handles the reception of classification results from the denoising
+        thread.
+
+        Parameters
+        ----------
+        indices : np.ndarray
+            Indices of the events in the metadata DataFrame that were classified.
+        classes : np.ndarray
+            Classification results for the events, where 0 indicates a pseudo-HFO and 1
+            indicates a real-HFO.
+        """
         self.model.meta.loc[indices, "is_real"] = classes == 1
         self._update_classification_label()
         self.rasterPlot.update()
@@ -146,20 +234,24 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.rasterPlot.update()
 
     def last_event(self):
+        """Navigate to the last event in the event list."""
         if self.model.meta is not None:
             self.eventNumBox.setValue(len(self.model.meta))
 
     def first_event(self):
+        """Navigate to the first event in the event list."""
         if self.model.meta is not None:
             self.eventNumBox.setValue(1)
 
     def next_event(self):
+        """Navigate to the next event in the event list."""
         if self.model.meta is None:
             return
         i, n = self.eventNumBox.value(), len(self.model.meta)
         self.eventNumBox.setValue(i + 1 if i < n else 1)
 
     def previous_event(self):
+        """Navigate to the previous event in the event list."""
         if self.model.meta is None:
             return
         i, n = self.eventNumBox.value(), len(self.model.meta)
@@ -183,6 +275,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.resetDefaultsButton.clicked.connect(self.config_menu.reset_defaults)
 
     def _apply_config(self):
+        """Apply the configuration changes made in the config menu."""
         self.config_menu.apply_changes()
         if self.config.montage_location:
             with open(self.config.montage_location, "r") as f:
@@ -205,6 +298,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.detector_thread.build_graph_single_band()
 
     def save(self):
+        """Save the current events and metadata to files specified in the
+        configuration."""
         self.model.save(
             raw_filename=self.config.raw_data_filename,
             filt_filename=self.config.filtered_data_filename,
@@ -236,10 +331,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     # Additional helpers
     def _create_channel_groups(self, channel_names: list[str]) -> list[tuple[int, str]]:
-        """
-        Group bipolar channels by shared prefix (e.g., LA, LAH, LPH) and
-        return ticks at the first occurrence of each group.
-        """
         groups = {}  # prefix -> first index
 
         for i, label in enumerate(channel_names):
@@ -284,5 +375,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self._update_classification_label()
 
     def closeEvent(self, event):
+        """Handle the close event of the main window, saving data before closing."""
         self.save()
         event.accept()

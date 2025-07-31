@@ -5,12 +5,12 @@ def compute_vfactor(data, start=0, end=None):
     """
     Compute V-Factor (range / std deviation) for each column in 2D data.
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
         data: shape (n_samples, n_events)
         start, end: optional slicing range
-    Returns:
-    --------
+    Returns
+    -------
         v_factors: shape (n_events,)
     """
     if end is None:

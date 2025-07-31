@@ -1,14 +1,17 @@
-import threading
 import queue
+import threading
+from abc import ABC, abstractmethod
+
 import numpy as np
 from streamz import Stream
-from abc import ABC, abstractmethod
 
 
 class Streamer(ABC):
     """
-    Abstract base class for data streamers.
-    Subclasses must implement the start, read, and stop methods.
+    Abstract base class for streaming data. Provides a common interface for
+    starting, reading, and stopping a data stream.
+
+    Subclasses must implement the `start`, `read`, and `stop` methods.
     """
 
     @abstractmethod
@@ -20,8 +23,12 @@ class Streamer(ABC):
     def read(self, timeout=None):
         """
         Read the next chunk of data.
-        If timeout is specified, waits at most that many seconds.
-        Returns None when the stream ends.
+
+        Parameters
+        ----------
+        timeout : float, optional
+            Maximum time to wait for data before returning None. If None, blocks
+            indefinitely.
         """
         pass
 
@@ -32,6 +39,44 @@ class Streamer(ABC):
 
 
 class DataStreamer(Streamer):
+    """
+    A simple data streamer that emits chunks of data at a specified rate.
+
+    Parameters
+    ----------
+    data : np.ndarray
+        The data to be streamed, should be a 2D array where each row is a
+        chunk of data.
+    chunk_size : int, default=1
+        The size of each chunk to emit. Defaults to 1.
+    interval_s : float, default=0.0
+        The interval in seconds between emitted chunks. Defaults to 0.0 (no delay).
+    max_queue_size : int, default=100
+        Maximum size of the internal queue used to buffer emitted chunks.
+
+    Attributes
+    ----------
+    data : np.ndarray
+    chunk_size : int
+    interval : float
+    source : Stream
+        The source stream that emits data chunks.
+    throttled : Stream
+        A throttled version of the source stream that limits the rate of emitted chunks.
+    queue : queue.Queue
+        A thread-safe queue for delivering chunks to the `read()` method.
+
+    Methods
+    -------
+    start()
+        Start the streaming process in a background thread.
+    read(timeout=None)
+        Retrieve the next chunk of data. Blocks by default; returns None when the stream
+        ends.
+    stop()
+        Stop producing further data and wait for the producer thread to finish.
+    """
+
     def __init__(
         self,
         data: np.ndarray,
@@ -39,12 +84,6 @@ class DataStreamer(Streamer):
         interval_s: float = 0.0,
         max_queue_size: int = 100,
     ):
-        """
-        data           : NumPy array of shape (num_samples, num_channels)
-        chunk_size     : number of samples per chunk
-        interval_s     : interval between sending chunks in seconds
-        max_queue_size : max number of chunks to buffer
-        """
         self.data = data
         self.chunk_size = chunk_size
         # Rate limit interval in seconds
@@ -85,7 +124,12 @@ class DataStreamer(Streamer):
     def read(self, timeout=None):
         """
         Retrieve next chunk.
-        Blocks by default; returns None when stream ends.
+
+        Parameters
+        ----------
+        timeout : float, optional
+            Maximum time to wait for data before returning None. If None, blocks
+            indefinitely.
         """
         return self.queue.get(timeout=timeout)
 

@@ -3,6 +3,21 @@ from dataclasses import dataclass, field, fields
 
 
 def _is_valid_file(file_path: str, extension: str) -> bool:
+    """
+    Check if the given file path is valid and has the specified extension.
+
+    Parameters
+    ----------
+    file_path : str
+        The file path to validate.
+    extension : str
+        The required file extension (e.g., '.pkl', '.npy').
+
+    Returns
+    -------
+    bool
+        True if the file path is valid and has the specified extension, False otherwise.
+    """
     # Empty string is considered valid
     if not file_path:
         return True
@@ -71,6 +86,15 @@ class GeneralConfig:
     )
 
     def get_validation_messages(self):
+        """
+        Collects validation messages for each field in the dataclass.
+
+        Returns
+        -------
+        dict
+            A dictionary where keys are field names and values are error messages
+            if the field does not meet its validation criteria.
+        """
         messages = {}
 
         for f in fields(self):
@@ -86,11 +110,34 @@ class GeneralConfig:
         return messages
 
     def validate(self):
+        """
+        Validates the configuration by checking each field against its validation
+        criteria.
+
+        Raises
+        ------
+        ValueError
+            If any field does not meet its validation criteria, a ValueError is raised
+        """
         messages = self.get_validation_messages()
         if messages:
             raise ValueError(f"Configuration validation failed: {messages}")
 
     def update(self, **kwargs):
+        """
+        Update the configuration with new values for specified fields.
+
+        Parameters
+        ----------
+        **kwargs
+            Keyword arguments where keys are field names and values are the new values
+            to set for those fields.
+
+        Raises
+        ------
+        ValueError
+            If a key in kwargs does not correspond to a field in the dataclass,
+        """
         for key, value in kwargs.items():
             if hasattr(self, key):
                 setattr(self, key, value)
