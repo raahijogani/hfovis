@@ -1,11 +1,13 @@
 import os
-import numpy as np
-from scipy.signal import butter, filtfilt, detrend, resample
-from scipy.signal.windows import tukey
-from .normalize import data_norm
-from .vfactor import compute_vfactor
-from .omp import batch_omp
+
 import joblib
+import numpy as np
+from scipy.signal import butter, detrend, filtfilt, resample
+from scipy.signal.windows import tukey
+
+from .normalize import data_norm
+from .omp import batch_omp
+from .vfactor import compute_vfactor
 
 bL, aL = butter(2, 1, fs=2048, btype="high")
 bH, aH = butter(4, (80, 600), fs=2048, btype="bandpass")
@@ -26,12 +28,12 @@ def extract_omp_features(
     """
     Extract features using OMP.
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     signal : np.ndarray
         Input signal to extract features from. Expected shape is (n_samples, n_events).
         This will be resampled to 512 samples.
-    n_iter : int, optional
+    n_iter : int, default=50
         Number of iterations for OMP. Default is 50.
     bL : np.ndarray, optional
         Coefficients for the high-pass filter. Default is a 1st order Butterworth filter
@@ -46,8 +48,8 @@ def extract_omp_features(
         Denominator coefficients for the band-pass filter. Default is a 4th order
         Butterworth filter between 80 Hz and 600 Hz.
 
-    Returns:
-    --------
+    Returns
+    -------
     np.ndarray
         Extracted features of shape (n_events, 155).
     """
