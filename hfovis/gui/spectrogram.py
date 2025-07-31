@@ -1,9 +1,35 @@
 import numpy as np
-from scipy.signal import butter, filtfilt, detrend, spectrogram
 import pyqtgraph as pg
+from scipy.signal import butter, detrend, filtfilt, spectrogram
 
 
 class SpectrogramPlot:
+    """
+    Logic for plotting spectrogram in event view.
+
+    Parameters
+    ----------
+    plot_widget : pg.PlotWidget
+        The plot widget from the main window where the spectrogram should be drawn.
+    fs : float
+        Sampling frequency of the signal.
+
+    Attributes
+    ----------
+    eventSpectrogram : pg.PlotWidget
+        The plot widget from the main window where the spectrogram should be drawn.
+    fs : float
+    spec_a, spec_b : np.ndarray
+        Coefficients for the high-pass Butterworth filter.
+    specImg : pg.ImageItem
+    cbar : pg.ColorBarItem
+
+    Methods
+    -------
+    update(sig: np.ndarray)
+        Updates the spectrogram with the provided signal.
+    """
+
     def __init__(self, plot_widget: pg.PlotWidget, fs: float, colormap: pg.ColorMap):
         self.eventSpectrogram = plot_widget
         self.fs = fs
@@ -37,6 +63,14 @@ class SpectrogramPlot:
         self.eventSpectrogram.setLabel("left", "Frequency", units="Hz")
 
     def update(self, sig: np.ndarray):
+        """
+        Update the spectrogram with the provided signal.
+
+        Parameters
+        ----------
+        sig : np.ndarray
+            The signal to be processed and displayed as a spectrogram.
+        """
         sig = filtfilt(self.spec_a, self.spec_b, sig, axis=0)
         sig = detrend(sig, type="constant")
 

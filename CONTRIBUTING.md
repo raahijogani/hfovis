@@ -57,9 +57,7 @@ The code is structured as follows:
           of the GUI.
     - `detector/`
         - `detector.py`: Contains the `RealTimeDetector` thread, which directly
-          interfaces with the stream and sends events to the GUI. Also has some
-          unused offline detection code.
-        - `utils.py`: Contains utilities for the offline detector.
+          interfaces with the stream and sends events to the GUI.
         - `config.py`: Contains the configuration for the real-time detector.
     - `gui/`: Contains all of the logic for the elements defined in
     `interface.py`.

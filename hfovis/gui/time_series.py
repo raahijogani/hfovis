@@ -3,6 +3,34 @@ import pyqtgraph as pg
 
 
 class TimeSeriesPlot:
+    """
+    Logic for plotting time series data in event view.
+
+    Parameters
+    ----------
+    raw_plot : pg.PlotWidget
+        The plot widget for raw time series data.
+    filtered_plot : pg.PlotWidget
+        The plot widget for filtered time series data.
+    fs : float
+        Sampling frequency of the signal.
+
+    Attributes
+    ----------
+    fs : float
+    rawPlot : pg.PlotWidget
+    filteredPlot : pg.PlotWidget
+    rawCurve : pg.PlotCurveItem
+    filtCurve : pg.PlotCurveItem
+    lowerThreshLine : pg.InfiniteLine
+    upperThreshLine : pg.InfiniteLine
+
+    Methods
+    -------
+    update(raw: np.ndarray, filt: np.ndarray, center: float, thr: float)
+        Update the plots with new raw and filtered data, center time, and threshold.
+    """
+
     def __init__(
         self,
         raw_plot: pg.PlotWidget,
@@ -40,6 +68,20 @@ class TimeSeriesPlot:
             p.setMouseEnabled(x=False, y=True)  # disable mouse panning/zooming
 
     def update(self, raw: np.ndarray, filt: np.ndarray, center: float, thr: float):
+        """
+        Update the plots with new raw and filtered data, center time, and threshold.
+
+        Parameters
+        ----------
+        raw : np.ndarray
+            Raw time series data.
+        filt : np.ndarray
+            Filtered time series data.
+        center : float
+            Center time for the plots.
+        thr : float
+            Threshold value for the filtered data.
+        """
         self._update_window(raw, self.rawCurve, self.rawPlot, center)
         self._update_window(filt, self.filtCurve, self.filteredPlot)
         self.lowerThreshLine.setPos(-thr)
@@ -52,6 +94,20 @@ class TimeSeriesPlot:
         plot_widget: pg.PlotWidget,
         center: float | None = None,
     ):
+        """
+        Update the plot with the provided signal, curve, and plot widget.
+
+        Parameters
+        ----------
+        sig : np.ndarray
+            Signal data to be plotted.
+        curve : pg.PlotCurveItem
+            The curve item to update with the signal data.
+        plot_widget : pg.PlotWidget
+            The plot widget where the signal will be displayed.
+        center : float, optional
+            Center time for the plot title (default is None).
+        """
         event_t = np.arange(sig.size) / self.fs
         curve.setData(event_t, sig)
         if center is not None:

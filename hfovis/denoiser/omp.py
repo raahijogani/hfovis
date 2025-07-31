@@ -1,7 +1,6 @@
 import numpy as np
-from scipy.linalg import cho_factor, cho_solve
 from numba import njit, prange
-from numpy.linalg import norm, pinv
+from scipy.linalg import cho_factor, cho_solve
 
 
 @njit(
@@ -11,12 +10,28 @@ from numpy.linalg import norm, pinv
     cache=True,
 )
 def project_and_select(
-    DtR,
-    support_lens,
-    supports,
-    E,
-    K,
+    DtR: np.ndarray,
+    support_lens: np.ndarray,
+    supports: np.ndarray,
+    E: int,
+    K: int,
 ):
+    """
+    Selects the best atom for each event based on the projections.
+
+    Parameters:
+    ----------
+    DtR : np.ndarray
+        The projections of the residuals onto the dictionary atoms, shape (K, E).
+    support_lens : np.ndarray
+        Current lengths of the supports for each event, shape (E,).
+    supports : np.ndarray
+        Indices of selected atoms for each event, shape (max_atoms, E).
+    E : int
+        Number of events.
+    K : int
+        Number of atoms in the dictionary.
+    """
     # DtR = D.T @ residuals (passed in)
     # Updates supports, computes new coefficients via small-matrix solves (optional here)
     # Returns updated support_lens and supports and flags to stop

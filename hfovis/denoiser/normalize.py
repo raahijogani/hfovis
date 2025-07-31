@@ -2,6 +2,28 @@ import numpy as np
 
 
 def data_norm(data, norm_type=4, axis=0):
+    """
+    Normalize data along the specified axis using various normalization techniques.
+    Parameters
+    ----------
+    data : np.ndarray
+        Input data to be normalized, expected to be a 2D array with shape (n_samples, n_channels).
+    norm_type : {0, 1, 2, 3, 4, 5}, default=4
+        Type of normalization to apply:
+        - 0: Count normalization (counts non-zero elements)
+        - 1: L1 normalization (sum of absolute values)
+        - 2: L2 normalization (Euclidean norm)
+        - 3: Max normalization (max value)
+        - 4: Z-score normalization (mean and standard deviation)
+        - 5: Min-Max normalization (scaling to [0, 1])
+    axis : int, default=0
+        Axis along which to normalize the data. Only axis=0 (column-wise) is supported.
+
+    Returns
+    -------
+    np.ndarray
+        Normalized data with the same shape as the input data.
+    """
     data = np.asarray(data, dtype=float)
     eps = np.finfo(float).eps
 

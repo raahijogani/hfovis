@@ -3,6 +3,42 @@ import pyqtgraph as pg
 
 
 class FrequencyPlot:
+    """
+    Logic for plotting frequency histogram in event view.
+
+    Parameters
+    ----------
+    plot_widget : pg.PlotWidget
+        The plot widget from the main window where the frequency histogram should be
+        drawn.
+    channel_groups : list[tuple[int, str]]
+        List of tuples where each tuple contains a channel index and its label.
+    num_channels : int
+        Total number of channels in the dataset.
+    fs : float
+        Sampling frequency of the signal.
+    colormap : pg.ColorMap
+        Color map to be used for the frequency histogram.
+
+    Attributes
+    ----------
+    fs : float
+    frequencyPlot : pg.PlotWidget
+    num_channels : int
+    freq_bins : np.ndarray
+    freq_hist : np.ndarray
+    freqImg : pg.ImageItem
+    freq_cbar : pg.ColorBarItem
+
+    Methods
+    -------
+    update_ticks(channel_groups: list[tuple[int, str]], num_channels: int)
+        Update the x-axis ticks based on the provided channel groups.
+    update(filtered_batch: np.ndarray, chan_vec: np.ndarray) -> np.ndarray
+        Update the frequency histogram with the provided filtered batch and channel
+        vector.
+    """
+
     def __init__(
         self,
         plot_widget: pg.PlotWidget,
@@ -70,7 +106,13 @@ class FrequencyPlot:
     def update_ticks(self, channel_groups: list[tuple[int, str]], num_channels: int):
         """
         Update the x-axis ticks based on the provided channel groups.
-        Each group is a tuple of (index, label).
+
+        Parameters
+        ----------
+        channel_groups : list[tuple[int, str]]
+            List of tuples where each tuple contains a channel index and its label.
+        num_channels : int
+            Total number of channels in the dataset.
         """
         self.frequencyPlot.getAxis("bottom").setTicks([channel_groups])
         self.num_channels = num_channels
@@ -79,6 +121,22 @@ class FrequencyPlot:
         )
 
     def update(self, filtered_batch: np.ndarray, chan_vec: np.ndarray) -> np.ndarray:
+        """
+        Update the frequency histogram with the provided filtered batch and channel
+        vector.
+
+        Parameters
+        ----------
+        filtered_batch : np.ndarray
+            Filtered event data for the batch as a 2D array (n_samples, n_channels).
+        chan_vec : np.ndarray
+            Vector of channels associated with the events in the batch.
+
+        Returns
+        -------
+        np.ndarray
+            Updated frequency histogram counts, shape (n_bins, n_channels).
+        """
         # Compute dominant freq for each event
         freqs = np.fft.rfftfreq(filtered_batch.shape[1], d=1 / self.fs)
         fft_vals = np.fft.rfft(filtered_batch, axis=1)

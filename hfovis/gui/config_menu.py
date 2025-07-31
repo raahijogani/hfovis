@@ -1,8 +1,59 @@
+from dataclasses import _MISSING_TYPE, fields
+
 from PyQt6 import QtWidgets
-from dataclasses import fields, _MISSING_TYPE
 
 
 class FilePickerWidget(QtWidgets.QWidget):
+    """
+    A widget that combines a `QLineEdit` and a `QPushButton` to allow users to select or
+    create a file.
+
+    Parameters
+    ----------
+    parent : QtWidgets.QWidget, optional
+        The parent widget for this widget.
+    mode : {"find file", "create file"}, default="find file"
+        The mode of the file picker. "find file" allows users to select an existing file
+        while "create file" allows users to specify a new file to create.
+    file_filter : str, default="All Files (*)"
+        The filter for the file dialog. This determines which files are shown in the dialog.
+    extension : str, default=""
+        Used to add extension in case user doesn't provide it when creating a file.
+
+    Attributes
+    ----------
+    line_edit : QtWidgets.QLineEdit
+        The line edit where the selected or created file path is displayed.
+    browse_button : QtWidgets.QPushButton
+        The button that opens the file dialog for selecting or creating a file.
+    mode : str
+        The mode of the file picker, either "find file" or "create file".
+    file_filter : str
+        The filter for the file dialog.
+    extension : str
+        The file extension to append when creating a file.
+    line_edit.setText(value: str)
+        Set the text in the line edit to the specified value.
+
+    Methods
+    -------
+    open_dialog()
+        Opens a file dialog based on the mode. If in "find file" mode, it
+        allows the user to select an existing file. If in "create file" mode, it
+        allows the user to specify a new file to create, appending the specified
+        extension if necessary.
+    text() -> str
+        Returns the text currently in the line edit.
+    setText(value: str)
+        Sets the text in the line edit to the specified value.
+    setToolTip(text: str)
+        Sets the tooltip for both the line edit and the browse button.
+    setEnabled(enabled: bool)
+        Enables or disables the line edit and browse button based on the provided boolean.
+    setStyleSheet(style: str)
+        Sets the style sheet for the line edit.
+    """
+
     def __init__(
         self,
         parent=None,
@@ -54,18 +105,88 @@ class FilePickerWidget(QtWidgets.QWidget):
         self.line_edit.setText(value)
 
     def setToolTip(self, text: str):
+        """
+        Sets the tooltip for both the line edit and the browse button.
+
+        Parameters
+        ----------
+        text : str
+            The text to set as the tooltip for both the line edit and the browse button.
+        """
         self.line_edit.setToolTip(text)
         self.browse_button.setToolTip(text)
 
     def setEnabled(self, enabled: bool):
+        """
+        Enables or disables the line edit and browse button based on the provided
+        boolean.
+
+        Parameters
+        ----------
+        enabled : bool
+            If True, enables the line edit and browse button; if False, disables them.
+        """
         self.line_edit.setEnabled(enabled)
         self.browse_button.setEnabled(enabled)
 
     def setStyleSheet(self, style: str):
+        """
+        Sets the style sheet for the line edit.
+
+        Parameters
+        ----------
+        style : str
+            The style sheet to apply to the line edit.
+        """
         self.line_edit.setStyleSheet(style)
 
 
 class ConfigMenu:
+    """
+    A configuration menu that displays a list of configurations in a vertical layout,
+    each within its own group box. Each configuration is represented by a dataclass,
+    and each field in the dataclass is displayed as a label and an input widget.
+
+    Parameters
+    ----------
+    parent : QtWidgets.QWidget
+        The parent widget for this configuration menu.
+    configs : list
+        A list of dataclass instances representing the configurations to be displayed.
+
+    Attributes
+    ----------
+    configs : list
+    parent : QtWidgets.QWidget
+    vertical_layout : QtWidgets.QVBoxLayout
+    group_boxes : list[QtWidgets.QGroupBox]
+        A list of group boxes, one for each configuration.
+    form_layouts : list[QtWidgets.QFormLayout]
+        A list of form layouts, one for each group box, containing the configuration
+        fields.
+    item_line_edits : dict
+        A dictionary mapping field names to their corresponding `QLineEdit` or
+        `FilePickerWidget` instances for user input.
+
+    Methods
+    -------
+    display_errors(messages: dict)
+        Displays error messages for fields that have validation issues by setting the
+        style of the corresponding input widgets to indicate an error and setting their
+        tooltips to the error messages.
+    apply_changes()
+        Applies changes made in the input widgets to the corresponding fields in the
+        configurations. Validates the input and displays error messages if any issues
+        are found.
+    reset_defaults()
+        Resets the input widgets to their default values as defined in the dataclass
+        fields. Clears any error styles or tooltips.
+    disable_editing()
+        Disables editing of the input widgets based on the `editable_after_start`
+        metadata of each field. If a field is not editable after the start, its input
+        widget will be disabled.
+    """
+
     def __init__(self, parent: QtWidgets.QWidget, configs: list):
         self.configs = configs
         self.parent = parent
@@ -126,6 +247,16 @@ class ConfigMenu:
             form_layout.addRow(label, line_edit)
 
     def display_errors(self, messages):
+        """
+        Displays error messages for fields that have validation issues by setting the
+        style of the corresponding input widgets to indicate an error and setting their
+        tooltips to the error messages.
+
+        Parameters
+        ----------
+        messages : dict
+            A dictionary where keys are field names and values are error messages.
+        """
         for config in self.configs:
             for field in fields(config):
                 if field.name in messages:
@@ -159,7 +290,7 @@ class ConfigMenu:
                         elif field.type is str:
                             attr = value
                     except ValueError:
-                        formatting_messages[field.name] = f"Invalid formatting"
+                        formatting_messages[field.name] = "Invalid formatting"
                         continue
 
                     setattr(config, field.name, attr)
