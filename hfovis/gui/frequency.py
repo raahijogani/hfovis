@@ -67,6 +67,17 @@ class FrequencyPlot:
             self.freqImg, insert_in=self.frequencyPlot.getPlotItem()
         )
 
+    def update_ticks(self, channel_groups: list[tuple[int, str]], num_channels: int):
+        """
+        Update the x-axis ticks based on the provided channel groups.
+        Each group is a tuple of (index, label).
+        """
+        self.frequencyPlot.getAxis("bottom").setTicks([channel_groups])
+        self.num_channels = num_channels
+        self.freq_hist = np.zeros(
+            (len(self.freq_bins) - 1, self.num_channels), dtype=int
+        )
+
     def update(self, filtered_batch: np.ndarray, chan_vec: np.ndarray) -> np.ndarray:
         # Compute dominant freq for each event
         freqs = np.fft.rfftfreq(filtered_batch.shape[1], d=1 / self.fs)

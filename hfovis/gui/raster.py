@@ -1,8 +1,9 @@
 import numpy as np
 import pandas as pd
 import pyqtgraph as pg
-from hfovis.gui.model import EventModel
 from PyQt6.QtWidgets import QCheckBox
+
+from hfovis.gui.model import EventModel
 
 
 class RasterPlot:
@@ -50,6 +51,11 @@ class RasterPlot:
         self.rasterPlot.setYRange(-0.5, num_channels - 0.5, padding=0)
 
         self.rasterPlot.setMouseEnabled(x=False, y=False)  # disable mouse
+
+    def update_ticks(self, channel_groups: list[tuple[int, str]], num_channels: int):
+        """Update the y-ticks with new channel groups."""
+        self.rasterPlot.getAxis("left").setTicks([channel_groups])
+        self.rasterPlot.setYRange(-0.5, num_channels - 0.5, padding=0)
 
     def update(self):
         if self.model.meta is None:

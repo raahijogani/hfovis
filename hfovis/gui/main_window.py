@@ -35,6 +35,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.config = GeneralConfig()
 
+        self.detector_thread = RealTimeDetector(
+            streamer,
+            **kwargs,
+        )
+
         if self.config.montage_location:
             with open(self.config.montage_location, "r") as f:
                 self.channel_names = [line.strip() for line in f if line.strip()]
@@ -44,21 +49,21 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.channel_names = channel_names
             self.channel_groups = self._create_channel_groups(channel_names)
             n_channels = len(self.channel_names)
-        elif n_channels:
+        elif self.detector_thread.config.channels:
+            n_channels = self.detector_thread.config.channels
+            self.channel_names = [f"{i + 1}" for i in range(n_channels)]
+            self.channel_groups = [(i, f"{i + 1}") for i in range(n_channels)]
+        elif n_channels is not None:
             self.channel_names = [f"{i + 1}" for i in range(n_channels)]
             self.channel_groups = [(i, f"{i + 1}") for i in range(n_channels)]
         else:
             raise ValueError(
                 "No channel names provided and no montage file specified in config."
             )
+        self.detector_thread.config.channels = n_channels
+        self.detector_thread.build_graph_single_band()
 
         self.show_latest = True
-
-        self.detector_thread = RealTimeDetector(
-            streamer,
-            channels=len(self.channel_names),
-            **kwargs,
-        )
 
         self.fs = self.detector_thread.config.fs
 
@@ -174,8 +179,27 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.startButton.clicked.connect(self._start)
         self.saveButton.clicked.connect(self.save)
 
-        self.applyConfigButton.clicked.connect(self.config_menu.apply_changes)
+        self.applyConfigButton.clicked.connect(self._apply_config)
         self.resetDefaultsButton.clicked.connect(self.config_menu.reset_defaults)
+
+    def _apply_config(self):
+        self.config_menu.apply_changes()
+        if self.config.montage_location:
+            with open(self.config.montage_location, "r") as f:
+                self.channel_names = [line.strip() for line in f if line.strip()]
+            self.channel_groups = self._create_channel_groups(self.channel_names)
+            self.frequencyPlot.update_ticks(
+                self.channel_groups, len(self.channel_names)
+            )
+            self.rasterPlot.update_ticks(self.channel_groups, len(self.channel_names))
+            self.denoisingHeatmapPlot.update_ticks(
+                self.channel_groups, len(self.channel_names)
+            )
+
+            # Don't rebuild the graph if running
+            if self.startButton.isEnabled():
+                self.detector_thread.config.channels = len(self.channel_names)
+                self.detector_thread.build_graph_single_band()
 
     def save(self):
         self.model.save(
@@ -185,12 +209,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         )
 
     def _start(self):
-        self._start_detector_thread(self.streamer)
+        self._start_detector_thread()
         self._start_denoise_thread()
         self.startButton.setEnabled(False)
         self.config_menu.disable_editing()
 
-    def _start_detector_thread(self, streamer: Streamer):
+    def _start_detector_thread(self):
         self.detector_thread.new_event.connect(
             self._on_event_received, QtCore.Qt.ConnectionType.QueuedConnection
         )
