@@ -172,3 +172,8 @@ stream = MyStream()  # Your custom stream implementation
 # ...boilerplate code in main.py 
 main = hfovis.gui.MainWindow(stream)
 ```
+
+# Contributing
+
+Please see the [CONTRIBUTING.md](./CONTRIBUTING.md) file for guidelines on
+contributing to this project.
