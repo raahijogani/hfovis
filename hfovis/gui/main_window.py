@@ -196,6 +196,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.channel_groups, len(self.channel_names)
             )
 
+            if hasattr(self, "denoise_thread"):
+                self.denoise_thread.num_channels = len(self.channel_names)
+
             # Don't rebuild the graph if running
             if self.startButton.isEnabled():
                 self.detector_thread.config.channels = len(self.channel_names)
