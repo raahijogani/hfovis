@@ -1,19 +1,15 @@
 import numpy as np
 import pandas as pd
 from numpy.lib.stride_tricks import sliding_window_view
-from scipy.signal import butter, filtfilt, firwin, sosfilt, sosfilt_zi, lfilter
-
-from streamz import Stream
-
 from PyQt6.QtCore import QThread, pyqtSignal
-
-from hfovis.data.streaming import Streamer
-from hfovis.data.buffering import RingBuffer
-
-from hfovis.detector.config import DetectorConfig
-
+from scipy.signal import butter, filtfilt, firwin, lfilter, sosfilt, sosfilt_zi
+from streamz import Stream
 from tqdm import tqdm
-from hfovis.detector.utils import get_adaptive_threshold, find_burst_events
+
+from hfovis.data.buffering import RingBuffer
+from hfovis.data.streaming import Streamer
+from hfovis.detector.config import DetectorConfig
+from hfovis.detector.utils import find_burst_events, get_adaptive_threshold
 
 get_adaptive_threshold = get_adaptive_threshold
 find_burst_events = find_burst_events
@@ -37,15 +33,8 @@ class RealTimeDetector(QThread):
         self.stream = stream
         self.config = DetectorConfig()
         self.config.update(**kwargs)
-        self.raw_stream = Stream()
 
-        # Ring buffer is used to temporarily store raw data so that it can later
-        # be matched in time if events are detected.
-        self.ring_buffer = RingBuffer(
-            int(self.config.ring_buffer_size_s * self.config.fs),
-            self.config.channels,
-        )
-        self._build_graph_single_band()
+        self.build_graph_single_band()
         self._running = True
 
     def stop(self):
@@ -73,7 +62,16 @@ class RealTimeDetector(QThread):
             print(f"Error in internal loop: {e}")
             self.stop()
 
-    def _build_graph_single_band(self):
+    def build_graph_single_band(self):
+        self.raw_stream = Stream()
+
+        # Ring buffer is used to temporarily store raw data so that it can later
+        # be matched in time if events are detected.
+        self.ring_buffer = RingBuffer(
+            int(self.config.ring_buffer_size_s * self.config.fs),
+            self.config.channels,
+        )
+
         # Send raw data to the ring buffer
         self.raw_stream.sink(lambda pair: self.ring_buffer.write(pair[1]))
 
@@ -331,7 +329,7 @@ class RealTimeDetector(QThread):
         # each sample in our visualization window.
         return peak_idx, start_idx[None, :] + offsets
 
-    def _build_graph_dual_band(self):
+    def build_graph_dual_band(self):
         # Send raw data to the ring buffer
         self.raw_stream.sink(lambda pair: self.ring_buffer.write(pair[1]))
 

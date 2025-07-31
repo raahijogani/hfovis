@@ -54,6 +54,12 @@ class DenoisingHeatmapPlot:
         # cumulative counts across all batches
         self._denoise_hist = np.zeros((2, num_channels), dtype=int)
 
+    def update_ticks(self, channel_groups: list[tuple[int, str]], num_channels: int):
+        """Update the y-ticks with new channel groups."""
+        self.denoisingHeatmap.getAxis("bottom").setTicks([channel_groups])
+        self.denoisingHeatmap.setYRange(-0.5, 1.5, padding=0)
+        self._denoise_hist = np.zeros((2, num_channels), dtype=int)
+
     def update(self, hist_batch: np.ndarray):
         self._denoise_hist += hist_batch
         self.denoiseImg.setImage(self._denoise_hist, autoLevels=True)

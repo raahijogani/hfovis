@@ -16,7 +16,9 @@ class FrequencyPlot:
         self.num_channels = num_channels
 
         self.freq_bins = np.linspace(0, 600, 61)  # 60 bins → 10 Hz resolution
-        self.freq_hist = np.zeros((len(self.freq_bins) - 1, self.num_channels), dtype=int)
+        self.freq_hist = np.zeros(
+            (len(self.freq_bins) - 1, self.num_channels), dtype=int
+        )
 
         # Create ImageItem
         self.freqImg = pg.ImageItem()
@@ -63,6 +65,17 @@ class FrequencyPlot:
         self.freq_cbar.getAxis("left").setLabel(color="k")
         self.freq_cbar.setImageItem(
             self.freqImg, insert_in=self.frequencyPlot.getPlotItem()
+        )
+
+    def update_ticks(self, channel_groups: list[tuple[int, str]], num_channels: int):
+        """
+        Update the x-axis ticks based on the provided channel groups.
+        Each group is a tuple of (index, label).
+        """
+        self.frequencyPlot.getAxis("bottom").setTicks([channel_groups])
+        self.num_channels = num_channels
+        self.freq_hist = np.zeros(
+            (len(self.freq_bins) - 1, self.num_channels), dtype=int
         )
 
     def update(self, filtered_batch: np.ndarray, chan_vec: np.ndarray) -> np.ndarray:

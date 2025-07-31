@@ -291,18 +291,22 @@ def find_burst_events(data_raw, data_filtered, thresholds, config):
         if start_window >= 0 and end_window <= len(data_filtered):
             y = data_filtered[start_window + halfMaxDur : end_window - halfMaxDur]
         else:
-            rejected_groups.append({
-                "group": group,
-                "reason": "window_out_of_bounds",
-            })
+            rejected_groups.append(
+                {
+                    "group": group,
+                    "reason": "window_out_of_bounds",
+                }
+            )
             continue
 
         # Rejection threshold check
         if np.max(np.abs(x)) > np.mean(th_rej[start : end + 1]):
-            rejected_groups.append({
-                "group": group,
-                "reason": "rejection_threshold",
-            })
+            rejected_groups.append(
+                {
+                    "group": group,
+                    "reason": "rejection_threshold",
+                }
+            )
             continue
 
         # Assign threshold values safely
@@ -311,10 +315,12 @@ def find_burst_events(data_raw, data_filtered, thresholds, config):
         # Remove large artifacts in FR component
         if config["Band_of_Interest"] == "FR":
             if threshold > config["max_threshold_FR"]:
-                rejected_groups.append({
-                    "group": group,
-                    "reason": "max_threshold_FR",
-                })
+                rejected_groups.append(
+                    {
+                        "group": group,
+                        "reason": "max_threshold_FR",
+                    }
+                )
                 continue
 
         # Check global and local swing
@@ -324,20 +330,24 @@ def find_burst_events(data_raw, data_filtered, thresholds, config):
                 rejected_groups.append({"group": group, "reason": "amp_crossing"})
                 continue
         except Exception as e:
-            rejected_groups.append({
-                "group": group,
-                "reason": "amp_crossing_exception",
-                "error": str(e),
-            })
+            rejected_groups.append(
+                {
+                    "group": group,
+                    "reason": "amp_crossing_exception",
+                    "error": str(e),
+                }
+            )
             continue
 
-        accepted_events.append([
-            int(start),
-            int(end),
-            int(center),
-            threshold,
-            int(end) - int(start),
-        ])
+        accepted_events.append(
+            [
+                int(start),
+                int(end),
+                int(center),
+                threshold,
+                int(end) - int(start),
+            ]
+        )
 
     # Convert to DataFrame
     df_accepted_events = pd.DataFrame(
@@ -531,16 +541,18 @@ def amp_crossing(x, th, config, plot=False):
         np.array(group_logic),
     )
 
-    m = np.array([
-        np.median(range(s, e + 1))
-        if len(range(s, e + 1)) % 2 != 0
-        else (
-            range(s, e + 1)[len(range(s, e + 1)) // 2 - 1]
-            + range(s, e + 1)[len(range(s, e + 1)) // 2]
-        )
-        / 2
-        for s, e in zip(group_ind_st, group_ind_et)
-    ])
+    m = np.array(
+        [
+            np.median(range(s, e + 1))
+            if len(range(s, e + 1)) % 2 != 0
+            else (
+                range(s, e + 1)[len(range(s, e + 1)) // 2 - 1]
+                + range(s, e + 1)[len(range(s, e + 1)) // 2]
+            )
+            / 2
+            for s, e in zip(group_ind_st, group_ind_et)
+        ]
+    )
 
     ixp_Corrected = m[group_logic == 1]
     ixn_Corrected = m[group_logic == -1]
@@ -813,10 +825,12 @@ def check_centralized_component(
         overlap,
         2,
     )
-    sd_side = np.concatenate([
-        temp_variance(data[: int(n * side_range)] + 1, wnd, overlap, 2),
-        temp_variance(data[int(2 * n * side_range) - 1 :], wnd, overlap, 2),
-    ])
+    sd_side = np.concatenate(
+        [
+            temp_variance(data[: int(n * side_range)] + 1, wnd, overlap, 2),
+            temp_variance(data[int(2 * n * side_range) - 1 :], wnd, overlap, 2),
+        ]
+    )
 
     # Compute threshold
     th = param * np.median(sd_side)

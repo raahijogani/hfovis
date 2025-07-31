@@ -24,4 +24,3 @@ def load_ieeg_from_fileinfo(file_info, data_path, annotations_path, baseline):
 def load_annotations(data_path, annotations_path):
     loader = IEEGDataLoader(annotations_path, data_path)
     return loader.load_annotations()
-

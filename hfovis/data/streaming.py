@@ -87,9 +87,7 @@ class DataStreamer(Streamer):
         Retrieve next chunk.
         Blocks by default; returns None when stream ends.
         """
-        return self.queue.get(
-            timeout=timeout
-        )
+        return self.queue.get(timeout=timeout)
 
     def stop(self):
         """Stop producing further data and wait for producer to finish."""
