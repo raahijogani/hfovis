@@ -15,6 +15,7 @@ jobs:
           uv sync
       - name: Build docs
         run: |
+          source .venv/bin/activate
           cd sphinx
           make html
           cp -r build/html ../docs
