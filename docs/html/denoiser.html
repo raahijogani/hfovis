@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>denoiser package &#8212; hfovis 0.0.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/classic.css?v=2bf1fcf8" />
+    
+    <script src="_static/documentation_options.js?v=d45e8c67"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">hfovis 0.0.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">denoiser package</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="denoiser-package">
+<h1>denoiser package<a class="headerlink" href="#denoiser-package" title="Link to this heading">¶</a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading">¶</a></h2>
+</section>
+<section id="module-denoiser.features">
+<span id="denoiser-features-module"></span><h2>denoiser.features module<a class="headerlink" href="#module-denoiser.features" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="denoiser.features.extract_omp_features">
+<span class="sig-prename descclassname"><span class="pre">denoiser.features.</span></span><span class="sig-name descname"><span class="pre">extract_omp_features</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">signal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_iter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bL</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">array([0.99783297,</span> <span class="pre">-1.99566595,</span> <span class="pre">0.99783297])</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aL</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">array([1.,</span> <span class="pre">-1.99566125,</span> <span class="pre">0.99567065])</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bH</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">array([0.09867276,</span> <span class="pre">0.,</span> <span class="pre">-0.39469104,</span> <span class="pre">0.,</span> <span class="pre">0.59203656,</span> <span class="pre">0.,</span> <span class="pre">-0.39469104,</span> <span class="pre">0.,</span> <span class="pre">0.09867276])</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aH</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">array([1.,</span> <span class="pre">-2.84005822,</span> <span class="pre">3.21625998,</span> <span class="pre">-2.36170687,</span> <span class="pre">1.77195549,</span> <span class="pre">-1.02942313,</span> <span class="pre">0.27582699,</span> <span class="pre">-0.04192111,</span> <span class="pre">0.01773673])</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/denoiser/features.html#extract_omp_features"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#denoiser.features.extract_omp_features" title="Link to this definition">¶</a></dt>
+<dd><p>Extract features using OMP.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>signal</strong><span class="classifier">np.ndarray</span></dt><dd><p>Input signal to extract features from. Expected shape is (n_samples, n_events).
+This will be resampled to 512 samples.</p>
+</dd>
+<dt><strong>n_iter</strong><span class="classifier">int, default=50</span></dt><dd><p>Number of iterations for OMP. Default is 50.</p>
+</dd>
+<dt><strong>bL</strong><span class="classifier">np.ndarray, optional</span></dt><dd><p>Coefficients for the high-pass filter. Default is a 1st order Butterworth filter
+at 1 Hz.</p>
+</dd>
+<dt><strong>aL</strong><span class="classifier">np.ndarray, optional</span></dt><dd><p>Denominator coefficients for the high-pass filter. Default is a 1st order
+Butterworth filter at 1 Hz.</p>
+</dd>
+<dt><strong>bH</strong><span class="classifier">np.ndarray, optional</span></dt><dd><p>Coefficients for the band-pass filter. Default is a 4th order Butterworth filter
+between 80 Hz and 600 Hz.</p>
+</dd>
+<dt><strong>aH</strong><span class="classifier">np.ndarray, optional</span></dt><dd><p>Denominator coefficients for the band-pass filter. Default is a 4th order
+Butterworth filter between 80 Hz and 600 Hz.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>np.ndarray</dt><dd><p>Extracted features of shape (n_events, 155).</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-denoiser.normalize">
+<span id="denoiser-normalize-module"></span><h2>denoiser.normalize module<a class="headerlink" href="#module-denoiser.normalize" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="denoiser.normalize.data_norm">
+<span class="sig-prename descclassname"><span class="pre">denoiser.normalize.</span></span><span class="sig-name descname"><span class="pre">data_norm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">norm_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/denoiser/normalize.html#data_norm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#denoiser.normalize.data_norm" title="Link to this definition">¶</a></dt>
+<dd><p>Normalize data along the specified axis using various normalization techniques.
+:param data: Input data to be normalized, expected to be a 2D array with shape (n_samples, n_channels).
+:type data: np.ndarray
+:param norm_type: Type of normalization to apply:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>0: Count normalization (counts non-zero elements)</p></li>
+<li><p>1: L1 normalization (sum of absolute values)</p></li>
+<li><p>2: L2 normalization (Euclidean norm)</p></li>
+<li><p>3: Max normalization (max value)</p></li>
+<li><p>4: Z-score normalization (mean and standard deviation)</p></li>
+<li><p>5: Min-Max normalization (scaling to [0, 1])</p></li>
+</ul>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>axis</strong> (<em>int</em><em>, </em><em>default=0</em>) – Axis along which to normalize the data. Only axis=0 (column-wise) is supported.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>np.ndarray</dt><dd><p>Normalized data with the same shape as the input data.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-denoiser.omp">
+<span id="denoiser-omp-module"></span><h2>denoiser.omp module<a class="headerlink" href="#module-denoiser.omp" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="denoiser.omp.batch_omp">
+<span class="sig-prename descclassname"><span class="pre">denoiser.omp.</span></span><span class="sig-name descname"><span class="pre">batch_omp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">D</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_atoms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">err_thresh</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">err_diff_thresh</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_iters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/denoiser/omp.html#batch_omp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#denoiser.omp.batch_omp" title="Link to this definition">¶</a></dt>
+<dd><p>Batch Orthogonal Matching Pursuit (OMP) algorithm.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="denoiser.omp.project_and_select">
+<span class="sig-prename descclassname"><span class="pre">denoiser.omp.</span></span><span class="sig-name descname"><span class="pre">project_and_select</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">DtR</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">support_lens</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">supports</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">E</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">K</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/denoiser/omp.html#project_and_select"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#denoiser.omp.project_and_select" title="Link to this definition">¶</a></dt>
+<dd><p>Selects the best atom for each event based on the projections.</p>
+<section id="parameters">
+<h3>Parameters:<a class="headerlink" href="#parameters" title="Link to this heading">¶</a></h3>
+<dl class="simple">
+<dt>DtR<span class="classifier">np.ndarray</span></dt><dd><p>The projections of the residuals onto the dictionary atoms, shape (K, E).</p>
+</dd>
+<dt>support_lens<span class="classifier">np.ndarray</span></dt><dd><p>Current lengths of the supports for each event, shape (E,).</p>
+</dd>
+<dt>supports<span class="classifier">np.ndarray</span></dt><dd><p>Indices of selected atoms for each event, shape (max_atoms, E).</p>
+</dd>
+<dt>E<span class="classifier">int</span></dt><dd><p>Number of events.</p>
+</dd>
+<dt>K<span class="classifier">int</span></dt><dd><p>Number of atoms in the dictionary.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+</section>
+<section id="module-denoiser.vfactor">
+<span id="denoiser-vfactor-module"></span><h2>denoiser.vfactor module<a class="headerlink" href="#module-denoiser.vfactor" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="denoiser.vfactor.compute_vfactor">
+<span class="sig-prename descclassname"><span class="pre">denoiser.vfactor.</span></span><span class="sig-name descname"><span class="pre">compute_vfactor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/denoiser/vfactor.html#compute_vfactor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#denoiser.vfactor.compute_vfactor" title="Link to this definition">¶</a></dt>
+<dd><p>Compute V-Factor (range / std deviation) for each column in 2D data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>data: shape (n_samples, n_events)</strong></dt><dd><p>start, end: optional slicing range</p>
+</dd>
+<dt><strong>Returns</strong></dt><dd></dd>
+<dt><strong>——-</strong></dt><dd><p>v_factors: shape (n_events,)</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-denoiser.worker">
+<span id="denoiser-worker-module"></span><h2>denoiser.worker module<a class="headerlink" href="#module-denoiser.worker" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="denoiser.worker.DenoisingThread">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">denoiser.worker.</span></span><span class="sig-name descname"><span class="pre">DenoisingThread</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_channels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/denoiser/worker.html#DenoisingThread"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#denoiser.worker.DenoisingThread" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">QThread</span></code></p>
+<p>Subclass of <cite>QThread</cite>. Thread for denoising potential HFO candidates.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>num_channels</strong><span class="classifier">int</span></dt><dd><p>Number of channels in the EEG data.</p>
+</dd>
+<dt><strong>fs</strong><span class="classifier">float</span></dt><dd><p>Sampling frequency of the EEG data.</p>
+</dd>
+<dt><strong>parent</strong><span class="classifier">QObject, optional</span></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Attributes<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>histReady</strong><span class="classifier">pyqtSignal</span></dt><dd><p>Signal emitted when the histogram of classes is ready.</p>
+</dd>
+<dt><strong>classReady</strong><span class="classifier">pyqtSignal</span></dt><dd><p>Signal emitted when the classification results are ready.</p>
+</dd>
+<dt><strong>num_channels</strong><span class="classifier">int</span></dt><dd></dd>
+<dt><strong>bL, aL</strong><span class="classifier">np.ndarray</span></dt><dd><p>Coefficients for the low-pass Butterworth filter.</p>
+</dd>
+<dt><strong>bH, aH</strong><span class="classifier">np.ndarray</span></dt><dd><p>Coefficients for the band-pass Butterworth filter.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><strong>enqueue(raw_batch, batch_meta, batch_indices)</strong></p></td>
+<td><p>Enqueues a batch of events to this denoising thread.</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>run()</strong></p></td>
+<td><p>Main loop of the thread that processes the queued events.</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>stop()</strong></p></td>
+<td><p>Stops the thread and waits for it to finish processing.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="denoiser.worker.DenoisingThread.classReady">
+<span class="sig-name descname"><span class="pre">classReady</span></span><a class="headerlink" href="#denoiser.worker.DenoisingThread.classReady" title="Link to this definition">¶</a></dt>
+<dd><p>int = …, arguments: Sequence = …) -&gt; PYQT_SIGNAL</p>
+<p>types is normally a sequence of individual types.  Each type is either a
+type object or a string that is the name of a C++ type.  Alternatively
+each type could itself be a sequence of types each describing a different
+overloaded signal.
+name is the optional C++ name of the signal.  If it is not specified then
+the name of the class attribute that is bound to the signal is used.
+revision is the optional revision of the signal that is exported to QML.
+If it is not specified then 0 is used.
+arguments is the optional sequence of the names of the signal’s arguments.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pyqtSignal(<a href="#id1"><span class="problematic" id="id2">*</span></a>types, name</p>
+</dd>
+<dt class="field-even">Type<span class="colon">:</span></dt>
+<dd class="field-even"><p>str = …, revision</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="denoiser.worker.DenoisingThread.enqueue">
+<span class="sig-name descname"><span class="pre">enqueue</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">raw_batch</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_meta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_indices</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/denoiser/worker.html#DenoisingThread.enqueue"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#denoiser.worker.DenoisingThread.enqueue" title="Link to this definition">¶</a></dt>
+<dd><p>Enqueues a batch of events to this denoising thread.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>raw_batch</strong><span class="classifier">np.ndarray</span></dt><dd></dd>
+<dt><strong>batch_meta</strong><span class="classifier">pd.DataFrame</span></dt><dd></dd>
+<dt><strong>batch_indices</strong><span class="classifier">np.ndarray</span></dt><dd><p>Indices in the Pandas DataFrame that correspond to the events</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="denoiser.worker.DenoisingThread.histReady">
+<span class="sig-name descname"><span class="pre">histReady</span></span><a class="headerlink" href="#denoiser.worker.DenoisingThread.histReady" title="Link to this definition">¶</a></dt>
+<dd><p>int = …, arguments: Sequence = …) -&gt; PYQT_SIGNAL</p>
+<p>types is normally a sequence of individual types.  Each type is either a
+type object or a string that is the name of a C++ type.  Alternatively
+each type could itself be a sequence of types each describing a different
+overloaded signal.
+name is the optional C++ name of the signal.  If it is not specified then
+the name of the class attribute that is bound to the signal is used.
+revision is the optional revision of the signal that is exported to QML.
+If it is not specified then 0 is used.
+arguments is the optional sequence of the names of the signal’s arguments.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pyqtSignal(<a href="#id3"><span class="problematic" id="id4">*</span></a>types, name</p>
+</dd>
+<dt class="field-even">Type<span class="colon">:</span></dt>
+<dd class="field-even"><p>str = …, revision</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="denoiser.worker.DenoisingThread.run">
+<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/denoiser/worker.html#DenoisingThread.run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#denoiser.worker.DenoisingThread.run" title="Link to this definition">¶</a></dt>
+<dd><p>Main loop of the thread that processes the queued events.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="denoiser.worker.DenoisingThread.stop">
+<span class="sig-name descname"><span class="pre">stop</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/denoiser/worker.html#DenoisingThread.stop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#denoiser.worker.DenoisingThread.stop" title="Link to this definition">¶</a></dt>
+<dd><p>Stops the thread and waits for it to finish processing.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-denoiser">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-denoiser" title="Link to this heading">¶</a></h2>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">denoiser package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-denoiser.features">denoiser.features module</a><ul>
+<li><a class="reference internal" href="#denoiser.features.extract_omp_features"><code class="docutils literal notranslate"><span class="pre">extract_omp_features()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-denoiser.normalize">denoiser.normalize module</a><ul>
+<li><a class="reference internal" href="#denoiser.normalize.data_norm"><code class="docutils literal notranslate"><span class="pre">data_norm()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-denoiser.omp">denoiser.omp module</a><ul>
+<li><a class="reference internal" href="#denoiser.omp.batch_omp"><code class="docutils literal notranslate"><span class="pre">batch_omp()</span></code></a></li>
+<li><a class="reference internal" href="#denoiser.omp.project_and_select"><code class="docutils literal notranslate"><span class="pre">project_and_select()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-denoiser.vfactor">denoiser.vfactor module</a><ul>
+<li><a class="reference internal" href="#denoiser.vfactor.compute_vfactor"><code class="docutils literal notranslate"><span class="pre">compute_vfactor()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-denoiser.worker">denoiser.worker module</a><ul>
+<li><a class="reference internal" href="#denoiser.worker.DenoisingThread"><code class="docutils literal notranslate"><span class="pre">DenoisingThread</span></code></a><ul>
+<li><a class="reference internal" href="#denoiser.worker.DenoisingThread.classReady"><code class="docutils literal notranslate"><span class="pre">DenoisingThread.classReady</span></code></a></li>
+<li><a class="reference internal" href="#denoiser.worker.DenoisingThread.enqueue"><code class="docutils literal notranslate"><span class="pre">DenoisingThread.enqueue()</span></code></a></li>
+<li><a class="reference internal" href="#denoiser.worker.DenoisingThread.histReady"><code class="docutils literal notranslate"><span class="pre">DenoisingThread.histReady</span></code></a></li>
+<li><a class="reference internal" href="#denoiser.worker.DenoisingThread.run"><code class="docutils literal notranslate"><span class="pre">DenoisingThread.run()</span></code></a></li>
+<li><a class="reference internal" href="#denoiser.worker.DenoisingThread.stop"><code class="docutils literal notranslate"><span class="pre">DenoisingThread.stop()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-denoiser">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/denoiser.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">hfovis 0.0.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">denoiser package</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2025, Raahi Jogani, Valentina Hrtonova, Behrang Besheli.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    </div>
+  </body>
+</html>

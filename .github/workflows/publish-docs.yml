@@ -10,7 +10,9 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
       - name: Install deps
-        run: pip install sphinx numpydoc sphinx_rtd_theme
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          uv sync
       - name: Build docs
         run: |
           cd sphinx

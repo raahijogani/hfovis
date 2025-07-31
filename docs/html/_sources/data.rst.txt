@@ -1,0 +1,45 @@
+data package
+============
+
+Submodules
+----------
+
+data.buffering module
+---------------------
+
+.. automodule:: data.buffering
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+data.ieeg\_loader module
+------------------------
+
+.. automodule:: data.ieeg_loader
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+data.loaders module
+-------------------
+
+.. automodule:: data.loaders
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+data.streaming module
+---------------------
+
+.. automodule:: data.streaming
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+Module contents
+---------------
+
+.. automodule:: data
+   :members:
+   :show-inheritance:
+   :undoc-members:

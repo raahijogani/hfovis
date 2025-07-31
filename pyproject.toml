@@ -18,6 +18,7 @@ dependencies = [
     "scipy>=1.15.3",
     "setuptools<81",
     "sphinx>=8.2.3",
+    "sphinx-rtd-theme>=3.0.2",
     "streamz>=0.6.4",
     "tabula>=1.0.5",
     "tqdm>=4.67.1",

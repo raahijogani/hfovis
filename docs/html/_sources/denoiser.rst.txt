@@ -1,0 +1,53 @@
+denoiser package
+================
+
+Submodules
+----------
+
+denoiser.features module
+------------------------
+
+.. automodule:: denoiser.features
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+denoiser.normalize module
+-------------------------
+
+.. automodule:: denoiser.normalize
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+denoiser.omp module
+-------------------
+
+.. automodule:: denoiser.omp
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+denoiser.vfactor module
+-----------------------
+
+.. automodule:: denoiser.vfactor
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+denoiser.worker module
+----------------------
+
+.. automodule:: denoiser.worker
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+Module contents
+---------------
+
+.. automodule:: denoiser
+   :members:
+   :show-inheritance:
+   :undoc-members:

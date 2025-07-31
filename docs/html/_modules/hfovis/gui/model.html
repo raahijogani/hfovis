@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>hfovis.gui.model &#8212; hfovis 0.0.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/classic.css?v=2bf1fcf8" />
+    
+    <script src="../../../_static/documentation_options.js?v=d45e8c67"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">hfovis 0.0.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">hfovis.gui.model</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for hfovis.gui.model</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+
+
+<div class="viewcode-block" id="EventModel">
+<a class="viewcode-back" href="../../../hfovis.gui.html#hfovis.gui.model.EventModel">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">EventModel</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Model for handling event data, including raw and filtered events, metadata,</span>
+<span class="sd">    and denoise histogram counts.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    n_channels : int</span>
+<span class="sd">        Number of channels in the event data.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    raw_events : np.ndarray</span>
+<span class="sd">        Array of raw event data, shape (n_samples, n_channels).</span>
+<span class="sd">    filtered_events : np.ndarray</span>
+<span class="sd">        Array of filtered event data, shape (n_samples, n_channels).</span>
+<span class="sd">    meta : pd.DataFrame</span>
+<span class="sd">        DataFrame containing metadata for each event, including center, channel,</span>
+<span class="sd">        threshold, and whether the event is real.</span>
+
+<span class="sd">    Methods</span>
+<span class="sd">    -------</span>
+<span class="sd">    append_batch(event: dict) -&gt; tuple[np.ndarray, np.ndarray, np.ndarray]:</span>
+<span class="sd">        Appends a batch of events to the model and returns the raw and filtered</span>
+<span class="sd">        event arrays, metadata DataFrame, and batch indices.</span>
+<span class="sd">    append_denoise_counts(hist_batch: np.ndarray) -&gt; np.ndarray:</span>
+<span class="sd">        Appends a batch of denoise histogram counts to the model and returns the</span>
+<span class="sd">        updated histogram counts.</span>
+<span class="sd">    save(raw_filename: str, filt_filename: str, meta_filename: str):</span>
+<span class="sd">        Saves the raw events, filtered events, and metadata to specified files.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_channels</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">raw_events</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filtered_events</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">meta</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_denoise_hist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="n">n_channels</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+
+<div class="viewcode-block" id="EventModel.append_batch">
+<a class="viewcode-back" href="../../../hfovis.gui.html#hfovis.gui.model.EventModel.append_batch">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">append_batch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Appends a batch of events to the model.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        event : dict</span>
+<span class="sd">            Dictionary containing the following keys:</span>
+<span class="sd">            - &quot;raw&quot;: Raw event data as a 2D array (n_samples, n</span>
+<span class="sd">            - &quot;filtered&quot;: Filtered event data as a 2D array (n_samples, n_channels).</span>
+<span class="sd">            - &quot;center&quot;: Center of the event as a 1D array (n_samples,).</span>
+<span class="sd">            - &quot;channels&quot;: Channels associated with the event as a 1D array (n_samples,).</span>
+<span class="sd">            - &quot;threshold&quot;: Threshold values for the event as a 1D array (n_samples,).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        tuple[np.ndarray, np.ndarray, pd.DataFrame, np.ndarray, np.ndarray]</span>
+<span class="sd">            - raw_batch: Raw event data for the batch as a 2D array</span>
+<span class="sd">            (n_samples, n_channels).</span>
+<span class="sd">            - filt_batch: Filtered event data for the batch as a 2D array (n_samples,</span>
+<span class="sd">            n_channels).</span>
+<span class="sd">            - batch_meta: DataFrame containing metadata</span>
+<span class="sd">            - batch_indices: Indices of the events in the batch.</span>
+<span class="sd">            - chan_vec: Vector of channels associated with the events in the batch.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">raw_batch</span> <span class="o">=</span> <span class="n">event</span><span class="p">[</span><span class="s2">&quot;raw&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">T</span>
+        <span class="n">filt_batch</span> <span class="o">=</span> <span class="n">event</span><span class="p">[</span><span class="s2">&quot;filtered&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">T</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">raw_events</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">raw_events</span> <span class="o">=</span> <span class="n">raw_batch</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">filtered_events</span> <span class="o">=</span> <span class="n">filt_batch</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">raw_events</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">raw_events</span><span class="p">,</span> <span class="n">raw_batch</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">filtered_events</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">filtered_events</span><span class="p">,</span> <span class="n">filt_batch</span><span class="p">))</span>
+
+        <span class="n">center_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">event</span><span class="p">[</span><span class="s2">&quot;center&quot;</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">chan_vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">event</span><span class="p">[</span><span class="s2">&quot;channels&quot;</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+        <span class="n">threh_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">event</span><span class="p">[</span><span class="s2">&quot;threshold&quot;</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+
+        <span class="n">old_n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">meta</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">meta</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="mi">0</span>
+        <span class="n">batch_indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">old_n</span><span class="p">,</span> <span class="n">old_n</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">center_arr</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+
+        <span class="n">batch_meta</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;center&quot;</span><span class="p">:</span> <span class="n">center_arr</span><span class="p">,</span>
+                <span class="s2">&quot;channel&quot;</span><span class="p">:</span> <span class="n">chan_vec</span><span class="p">,</span>
+                <span class="s2">&quot;threshold&quot;</span><span class="p">:</span> <span class="n">threh_arr</span><span class="p">,</span>
+                <span class="s2">&quot;is_real&quot;</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">NA</span><span class="p">,</span>
+            <span class="p">}</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">meta</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">meta</span><span class="p">,</span> <span class="n">batch_meta</span><span class="p">],</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">meta</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="k">else</span> <span class="n">batch_meta</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">raw_batch</span><span class="p">,</span> <span class="n">filt_batch</span><span class="p">,</span> <span class="n">batch_meta</span><span class="p">,</span> <span class="n">batch_indices</span><span class="p">,</span> <span class="n">chan_vec</span></div>
+
+
+<div class="viewcode-block" id="EventModel.append_denoise_counts">
+<a class="viewcode-back" href="../../../hfovis.gui.html#hfovis.gui.model.EventModel.append_denoise_counts">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">append_denoise_counts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hist_batch</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Appends a batch of denoise histogram counts to the model.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        hist_batch : np.ndarray</span>
+<span class="sd">            Histogram batch of shape (2, n_channels) containing counts for pseudo-HFO</span>
+<span class="sd">            and real-HFO across channels.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        np.ndarray</span>
+<span class="sd">            Updated denoise histogram counts, shape (2, n_channels).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_denoise_hist</span> <span class="o">+=</span> <span class="n">hist_batch</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_denoise_hist</span></div>
+
+
+<div class="viewcode-block" id="EventModel.save">
+<a class="viewcode-back" href="../../../hfovis.gui.html#hfovis.gui.model.EventModel.save">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">raw_filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">filt_filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">meta_filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Saves the raw events, filtered events, and metadata to specified files.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        raw_filename : str</span>
+<span class="sd">            Filename to save the raw events (should be .pkl).</span>
+<span class="sd">        filt_filename : str</span>
+<span class="sd">            Filename to save the filtered events (should be .npy).</span>
+<span class="sd">        meta_filename : str</span>
+<span class="sd">            Filename to save the metadata DataFrame (should be .npy).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">meta</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">meta_filename</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">to_pickle</span><span class="p">(</span><span class="n">meta_filename</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">raw_events</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">raw_filename</span><span class="p">:</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">raw_filename</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">raw_events</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">filtered_events</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">filt_filename</span><span class="p">:</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">filt_filename</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">filtered_events</span><span class="p">)</span></div>
+</div>
+
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">hfovis 0.0.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">hfovis.gui.model</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2025, Raahi Jogani, Valentina Hrtonova, Behrang Besheli.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    </div>
+  </body>
+</html>

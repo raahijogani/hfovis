@@ -1,0 +1,427 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>hfovis.detector package &mdash; hfovis 0.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=d45e8c67"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="hfovis.gui package" href="hfovis.gui.html" />
+    <link rel="prev" title="hfovis.denoiser package" href="hfovis.denoiser.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            hfovis
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="hfovis.html">hfovis package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hfovis.data.html">hfovis.data package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hfovis.denoiser.html">hfovis.denoiser package</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">hfovis.detector package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-hfovis.detector.config">hfovis.detector.config module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#hfovis.detector.config.DetectorConfig"><code class="docutils literal notranslate"><span class="pre">DetectorConfig</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#hfovis.detector.config.DetectorConfig.adaptive_threshold_num_windows"><code class="docutils literal notranslate"><span class="pre">DetectorConfig.adaptive_threshold_num_windows</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hfovis.detector.config.DetectorConfig.adaptive_threshold_num_windows_overlap"><code class="docutils literal notranslate"><span class="pre">DetectorConfig.adaptive_threshold_num_windows_overlap</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hfovis.detector.config.DetectorConfig.adaptive_threshold_overlap_ms"><code class="docutils literal notranslate"><span class="pre">DetectorConfig.adaptive_threshold_overlap_ms</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hfovis.detector.config.DetectorConfig.adaptive_threshold_window_size_ms"><code class="docutils literal notranslate"><span class="pre">DetectorConfig.adaptive_threshold_window_size_ms</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hfovis.detector.config.DetectorConfig.burst_window_overlap_ms"><code class="docutils literal notranslate"><span class="pre">DetectorConfig.burst_window_overlap_ms</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hfovis.detector.config.DetectorConfig.burst_window_size_ms"><code class="docutils literal notranslate"><span class="pre">DetectorConfig.burst_window_size_ms</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hfovis.detector.config.DetectorConfig.center_min_crossings"><code class="docutils literal notranslate"><span class="pre">DetectorConfig.center_min_crossings</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hfovis.detector.config.DetectorConfig.channels"><code class="docutils literal notranslate"><span class="pre">DetectorConfig.channels</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hfovis.detector.config.DetectorConfig.fast_ripple_band"><code class="docutils literal notranslate"><span class="pre">DetectorConfig.fast_ripple_band</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hfovis.detector.config.DetectorConfig.fs"><code class="docutils literal notranslate"><span class="pre">DetectorConfig.fs</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hfovis.detector.config.DetectorConfig.get_validation_messages"><code class="docutils literal notranslate"><span class="pre">DetectorConfig.get_validation_messages()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hfovis.detector.config.DetectorConfig.hfo_band"><code class="docutils literal notranslate"><span class="pre">DetectorConfig.hfo_band</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hfovis.detector.config.DetectorConfig.low_band"><code class="docutils literal notranslate"><span class="pre">DetectorConfig.low_band</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hfovis.detector.config.DetectorConfig.min_threshold"><code class="docutils literal notranslate"><span class="pre">DetectorConfig.min_threshold</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hfovis.detector.config.DetectorConfig.name"><code class="docutils literal notranslate"><span class="pre">DetectorConfig.name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hfovis.detector.config.DetectorConfig.ring_buffer_size_s"><code class="docutils literal notranslate"><span class="pre">DetectorConfig.ring_buffer_size_s</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hfovis.detector.config.DetectorConfig.ripple_band"><code class="docutils literal notranslate"><span class="pre">DetectorConfig.ripple_band</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hfovis.detector.config.DetectorConfig.side_max_crossings"><code class="docutils literal notranslate"><span class="pre">DetectorConfig.side_max_crossings</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hfovis.detector.config.DetectorConfig.threshold_multiplier"><code class="docutils literal notranslate"><span class="pre">DetectorConfig.threshold_multiplier</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hfovis.detector.config.DetectorConfig.update"><code class="docutils literal notranslate"><span class="pre">DetectorConfig.update()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hfovis.detector.config.DetectorConfig.validate"><code class="docutils literal notranslate"><span class="pre">DetectorConfig.validate()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hfovis.detector.config.DetectorConfig.visualization_window_size_ms"><code class="docutils literal notranslate"><span class="pre">DetectorConfig.visualization_window_size_ms</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-hfovis.detector.detector">hfovis.detector.detector module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#hfovis.detector.detector.RealTimeDetector"><code class="docutils literal notranslate"><span class="pre">RealTimeDetector</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#hfovis.detector.detector.RealTimeDetector.build_graph_dual_band"><code class="docutils literal notranslate"><span class="pre">RealTimeDetector.build_graph_dual_band()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hfovis.detector.detector.RealTimeDetector.build_graph_single_band"><code class="docutils literal notranslate"><span class="pre">RealTimeDetector.build_graph_single_band()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hfovis.detector.detector.RealTimeDetector.new_event"><code class="docutils literal notranslate"><span class="pre">RealTimeDetector.new_event</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hfovis.detector.detector.RealTimeDetector.run"><code class="docutils literal notranslate"><span class="pre">RealTimeDetector.run()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#hfovis.detector.detector.RealTimeDetector.stop"><code class="docutils literal notranslate"><span class="pre">RealTimeDetector.stop()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-hfovis.detector">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="hfovis.gui.html">hfovis.gui package</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">hfovis</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="hfovis.html">hfovis package</a></li>
+      <li class="breadcrumb-item active">hfovis.detector package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/hfovis.detector.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="hfovis-detector-package">
+<h1>hfovis.detector package<a class="headerlink" href="#hfovis-detector-package" title="Link to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
+</section>
+<section id="module-hfovis.detector.config">
+<span id="hfovis-detector-config-module"></span><h2>hfovis.detector.config module<a class="headerlink" href="#module-hfovis.detector.config" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="hfovis.detector.config.DetectorConfig">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">hfovis.detector.config.</span></span><span class="sig-name descname"><span class="pre">DetectorConfig</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fs:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">2048.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">channels:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hfo_band:</span> <span class="pre">list[int]</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ripple_band:</span> <span class="pre">list[int]</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fast_ripple_band:</span> <span class="pre">list[int]</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">adaptive_threshold_window_size_ms:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">500.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">adaptive_threshold_overlap_ms:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">200.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">adaptive_threshold_num_windows:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">adaptive_threshold_num_windows_overlap:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_threshold:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">5.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold_multiplier:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">5.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">burst_window_size_ms:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">320.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">burst_window_overlap_ms:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">64.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">side_max_crossings:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">center_min_crossings:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">6</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">visualization_window_size_ms:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">200.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">low_band:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ring_buffer_size_s:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">10.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hfovis/detector/config.html#DetectorConfig"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfovis.detector.config.DetectorConfig" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#hfovis.detector.config.DetectorConfig.get_validation_messages" title="hfovis.detector.config.DetectorConfig.get_validation_messages"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_validation_messages</span></code></a>()</p></td>
+<td><p>Collects validation messages for each field in the dataclass.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#hfovis.detector.config.DetectorConfig.update" title="hfovis.detector.config.DetectorConfig.update"><code class="xref py py-obj docutils literal notranslate"><span class="pre">update</span></code></a>(**kwargs)</p></td>
+<td><p>Update the configuration with new values for specified fields.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#hfovis.detector.config.DetectorConfig.validate" title="hfovis.detector.config.DetectorConfig.validate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">validate</span></code></a>()</p></td>
+<td><p>Validates the configuration by checking each field against its validation criteria.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="hfovis.detector.config.DetectorConfig.adaptive_threshold_num_windows">
+<span class="sig-name descname"><span class="pre">adaptive_threshold_num_windows</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">100</span></em><a class="headerlink" href="#hfovis.detector.config.DetectorConfig.adaptive_threshold_num_windows" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="hfovis.detector.config.DetectorConfig.adaptive_threshold_num_windows_overlap">
+<span class="sig-name descname"><span class="pre">adaptive_threshold_num_windows_overlap</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">100</span></em><a class="headerlink" href="#hfovis.detector.config.DetectorConfig.adaptive_threshold_num_windows_overlap" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="hfovis.detector.config.DetectorConfig.adaptive_threshold_overlap_ms">
+<span class="sig-name descname"><span class="pre">adaptive_threshold_overlap_ms</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">200.0</span></em><a class="headerlink" href="#hfovis.detector.config.DetectorConfig.adaptive_threshold_overlap_ms" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="hfovis.detector.config.DetectorConfig.adaptive_threshold_window_size_ms">
+<span class="sig-name descname"><span class="pre">adaptive_threshold_window_size_ms</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">500.0</span></em><a class="headerlink" href="#hfovis.detector.config.DetectorConfig.adaptive_threshold_window_size_ms" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="hfovis.detector.config.DetectorConfig.burst_window_overlap_ms">
+<span class="sig-name descname"><span class="pre">burst_window_overlap_ms</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">64.0</span></em><a class="headerlink" href="#hfovis.detector.config.DetectorConfig.burst_window_overlap_ms" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="hfovis.detector.config.DetectorConfig.burst_window_size_ms">
+<span class="sig-name descname"><span class="pre">burst_window_size_ms</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">320.0</span></em><a class="headerlink" href="#hfovis.detector.config.DetectorConfig.burst_window_size_ms" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="hfovis.detector.config.DetectorConfig.center_min_crossings">
+<span class="sig-name descname"><span class="pre">center_min_crossings</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">6</span></em><a class="headerlink" href="#hfovis.detector.config.DetectorConfig.center_min_crossings" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="hfovis.detector.config.DetectorConfig.channels">
+<span class="sig-name descname"><span class="pre">channels</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#hfovis.detector.config.DetectorConfig.channels" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="hfovis.detector.config.DetectorConfig.fast_ripple_band">
+<span class="sig-name descname"><span class="pre">fast_ripple_band</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#hfovis.detector.config.DetectorConfig.fast_ripple_band" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="hfovis.detector.config.DetectorConfig.fs">
+<span class="sig-name descname"><span class="pre">fs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2048.0</span></em><a class="headerlink" href="#hfovis.detector.config.DetectorConfig.fs" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hfovis.detector.config.DetectorConfig.get_validation_messages">
+<span class="sig-name descname"><span class="pre">get_validation_messages</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/hfovis/detector/config.html#DetectorConfig.get_validation_messages"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfovis.detector.config.DetectorConfig.get_validation_messages" title="Link to this definition"></a></dt>
+<dd><p>Collects validation messages for each field in the dataclass.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>dict</dt><dd><p>A dictionary where keys are field names and values are error messages
+if the field does not meet its validation criteria.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="hfovis.detector.config.DetectorConfig.hfo_band">
+<span class="sig-name descname"><span class="pre">hfo_band</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#hfovis.detector.config.DetectorConfig.hfo_band" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="hfovis.detector.config.DetectorConfig.low_band">
+<span class="sig-name descname"><span class="pre">low_band</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1.0</span></em><a class="headerlink" href="#hfovis.detector.config.DetectorConfig.low_band" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="hfovis.detector.config.DetectorConfig.min_threshold">
+<span class="sig-name descname"><span class="pre">min_threshold</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">5.0</span></em><a class="headerlink" href="#hfovis.detector.config.DetectorConfig.min_threshold" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="hfovis.detector.config.DetectorConfig.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Detector</span> <span class="pre">Configuration'</span></em><a class="headerlink" href="#hfovis.detector.config.DetectorConfig.name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="hfovis.detector.config.DetectorConfig.ring_buffer_size_s">
+<span class="sig-name descname"><span class="pre">ring_buffer_size_s</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">10.0</span></em><a class="headerlink" href="#hfovis.detector.config.DetectorConfig.ring_buffer_size_s" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="hfovis.detector.config.DetectorConfig.ripple_band">
+<span class="sig-name descname"><span class="pre">ripple_band</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#hfovis.detector.config.DetectorConfig.ripple_band" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="hfovis.detector.config.DetectorConfig.side_max_crossings">
+<span class="sig-name descname"><span class="pre">side_max_crossings</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">4</span></em><a class="headerlink" href="#hfovis.detector.config.DetectorConfig.side_max_crossings" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="hfovis.detector.config.DetectorConfig.threshold_multiplier">
+<span class="sig-name descname"><span class="pre">threshold_multiplier</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">5.0</span></em><a class="headerlink" href="#hfovis.detector.config.DetectorConfig.threshold_multiplier" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hfovis.detector.config.DetectorConfig.update">
+<span class="sig-name descname"><span class="pre">update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hfovis/detector/config.html#DetectorConfig.update"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfovis.detector.config.DetectorConfig.update" title="Link to this definition"></a></dt>
+<dd><p>Update the configuration with new values for specified fields.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>**kwargs</strong></dt><dd><p>Keyword arguments where keys are field names and values are the new values
+to set for those fields.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>ValueError</dt><dd><p>If a key in kwargs does not correspond to a field in the dataclass,</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hfovis.detector.config.DetectorConfig.validate">
+<span class="sig-name descname"><span class="pre">validate</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/hfovis/detector/config.html#DetectorConfig.validate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfovis.detector.config.DetectorConfig.validate" title="Link to this definition"></a></dt>
+<dd><p>Validates the configuration by checking each field against its validation
+criteria.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>ValueError</dt><dd><p>If any field does not meet its validation criteria, a ValueError is raised</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="hfovis.detector.config.DetectorConfig.visualization_window_size_ms">
+<span class="sig-name descname"><span class="pre">visualization_window_size_ms</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">200.0</span></em><a class="headerlink" href="#hfovis.detector.config.DetectorConfig.visualization_window_size_ms" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-hfovis.detector.detector">
+<span id="hfovis-detector-detector-module"></span><h2>hfovis.detector.detector module<a class="headerlink" href="#module-hfovis.detector.detector" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="hfovis.detector.detector.RealTimeDetector">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">hfovis.detector.detector.</span></span><span class="sig-name descname"><span class="pre">RealTimeDetector</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stream</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="hfovis.data.html#hfovis.data.streaming.Streamer" title="hfovis.data.streaming.Streamer"><span class="pre">Streamer</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hfovis/detector/detector.html#RealTimeDetector"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfovis.detector.detector.RealTimeDetector" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">QThread</span></code></p>
+<p>Subclass of <cite>QThread</cite> Real-time detector for high-frequency oscillations (HFOs) in
+EEG data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>stream</strong><span class="classifier">Streamer</span></dt><dd><p>A data stream object that has a <cite>start()</cite> method for starting the stream
+and a <cite>read()</cite> method for reading a chunk from the stream.</p>
+</dd>
+<dt><strong>parent</strong><span class="classifier">QObject, optional</span></dt><dd></dd>
+<dt><strong>**kwargs</strong></dt><dd><p>Check <cite>DetectorConfig</cite> for available parameters.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Attributes<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>new_event</strong><span class="classifier">pyqtSignal</span></dt><dd><p>Signal emitted when a new event is detected.</p>
+</dd>
+<dt><strong>stream</strong><span class="classifier">Streamer</span></dt><dd></dd>
+<dt><strong>config</strong><span class="classifier">DetectorConfig</span></dt><dd></dd>
+<dt><strong>ring_buffer</strong><span class="classifier">RingBuffer</span></dt><dd><p>Used to store raw data for when events are detected.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><strong>stop()</strong></p></td>
+<td><p>Stops both the stream and the detector.</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>run()</strong></p></td>
+<td><p>Reads through the data stream and emits chunks tagged with a global index.</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>build_graph_single_band()</strong></p></td>
+<td><p>Builds the processing graph for single-band HFO detection.</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>build_graph_dual_band()</strong></p></td>
+<td><p>Builds the processing graph for dual-band HFO detection. Note: Still WIP.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="hfovis.detector.detector.RealTimeDetector.build_graph_dual_band">
+<span class="sig-name descname"><span class="pre">build_graph_dual_band</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/hfovis/detector/detector.html#RealTimeDetector.build_graph_dual_band"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfovis.detector.detector.RealTimeDetector.build_graph_dual_band" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hfovis.detector.detector.RealTimeDetector.build_graph_single_band">
+<span class="sig-name descname"><span class="pre">build_graph_single_band</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/hfovis/detector/detector.html#RealTimeDetector.build_graph_single_band"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfovis.detector.detector.RealTimeDetector.build_graph_single_band" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="hfovis.detector.detector.RealTimeDetector.new_event">
+<span class="sig-name descname"><span class="pre">new_event</span></span><a class="headerlink" href="#hfovis.detector.detector.RealTimeDetector.new_event" title="Link to this definition"></a></dt>
+<dd><p>int = …, arguments: Sequence = …) -&gt; PYQT_SIGNAL</p>
+<p>types is normally a sequence of individual types.  Each type is either a
+type object or a string that is the name of a C++ type.  Alternatively
+each type could itself be a sequence of types each describing a different
+overloaded signal.
+name is the optional C++ name of the signal.  If it is not specified then
+the name of the class attribute that is bound to the signal is used.
+revision is the optional revision of the signal that is exported to QML.
+If it is not specified then 0 is used.
+arguments is the optional sequence of the names of the signal’s arguments.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pyqtSignal(<a href="#id1"><span class="problematic" id="id2">*</span></a>types, name</p>
+</dd>
+<dt class="field-even">Type<span class="colon">:</span></dt>
+<dd class="field-even"><p>str = …, revision</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hfovis.detector.detector.RealTimeDetector.run">
+<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/hfovis/detector/detector.html#RealTimeDetector.run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfovis.detector.detector.RealTimeDetector.run" title="Link to this definition"></a></dt>
+<dd><p>Reads through the data stream and emits chunks tagged with a global index.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="hfovis.detector.detector.RealTimeDetector.stop">
+<span class="sig-name descname"><span class="pre">stop</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/hfovis/detector/detector.html#RealTimeDetector.stop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hfovis.detector.detector.RealTimeDetector.stop" title="Link to this definition"></a></dt>
+<dd><p>Stops both the stream and the detector.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-hfovis.detector">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-hfovis.detector" title="Link to this heading"></a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="hfovis.denoiser.html" class="btn btn-neutral float-left" title="hfovis.denoiser package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="hfovis.gui.html" class="btn btn-neutral float-right" title="hfovis.gui package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Raahi Jogani, Valentina Hrtonova, Behrang Besheli.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
